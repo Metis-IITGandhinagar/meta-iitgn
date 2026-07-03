@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export default async function WikiPage() {
   // Fetch from the backend
-  const response = await fetch("http://127.0.0.1:8000/page/1");
+  const response = await fetch("https://meta-iitgn-vercel.onrender.com/page/1");
 
   let pageContent = "Failed to load content.";
   if (response.ok) {
