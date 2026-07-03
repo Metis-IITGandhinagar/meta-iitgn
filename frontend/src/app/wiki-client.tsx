@@ -172,7 +172,7 @@ export default function WikiClient({ initialMarkdown }: WikiClientProps) {
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/page/1", {
+      const response = await fetch("https://meta-iitgn-vercel.onrender.com/page/1", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
