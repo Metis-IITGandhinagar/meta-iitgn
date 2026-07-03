@@ -7,6 +7,12 @@ from pydantic import BaseModel
 app = FastAPI(title="Basic API")
 
 
+origins = [
+    "https://meta-iitgn-vercel.onrender.com/", # Replace with your actual Vercel URL
+    "http://localhost:3000",                  # Keep this for local development
+]
+
+
 # 2. Define a data schema for validation
 class Page(BaseModel):
     name: str
