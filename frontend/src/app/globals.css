@@ -86,10 +86,17 @@ body {
   text-shadow: 0 4px 16px rgba(0, 0, 0, 0.65), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
 }
 
+/* Custom animated moving gradient for premium headers, buttons and tags */
+@keyframes gradient-xy {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
 
-
-
-
-
-
-
+.animate-gradient-slow {
+  background-size: 200% auto;
+  animation: gradient-xy 6s ease infinite;
+}

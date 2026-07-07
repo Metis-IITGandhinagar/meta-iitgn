@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, Search } from "lucide-react";
 
 export default function HomePortal() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,11 +56,11 @@ export default function HomePortal() {
   ];
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white select-none">
+    <div className="flex flex-col lg:flex-row min-h-screen w-screen overflow-x-hidden bg-white select-none">
       {/* Left Column: Navigation & Search Portal */}
-      <aside className="w-[360px] md:w-[400px] border-r border-gray-100 flex flex-col justify-between p-12 shrink-0 bg-white z-10">
+      <aside className="w-full lg:w-[400px] border-r border-gray-100 flex flex-col p-8 md:p-12 shrink-0 bg-white z-10 gap-6 overflow-y-auto h-auto lg:h-screen">
         
-        {/* Brand Crest */}
+        {/* Brand Crest (Untouched at the top) */}
         <div className="flex flex-col items-center mt-4">
           <div className="w-24 h-24 bg-gray-950 text-white rounded-full flex items-center justify-center font-display font-black text-4xl shadow-lg cursor-pointer hover:scale-135 transition-transform duration-300">
             mI
@@ -74,27 +74,45 @@ export default function HomePortal() {
           </div>
         </div>
 
-        {/* Search Bar Portal */}
-        <form onSubmit={handleSearch} className="my-8">
-          <div className="relative flex items-stretch border border-gray-200 hover:border-gray-300 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-indigo-50 rounded-lg overflow-hidden transition-all">
+        <form onSubmit={handleSearch} className="my-4 w-full">
+          <div className="relative flex items-center h-12 bg-slate-50 border border-slate-200/60 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] rounded-full px-5 transition-all focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100/50">
             <input
               type="text"
-              placeholder="What are you looking for?"
+              placeholder="SEARCH..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 text-sm text-gray-800 placeholder-gray-400 bg-transparent focus:outline-none"
+              className="w-full text-xs text-slate-800 placeholder:text-slate-400 placeholder:font-semibold placeholder:tracking-widest bg-transparent focus:outline-none h-full pr-10"
             />
             <button
               type="submit"
-              className="bg-gray-50 border-l border-gray-200 px-5 text-xs font-bold text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors uppercase tracking-wider flex items-center justify-center"
+              className="absolute right-5 text-slate-400 hover:text-indigo-650 transition-colors cursor-pointer"
+              aria-label="Search"
             >
-              GO
+              <Search className="h-5 w-5" />
             </button>
           </div>
         </form>
 
+        {/* Photo and tagline text from image (Shown below search bar on mobile screens) */}
+        <div className="lg:hidden w-auto -mx-8 md:-mx-12 h-[480px] md:h-[580px] overflow-hidden relative shadow-sm flex-shrink-0 flex items-center justify-center">
+          {/* Background Image - Zoomed in further */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center transform scale-150"
+            style={{ backgroundImage: `url('/homepage_bg.png')` }}
+          />
+          {/* Tagline overlay styled exactly like desktop */}
+          <div className="relative z-10 flex flex-col items-center text-center w-full px-6">
+            <h2 className="text-6xl md:text-7xl font-display font-bold tracking-tight text-white mb-3 leading-none">
+              Welcome to <br/> meta IITGN
+            </h2>
+            <p className="text-lg md:text-xl font-sans font-medium text-white/95 tracking-wide mt-2 w-full max-w-md border-t border-white/20 pt-3">
+              the collaborative campus encyclopedia that anyone can edit.
+            </p>
+          </div>
+        </div>
+
         {/* Bottom Footer Block */}
-        <div className="flex flex-col gap-6 mt-auto">
+        <div className="flex flex-col gap-6 mt-4 lg:mt-auto">
           {/* Categories / Knowledge Branches */}
           <div className="flex flex-col gap-6">
             <nav className="grid grid-cols-2 gap-y-3 gap-x-4">
@@ -136,8 +154,8 @@ export default function HomePortal() {
         </div>
       </aside>
 
-      {/* Right Column: Immersive visual backdrop */}
-      <main className="flex-1 relative overflow-hidden flex items-center justify-center">
+      {/* Right Column: Immersive visual backdrop (Desktop only) */}
+      <main className="hidden lg:flex flex-1 relative overflow-hidden items-center justify-center">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
