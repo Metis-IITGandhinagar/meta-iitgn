@@ -21,7 +21,12 @@ export default function WikiLayout({ children }: { children: React.ReactNode }) 
       {/* Main Content Workspace */}
       <div className="flex flex-1 overflow-hidden w-full relative">
         {/* Left Collapsible Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)} 
+          currentTier={currentTier}
+          onChangeTier={setCurrentTier}
+        />
         {children}
       </div>
     </div>
