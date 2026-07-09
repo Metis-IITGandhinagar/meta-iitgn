@@ -19,79 +19,82 @@ export function parseMarkdown(markdown: string) {
     { label: "Tags", value: ["Mock", "Test", "FastAPI"], type: "badge" },
   ];
   let contentMarkdown = markdown;
+  let frontmatterText = "";
 
   // Check if it has frontmatter
   if (markdown.startsWith("---")) {
     const parts = markdown.split("---");
     if (parts.length >= 3) {
-      const frontmatterText = parts[1];
+      frontmatterText = parts[1];
       contentMarkdown = parts.slice(2).join("---").trim();
-      
-      // Parse simple YAML-like frontmatter
-      const lines = frontmatterText.split("\n");
-      const normalizedLines: string[] = [];
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        if (!line.includes(":") && !trimmed.startsWith("-") && normalizedLines.length > 0) {
-          normalizedLines[normalizedLines.length - 1] += " " + trimmed;
-        } else {
-          normalizedLines.push(line);
-        }
+    }
+  }
+
+  if (frontmatterText) {
+    // Parse simple YAML-like frontmatter
+    const lines = frontmatterText.split("\n");
+    const normalizedLines: string[] = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (!line.includes(":") && !trimmed.startsWith("-") && normalizedLines.length > 0) {
+        normalizedLines[normalizedLines.length - 1] += " " + trimmed;
+      } else {
+        normalizedLines.push(line);
       }
+    }
 
-      let currentRows: InfoboxRow[] = [];
-      let inRows = false;
-      let currentRow: Partial<InfoboxRow> | null = null;
+    let currentRows: InfoboxRow[] = [];
+    let inRows = false;
+    let currentRow: Partial<InfoboxRow> | null = null;
 
-      for (let line of normalizedLines) {
-        line = line.trim();
-        if (!line) continue;
+    for (let line of normalizedLines) {
+      line = line.trim();
+      if (!line) continue;
 
-        if (line.startsWith("image:")) {
-          image = line.replace("image:", "").trim();
-          inRows = false;
-        } else if (line.startsWith("imageAlt:")) {
-          imageAlt = line.replace("imageAlt:", "").trim();
-          inRows = false;
-        } else if (line.startsWith("rows:")) {
-          inRows = true;
-          currentRows = [];
-        } else if (inRows && line.startsWith("-")) {
-          // New row
-          if (currentRow && currentRow.label !== undefined && currentRow.value !== undefined) {
-            currentRows.push(currentRow as InfoboxRow);
-          }
-          currentRow = {};
-          const rowContent = line.replace(/^-/, "").trim();
-          if (rowContent.startsWith("label:")) {
-            currentRow.label = rowContent.replace("label:", "").trim();
-          }
-        } else if (inRows && currentRow) {
-          const colonIndex = line.indexOf(":");
-          if (colonIndex !== -1) {
-            const key = line.slice(0, colonIndex).trim();
-            const val = line.slice(colonIndex + 1).trim();
-            if (key === "label") {
-              currentRow.label = val;
-            } else if (key === "value") {
-              if (val.startsWith("[") && val.endsWith("]")) {
-                currentRow.value = val.slice(1, -1).split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ""));
-              } else {
-                currentRow.value = val;
-              }
-            } else if (key === "type") {
-              currentRow.type = val as "text" | "badge";
+      if (line.startsWith("image:")) {
+        image = line.replace("image:", "").trim();
+        inRows = false;
+      } else if (line.startsWith("imageAlt:")) {
+        imageAlt = line.replace("imageAlt:", "").trim();
+        inRows = false;
+      } else if (line.startsWith("rows:")) {
+        inRows = true;
+        currentRows = [];
+      } else if (inRows && line.startsWith("-")) {
+        // New row
+        if (currentRow && currentRow.label !== undefined && currentRow.value !== undefined) {
+          currentRows.push(currentRow as InfoboxRow);
+        }
+        currentRow = {};
+        const rowContent = line.replace(/^-/, "").trim();
+        if (rowContent.startsWith("label:")) {
+          currentRow.label = rowContent.replace("label:", "").trim();
+        }
+      } else if (inRows && currentRow) {
+        const colonIndex = line.indexOf(":");
+        if (colonIndex !== -1) {
+          const key = line.slice(0, colonIndex).trim();
+          const val = line.slice(colonIndex + 1).trim();
+          if (key === "label") {
+            currentRow.label = val;
+          } else if (key === "value") {
+            if (val.startsWith("[") && val.endsWith("]")) {
+              currentRow.value = val.slice(1, -1).split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ""));
+            } else {
+              currentRow.value = val;
             }
+          } else if (key === "type") {
+            currentRow.type = val as "text" | "badge";
           }
         }
       }
-      if (currentRow && currentRow.label !== undefined && currentRow.value !== undefined) {
-        currentRows.push(currentRow as InfoboxRow);
-      }
-      if (currentRows.length > 0) {
-        rows = currentRows;
-      }
+    }
+    if (currentRow && currentRow.label !== undefined && currentRow.value !== undefined) {
+      currentRows.push(currentRow as InfoboxRow);
+    }
+    if (currentRows.length > 0) {
+      rows = currentRows;
     }
   }
 

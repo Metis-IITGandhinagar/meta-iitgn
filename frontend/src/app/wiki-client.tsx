@@ -29,11 +29,20 @@ const MilkdownEditor = dynamic(() => import("@/components/article/milkdown-edito
 interface WikiClientProps {
   initialMarkdown: string;
   defaultEditing?: boolean;
+  pageId?: string;
 }
 
-export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClientProps) {
+export default function WikiClient({ initialMarkdown, defaultEditing, pageId = "1" }: WikiClientProps) {
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
+  const [currentPageId, setCurrentPageId] = useState(pageId);
+  const [savedMarkdown, setSavedMarkdown] = useState(initialMarkdown);
   const [markdown, setMarkdown] = useState(initialMarkdown);
+
+  useEffect(() => {
+    setSavedMarkdown(initialMarkdown);
+    setMarkdown(initialMarkdown);
+    setCurrentPageId(pageId);
+  }, [initialMarkdown, pageId]);
   const parsed = useMemo(() => parseMarkdown(markdown), [markdown]);
   const [activeSection, setActiveSection] = useState<string>("");
   const [editorLoaded, setEditorLoaded] = useState(false);
@@ -137,16 +146,32 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
   };
 
   const handleSave = async () => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    const targetUrl = `${apiBase}/page/${currentPageId}`;
+    
+    console.log("=== Debug Save ===");
+    console.log("Browser Origin:", window.location.origin);
+    console.log("Target URL:", targetUrl);
+    console.log("Markdown Content:", markdownRef.current);
+    
     try {
-      const response = await fetch("https://meta-iitgn-vercel.onrender.com/page/1", {
-        method: "POST",
+      const response = await fetch(targetUrl, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ content: markdownRef.current }),
       });
-      if (!response.ok) {
-        console.warn("Backend save failed or endpoint not implemented. Saved locally.");
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.content) {
+          setSavedMarkdown(data.content);
+          setMarkdown(data.content);
+          markdownRef.current = data.content;
+        }
+      } else {
+        console.error("Failed to save page. Server returned status:", response.status);
       }
     } catch (error) {
       console.error("Error saving to backend:", error);
@@ -258,8 +283,8 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                     </button>
                     <button
                       onClick={() => {
-                        setMarkdown(initialMarkdown);
-                        markdownRef.current = initialMarkdown;
+                        setMarkdown(savedMarkdown);
+                        markdownRef.current = savedMarkdown;
                         setIsEditing(false);
                       }}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs cursor-pointer transition-colors shadow-sm"
@@ -662,8 +687,8 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
               </button>
               <button
                 onClick={() => {
-                  setMarkdown(initialMarkdown);
-                  markdownRef.current = initialMarkdown;
+                  setMarkdown(savedMarkdown);
+                  markdownRef.current = savedMarkdown;
                   setIsEditing(false);
                 }}
                 className="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
