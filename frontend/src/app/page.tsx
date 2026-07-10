@@ -246,9 +246,9 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50/30 overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen lg:h-screen bg-gray-50/30 overflow-y-auto lg:overflow-hidden font-sans">
       {/* Main Container */}
-      <div className="flex flex-1 relative overflow-y-auto lg:overflow-hidden w-full h-full">
+      <div className="flex flex-1 relative overflow-visible lg:overflow-hidden w-full h-auto lg:h-full">
         {/* Collapsible Sidebar */}
         <Sidebar
           isOpen={sidebarOpen}
@@ -262,7 +262,7 @@ export default function HomePage() {
           sidebarOpen ? "translate-x-80 lg:translate-x-0" : "translate-x-0"
         }`}>
           {/* Left Panel: Fixed Dashboard on Desktop */}
-              <div className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-150 flex flex-col justify-between p-6 bg-white z-20 h-auto lg:h-full lg:overflow-y-auto select-none pb-28 ${
+              <div className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-150 flex flex-col justify-between p-6 bg-white z-20 h-auto lg:h-full overflow-y-visible lg:overflow-hidden select-none pb-0 lg:pb-6 ${
                 activeTab !== "home" ? "hidden lg:flex" : "flex"
               }`}>
             <div className="space-y-2">
@@ -355,7 +355,7 @@ export default function HomePage() {
             </div>
 
             {/* Credits Footer */}
-            <div className="pt-2 border-t hidden border-slate-100 md:flex flex-col items-center text-center gap-1.5 select-none mt-6">
+            <div className="pt-4 border-t border-slate-100 flex flex-col items-center text-center gap-1.5 select-none mt-6">
               <div className="text-[10px] text-gray-400 font-medium flex items-center gap-1.5">
                 <span>Made with</span>
                 <Heart
@@ -369,16 +369,16 @@ export default function HomePage() {
                   </span>
                 </span>
               </div>
-              <div className="text-[9px] text-gray-400 font-medium">
-                © {new Date().getFullYear()} meta IITGN · Technical Council
-                IITGN
+              <div className="text-[10px] font-semibold text-gray-400 mt-0.5">
+                © {new Date().getFullYear()} IIT Gandhinagar
               </div>
             </div>
+
           </div>
 
           {/* Right Panel: Scrollable Hero + Highlights Feed */}
           <div
-            className="flex-1 h-auto lg:h-full lg:overflow-y-auto scroll-smooth relative"
+            className="flex-1 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto pb-28 scroll-smooth relative"
             id="right-scroll-panel"
           >
             {activeTab === "home" ? (
@@ -784,11 +784,8 @@ export default function HomePage() {
                     </span>
                   </span>
                 </div>
-                <div className="text-[9px] text-gray-400 font-medium">
-                  © {new Date().getFullYear()} meta IITGN · Technical Council
-                  IITGN
-                </div>
-              </div>
+
+            </div>
             </div>
           </>
         ) : activeTab === "search" ? (
@@ -844,7 +841,7 @@ export default function HomePage() {
               </div>
 
               {/* Scrollable Results Viewport */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-28 space-y-4 no-scrollbar">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest select-none">
                   Search Results ({filteredSearchItems.length})
                 </h3>
@@ -882,6 +879,7 @@ export default function HomePage() {
                     <p className="text-xs text-slate-500 font-bold">No matching articles found</p>
                   </div>
                 )}
+
               </div>
             </div>
           ) : activeTab === "bookmarks" ? (
@@ -913,7 +911,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Scrollable Viewport */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 no-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-28 space-y-4 no-scrollbar">
                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest select-none">
                     Saved Pages ({bookmarks.length})
                   </h3>
@@ -966,6 +964,7 @@ export default function HomePage() {
                       <p className="text-[10px] text-slate-400 mt-0.5">Bookmark wiki pages to save them here for offline access.</p>
                     </div>
                   )}
+
                 </div>
               </div>
             </div>
@@ -981,7 +980,7 @@ export default function HomePage() {
               </div>
 
               {/* Scrollable Split Layout */}
-              <div className="flex-1 overflow-y-auto p-6 lg:p-8 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-6 lg:p-8 pb-28 no-scrollbar">
                 {createSuccess ? (
                   <div className="p-8 text-center bg-white border border-slate-150 rounded-2xl shadow-sm space-y-4 max-w-xl mx-auto my-auto select-none">
                     <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto animate-bounce" />
@@ -1077,14 +1076,17 @@ export default function HomePage() {
                     </div>
                   </div>
                 )}
+
               </div>
             </div>
           )}
         </div>
       </div>
+      {/* Floating Bottom Navbar on Mobile/Tablet */}
+      {!sidebarOpen && (
+        <BottomNavbar tabs={homeTabs} activeTab={activeTab} className="fixed bottom-6 left-1/2 transform -translate-x-1/2 lg:left-[calc(50vw+15rem)] z-[9999]" />
+      )}
     </div>
-      {/* Material Design 3 Bottom Navigation Bar */}
-      <BottomNavbar tabs={homeTabs} activeTab={activeTab} />
     </div>
   );
 }

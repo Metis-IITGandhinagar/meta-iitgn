@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -65,6 +66,28 @@ export default function Sidebar({
   currentTier,
 }: SidebarProps) {
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, onClose]);
+  
+  useEffect(() => {
+    if (isOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   
   const user:userType = {
   name: "Meta IITGN",
@@ -93,19 +116,20 @@ export default function Sidebar({
     <>
       {/* Sidebar Container */}
       <aside
+        ref={sidebarRef}
         className={`
           flex flex-col h-full bg-white border-r border-gray-150 select-none overflow-hidden shrink-0 relative
           transition-all duration-300 ease-in-out
           fixed inset-y-0 left-0 z-50 lg:static lg:h-full lg:z-auto
           ${
             isOpen
-              ? "w-80 translate-x-0"
+              ? "w-full lg:w-80 translate-x-0"
               : "w-0 lg:w-0 -translate-x-full lg:translate-x-0 lg:border-r-0"
           }
         `}
       >
         {/* Inner fixed-width container to prevent layout squeezing during transitions */}
-        <div className="w-80 h-full flex flex-col shrink-0 relative">
+        <div className="w-full lg:w-80 h-full flex flex-col shrink-0 relative">
           {/* Mobile-only absolute close button */}
           {isOpen && (
             <button
@@ -156,7 +180,7 @@ export default function Sidebar({
           </div>
 
           {/* Navigation list area */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 no-scrollbar">
+          <div className="flex-1 overflow-y-hidden overflow-x-hidden p-4 space-y-6 no-scrollbar">
             {SIDEBAR_SECTIONS.map((section) => (
               <div key={section.title} className="space-y-1.5">
                 {/* Section Header */}
@@ -194,50 +218,7 @@ export default function Sidebar({
               </div>
             ))}
 
-            {/* Tier Banner - Scrollable */}
-            {user && (
-              <div className="space-y-1.5 border-t border-gray-100 pt-4 px-3">
-                <div className="p-3.5 rounded-xl border border-gray-150 bg-gray-50/30">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[9px] font-bold text-gray-400 tracking-wider uppercase">
-                      Contributor Tier
-                    </span>
-                    <span className="text-[10px] font-bold text-gray-400">
-                      Rank {activeTierData.rank}
-                    </span>
-                  </div>
 
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base leading-none">
-                        {activeTierData.icon}
-                      </span>
-                      <span className="text-xs font-extrabold text-gray-800">
-                        {activeTierData.name}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-gray-500">
-                      {activeTierData.xp} XP
-                    </span>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-2">
-                    <div
-                      className={`h-full rounded-full transition-all duration-355 ${activeTierData.progressBar}`}
-                      style={{ width: `${activeTierData.percent}%` }}
-                    />
-                  </div>
-
-                  {/* Next Tier Unlock */}
-                  {activeTierData.nextTier && (
-                    <p className="text-[9px] font-semibold text-gray-400 leading-normal line-clamp-1">
-                      Next: {activeTierData.nextTier} • {activeTierData.nextUnlock}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Account/Profile Section */}
             {user ? (
@@ -261,7 +242,7 @@ export default function Sidebar({
                       className={`h-5 w-5 transition-colors duration-200 ${
                         pathname === "/user/profile"
                           ? "text-blue-600"
-                          : "text-gray-400 group-hover:text-gray-650"
+                          : "text-gray-400 group-hover:text-gray-655"
                       }`}
                     />
                     <span className="truncate">My Profile</span>
@@ -281,7 +262,7 @@ export default function Sidebar({
                       className={`h-5 w-5 transition-colors duration-200 ${
                         pathname === "/user/contributions"
                           ? "text-blue-600"
-                          : "text-gray-400 group-hover:text-gray-650"
+                          : "text-gray-400 group-hover:text-gray-655"
                       }`}
                     />
                     <span className="truncate">My Contributions</span>
@@ -301,7 +282,7 @@ export default function Sidebar({
                       className={`h-5 w-5 transition-colors duration-200 ${
                         pathname === "/user/settings"
                           ? "text-blue-600"
-                          : "text-gray-400 group-hover:text-gray-650"
+                          : "text-gray-400 group-hover:text-gray-655"
                       }`}
                     />
                     <span className="truncate">Settings</span>
@@ -327,6 +308,61 @@ export default function Sidebar({
               </div>
               </>
             )}
+            {/* Tier Banner - Moved to bottom of scroll list */}
+            {user && (
+              <div className="space-y-1.5 border-t border-gray-100 pt-4 px-3">
+                <div className="p-4 rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/60 to-yellow-50/40 backdrop-blur-md text-slate-800 shadow-md relative overflow-hidden select-none">
+                  {/* Glowing amber accent backdrop blob */}
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-amber-400/20 rounded-full blur-xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between mb-2.5 relative z-10">
+                    <span className="text-[9px] font-black text-amber-800/70 tracking-widest uppercase">
+                      Contributor Tier
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-100/80 border border-amber-200/60 text-amber-850 font-sans font-bold text-[9px] uppercase tracking-wider shrink-0 shadow-sm">
+                      Rank {activeTierData.rank}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-3 relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-white border border-amber-200 flex items-center justify-center font-serif text-lg leading-none shadow-sm">
+                        {activeTierData.icon}
+                      </div>
+                      <div>
+                        <span className="block text-xs font-black text-slate-800 font-sans">
+                          {activeTierData.name} Tier
+                        </span>
+                        <span className="block text-[8px] font-bold text-amber-700 uppercase tracking-widest leading-none mt-0.5">
+                          {activeTierData.roleTitle}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-black text-amber-600 font-sans">
+                      {activeTierData.xp} XP
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full h-2 bg-amber-100/50 border border-amber-200/40 rounded-full overflow-hidden mb-2.5 relative z-10 p-0.5 shadow-inner">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-amber-500 to-yellow-500 shadow-sm`}
+                      style={{ width: `${activeTierData.percent}%` }}
+                    />
+                  </div>
+
+                  {/* Next Tier Unlock */}
+                  {activeTierData.nextTier && (
+                    <div className="flex items-start gap-1 relative z-10 text-slate-500">
+                      <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider shrink-0">Next:</span>
+                      <p className="text-[9px] font-semibold leading-normal line-clamp-1">
+                        {activeTierData.nextTier} • {activeTierData.nextUnlock}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
 
@@ -335,9 +371,6 @@ export default function Sidebar({
           <div className="p-4 border-t border-gray-100 bg-gray-50/50 shrink-0">
             <p className="text-[10px] font-semibold text-gray-400">
               © {new Date().getFullYear()} IIT Gandhinagar
-            </p>
-            <p className="text-[10px] text-gray-400 mt-0.5">
-              Community maintained
             </p>
           </div>
         </div>

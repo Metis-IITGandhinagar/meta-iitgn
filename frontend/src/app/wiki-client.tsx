@@ -89,7 +89,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     const startWidth = rightWidth;
     let currentWidth = startWidth;
     const doDrag = (moveEvent: MouseEvent) => {
-      currentWidth = Math.max(200, Math.min(600, startWidth - (moveEvent.clientX - startX)));
+      currentWidth = Math.max(200, Math.min(600, startWidth + (moveEvent.clientX - startX)));
       setRightWidth(currentWidth);
     };
     const stopDrag = () => {
@@ -474,68 +474,17 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
 
   return (
     <>
-      {/* Main Content Wrapper */}
-      <div className={`flex flex-1 h-full w-full min-w-full lg:min-w-0 overflow-hidden transition-transform duration-300 ease-in-out ${
-        rightSidebarOpen ? "-translate-x-80 lg:translate-x-0" : "translate-x-0"
-      }`}>
-        {/* Main Scrollable Article Body */}
-        <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-8 pb-20 overflow-y-auto bg-white relative scroll-smooth">
-          <article className="w-full max-w-5xl mx-auto space-y-6">
-            {/* Teleported editor toolbar container */}
-            {isEditing && (
-              <div 
-                ref={setToolbarContainer} 
-                className="border border-gray-150 rounded-xl bg-gray-50 p-1.5 mb-6 milkdown flex items-center justify-center min-h-10"
-              />
-            )}
-            {/* Title Header (Separated from editor to prevent accidental deletion) */}
-            {isEditing ? (
-              <EditableCell
-                initialValue={parsed.title}
-                onChange={handleTitleChange}
-                placeholder="Untitled Page"
-                className="text-4xl font-display font-black tracking-tight text-gray-900 w-full border-none focus:outline-none focus:ring-0 mb-8 bg-transparent placeholder-gray-200"
-              />
-            ) : (
-              <h1 className="text-4xl font-display font-black tracking-tight text-gray-900 mb-8">
-                {parsed.title}
-              </h1>
-            )}
-
-            {/* Milkdown Editor */}
-            <MilkdownEditor
-              key={isEditing ? "edit" : "view"}
-              initialMarkdown={parsed.contentMarkdown}
-              onMarkdownChange={handleMarkdownChange}
-              readOnly={!isEditing}
-              onLoaded={() => setEditorLoaded(true)}
-              toolbarContainer={toolbarContainer}
-            />
-          </article>
-        </main>
-      </div>
-
-      {/* Resize Handle - desktop only */}
-      {rightSidebarOpen && (
-        <div
-          onMouseDown={startResizeRight}
-          onDoubleClick={handleRightDoubleClick}
-          className="hidden lg:block w-1.5 -mr-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0"
-          title="Drag to resize, double-click to reset"
-        />
-      )}
-
-      {/* InfoBox (Right Sidebar) */}
+      {/* InfoBox (Left Sidebar) */}
       <aside
         style={{ width: rightSidebarOpen ? (isMobile ? "320px" : `${rightWidth}px`) : undefined }}
         className={`
-          border-l border-gray-150 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
+          border-r border-gray-150 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
           transition-all duration-300 ease-in-out
-          fixed lg:static inset-y-0 right-0 z-50 lg:z-auto lg:h-full lg:border-l lg:border-gray-150
+          fixed lg:static inset-y-0 left-0 z-50 lg:z-auto lg:h-full lg:border-r lg:border-gray-150
           ${
             rightSidebarOpen
-              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none lg:border-l lg:border-gray-150"
-              : "translate-x-full lg:translate-x-0 lg:w-0 lg:border-l-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
+              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none lg:border-r lg:border-gray-150"
+              : "-translate-x-full lg:translate-x-0 lg:w-0 lg:border-r-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
           }
         `}
       >
@@ -739,7 +688,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                                   rows: newRows,
                                 });
                               }}
-                              className="text-gray-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
+                              className="text-gray-450 hover:text-rose-500 p-1 cursor-pointer transition-colors"
                               title="Delete fact row"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -836,85 +785,139 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
               })}
             </ul>
           </div>
-          </div>
-        </aside>
- 
-        {/* Material Design 3 Bottom Navigation Bar */}
-        <BottomNavbar
-          tabs={
-            isEditing
-              ? [
-                  {
-                    id: "back",
-                    label: "Back",
-                    icon: ArrowLeft,
-                    onClick: () => {
-                      if (window.history.length > 1) {
-                        router.back();
-                      } else {
-                        router.push("/");
-                      }
-                    },
-                  },
-                  {
-                    id: "save",
-                    label: "Save",
-                    icon: Check,
-                    onClick: handleSave,
-                  },
-                  {
-                    id: "cancel",
-                    label: "Cancel",
-                    icon: X,
-                    onClick: () => {
-                      setMarkdown(initialMarkdown);
-                      markdownRef.current = initialMarkdown;
-                      setIsEditing(false);
-                    },
-                  },
-                  {
-                    id: "sidebar",
-                    label: "Sidebar",
-                    icon: PanelRight,
-                    onClick: () => setRightSidebarOpen(!rightSidebarOpen),
-                  },
-                ]
-              : [
-                  {
-                    id: "new",
-                    label: "New Page",
-                    icon: PlusCircle,
-                    onClick: () => {
-                      router.push("/wiki/campus/new");
-                    },
-                  },
-                  {
-                    id: "edit",
-                    label: "Edit Page",
-                    icon: Edit3,
-                    onClick: () => setIsEditing(true),
-                  },
-                  {
-                    id: "changes",
-                    label: "Changes",
-                    icon: History,
-                    onClick: () => {
-                      setShowPendingChanges(true);
-                      setShowRevisions(false);
-                      window.dispatchEvent(new CustomEvent("show-wiki-pending"));
-                    },
-                    badgeCount: 2,
-                  },
-                  {
-                    id: "sidebar",
-                    label: "Sidebar",
-                    icon: PanelRight,
-                    onClick: () => setRightSidebarOpen(!rightSidebarOpen),
-                  },
-                ]
-          }
-          activeTab={rightSidebarOpen ? "sidebar" : (isEditing ? "edit" : undefined)}
+        </div>
+      </aside>
+
+      {/* Resize Handle - desktop only */}
+      {rightSidebarOpen && (
+        <div
+          onMouseDown={startResizeRight}
+          onDoubleClick={handleRightDoubleClick}
+          className="hidden lg:block w-1.5 -ml-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0"
+          title="Drag to resize, double-click to reset"
         />
+      )}
+
+      {/* Main Content Wrapper */}
+      <div className={`flex flex-1 h-full w-full min-w-full lg:min-w-0 overflow-hidden transition-transform duration-300 ease-in-out ${
+        rightSidebarOpen ? "translate-x-80 lg:translate-x-0" : "translate-x-0"
+      }`}>
+        {/* Main Scrollable Article Body */}
+        <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-8 pb-28 overflow-y-auto bg-white relative scroll-smooth">
+          <article className="w-full max-w-5xl mx-auto space-y-6">
+            {/* Teleported editor toolbar container */}
+            {isEditing && (
+              <div 
+                ref={setToolbarContainer} 
+                className="border border-gray-150 rounded-xl bg-gray-50 p-1.5 mb-6 milkdown flex items-center justify-center min-h-10"
+              />
+            )}
+            {/* Title Header (Separated from editor to prevent accidental deletion) */}
+            {isEditing ? (
+              <EditableCell
+                initialValue={parsed.title}
+                onChange={handleTitleChange}
+                placeholder="Untitled Page"
+                className="text-4xl font-display font-black tracking-tight text-gray-900 w-full border-none focus:outline-none focus:ring-0 mb-8 bg-transparent placeholder-gray-200"
+              />
+            ) : (
+              <h1 className="text-4xl font-display font-black tracking-tight text-gray-900 mb-8">
+                {parsed.title}
+              </h1>
+            )}
+
+            {/* Milkdown Editor */}
+            <MilkdownEditor
+              key={isEditing ? "edit" : "view"}
+              initialMarkdown={parsed.contentMarkdown}
+              onMarkdownChange={handleMarkdownChange}
+              readOnly={!isEditing}
+              onLoaded={() => setEditorLoaded(true)}
+              toolbarContainer={toolbarContainer}
+            />
+          </article>
+          {/* Material Design 3 Bottom Navigation Bar */}
+          <BottomNavbar
+            tabs={
+              isEditing
+                ? [
+                    {
+                      id: "back",
+                      label: "Back",
+                      icon: ArrowLeft,
+                      onClick: () => {
+                        if (window.history.length > 1) {
+                          router.back();
+                        } else {
+                          router.push("/");
+                        }
+                      },
+                    },
+                    {
+                      id: "save",
+                      label: "Save",
+                      icon: Check,
+                      onClick: handleSave,
+                    },
+                    {
+                      id: "cancel",
+                      label: "Cancel",
+                      icon: X,
+                      onClick: () => {
+                        setMarkdown(initialMarkdown);
+                        markdownRef.current = initialMarkdown;
+                        setIsEditing(false);
+                      },
+                    },
+                    {
+                      id: "sidebar",
+                      label: "Sidebar",
+                      icon: PanelRight,
+                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
+                    },
+                  ]
+                : [
+                    {
+                      id: "sidebar",
+                      label: "Sidebar",
+                      icon: PanelRight,
+                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
+                    },
+                    {
+                      id: "edit",
+                      label: "Edit Page",
+                      icon: Edit3,
+                      onClick: () => setIsEditing(true),
+                    },
+                    {
+                      id: "changes",
+                      label: "Changes",
+                      icon: History,
+                      onClick: () => {
+                        setShowPendingChanges(true);
+                        setShowRevisions(false);
+                        window.dispatchEvent(new CustomEvent("show-wiki-pending"));
+                      },
+                      badgeCount: 2,
+                    },
+                    {
+                      id: "new",
+                      label: "New Page",
+                      icon: PlusCircle,
+                      onClick: () => {
+                        router.push("/wiki/campus/new");
+                      },
+                    },
+                  ]
+            }
+            activeTab={rightSidebarOpen ? "sidebar" : (isEditing ? "edit" : undefined)}
+            style={{
+              left: !isMobile && rightSidebarOpen ? `calc((100vw - ${rightWidth}px) / 2)` : '50%'
+            }}
+            className="fixed bottom-6 transform -translate-x-1/2 z-[9999]"
+          />
+        </main>
+      </div>
       </>
     );
 }

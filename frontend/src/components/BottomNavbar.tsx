@@ -14,15 +14,20 @@ interface BottomNavbarProps {
   tabs: TabItem[];
   activeTab?: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function BottomNavbar({
   tabs,
   activeTab,
-  className = "",
+  className = "fixed bottom-6 left-1/2 transform -translate-x-1/2",
+  style,
 }: BottomNavbarProps) {
   return (
-    <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-lg transition-all duration-300 ${className}`}>
+    <div
+      style={style}
+      className={`z-[9999] w-[90%] max-w-lg transition-all duration-300 ${className}`}
+    >
       <div className="bg-white/90 backdrop-blur-md border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full px-4 py-2 flex items-center justify-around select-none">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
