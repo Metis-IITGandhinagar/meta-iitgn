@@ -276,7 +276,7 @@ export default function HomePage() {
               className="p-6 md:p-8 lg:p-10 bg-[#FCFCFD] space-y-10"
             >
               {/* Double Column: Featured Article & In the News */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="grid grid-cols-1 gap-8">
                 {/* Featured Article */}
                 <div className="lg:col-span-8 space-y-4">
                   <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
@@ -316,7 +316,7 @@ export default function HomePage() {
                 </div>
 
                 {/* In the News */}
-                <div className="lg:col-span-4 space-y-4">
+                <div className="lg:col-span-8 space-y-4 flex flex-col justify-center">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                     <h2 className="text-xl sm:text-2xl font-serif font-black text-gray-900 tracking-tight">
                       In the News
@@ -390,7 +390,7 @@ export default function HomePage() {
               </div>
 
               {/* Three Column Highlights Section */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pt-2">
                 {/* Column 1: Did You Know? */}
                 <div className="p-5 rounded-2xl border border-slate-150 bg-white hover:shadow-md transition-shadow duration-200 flex flex-col justify-between h-56 text-left">
                   <div>
@@ -420,7 +420,7 @@ export default function HomePage() {
                         On This Day
                       </h3>
                     </div>
-                    <div className="text-blue-605 text-xs font-extrabold mb-1.5">
+                    <div className="text-blue-500 text-xs font-extrabold mb-1.5">
                       {new Date().toLocaleDateString("en-US", {
                         month: "long",
                         day: "numeric",
