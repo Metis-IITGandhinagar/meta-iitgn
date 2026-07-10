@@ -4,15 +4,18 @@
   --background: #ffffff;
   --foreground: #171717;
 }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--color-void); }
-::-webkit-scrollbar-thumb { background: #0590db; border-radius: 12px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.3); }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-gray-150: #e2e8f0;
+  --color-slate-150: #e2e8f0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -109,7 +112,7 @@ body {
   }
 
   aside.right-sidebar-mobile-toggle {
-    width: 300px !important;
+    width: 320px !important;
   }
 }
 
@@ -139,4 +142,27 @@ body {
 .animate-gradient-slow {
   background-size: 200% auto;
   animation: gradient-xy 6s ease infinite;
+}
+
+/* Premium design depth utilities */
+.shadow-depth {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+}
+
+.shadow-depth-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.shadow-depth-hover:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.12), 0 10px 20px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Hide scrollbars for sidebars and other specific panels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
 }

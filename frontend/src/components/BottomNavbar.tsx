@@ -7,6 +7,7 @@ interface TabItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   onClick?: () => void;
+  badgeCount?: number;
 }
 
 interface BottomNavbarProps {
@@ -41,7 +42,14 @@ export default function BottomNavbar({
                     : "hover:bg-slate-100"
                 }`}
               >
-                <Icon className={`h-5 w-5 transition-transform duration-200 ${isActive ? "scale-105" : "group-hover:scale-105"}`} />
+                <div className="relative">
+                  <Icon className={`h-5 w-5 transition-transform duration-200 ${isActive ? "scale-105" : "group-hover:scale-105"}`} />
+                  {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white leading-none shadow-sm">
+                      {tab.badgeCount}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Text Label */}

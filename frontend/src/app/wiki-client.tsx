@@ -21,6 +21,7 @@ import {
   PanelRight,
   Home,
   ArrowLeft,
+  PlusCircle,
 } from "lucide-react";
 import BottomNavbar from "@/components/BottomNavbar";
 
@@ -46,13 +47,40 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
   const [rightWidth, setRightWidth] = useState(320);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showRevisions, setShowRevisions] = useState(false);
+  const [showPendingChanges, setShowPendingChanges] = useState(false);
 
   useEffect(() => {
     const savedRight = localStorage.getItem("wiki-right-sidebar-width");
     if (savedRight) setRightWidth(Math.max(200, Number(savedRight)));
     if (window.innerWidth < 1024) {
       setRightSidebarOpen(false);
+      setIsMobile(true);
     }
+
+    const handleShowRevisions = () => {
+      setShowRevisions(true);
+      setShowPendingChanges(false);
+    };
+    const handleShowPending = () => {
+      setShowPendingChanges(true);
+      setShowRevisions(false);
+    };
+    const handleHideHistory = () => {
+      setShowRevisions(false);
+      setShowPendingChanges(false);
+    };
+    window.addEventListener("show-wiki-history", handleShowRevisions);
+    window.addEventListener("show-wiki-revisions", handleShowRevisions);
+    window.addEventListener("show-wiki-pending", handleShowPending);
+    window.addEventListener("hide-wiki-history", handleHideHistory);
+    return () => {
+      window.removeEventListener("show-wiki-history", handleShowRevisions);
+      window.removeEventListener("show-wiki-revisions", handleShowRevisions);
+      window.removeEventListener("show-wiki-pending", handleShowPending);
+      window.removeEventListener("hide-wiki-history", handleHideHistory);
+    };
   }, []);
 
   const startResizeRight = (e: React.MouseEvent) => {
@@ -241,13 +269,218 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
 
 
 
+  if (showRevisions) {
+    return (
+      <div className="fixed inset-0 bg-white z-[60] flex flex-col h-screen w-screen overflow-hidden select-none animate-in fade-in duration-200">
+        {/* Top Header Bar */}
+        <header className="h-16 border-b border-gray-150 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
+          <button
+            onClick={() => {
+              setShowRevisions(false);
+              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
+            }}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-655 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+            aria-label="Back to Wiki"
+          >
+            <ArrowLeft className="h-6 w-6 text-black" />
+          </button>
+          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
+        </header>
+
+        {/* Changes Body (Like Search & Bookmarks pages) */}
+        <div className="flex-1 overflow-y-auto bg-gray-50/50 p-6 md:p-8 lg:p-12">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Recent Page Revisions</h2>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Track and restore past edits for this article</p>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              {[
+                {
+                  rev: 3,
+                  title: "Added cs curriculum and policies",
+                  author: "Meta IITGN",
+                  avatar: "MI",
+                  time: "4 hours ago",
+                  badge: "Admin",
+                  badgeBg: "bg-blue-50 text-blue-600 border border-blue-150",
+                  details: "Inserted curriculum listings under CS major and updated hostel rules. Added detail on curriculum pathways."
+                },
+                {
+                  rev: 2,
+                  title: "Updated infobox stats",
+                  author: "Alex Carter",
+                  avatar: "AC",
+                  time: "1 day ago",
+                  badge: "Gold Contributor",
+                  badgeBg: "bg-amber-50 text-amber-600 border border-amber-150",
+                  details: "Modified placement percentages and Amalthea festival dates. Corrected coordinate references."
+                },
+                {
+                  rev: 1,
+                  title: "Initial page creation",
+                  author: "System Init",
+                  avatar: "SY",
+                  time: "2 days ago",
+                  badge: "System",
+                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-150",
+                  details: "Imported markdown core structure, category hierarchies, and initial infobox configurations."
+                }
+              ].map((revision) => (
+                <div key={revision.rev} className="p-5 border border-gray-150 bg-white rounded-2xl shadow-depth shadow-depth-hover transition-all duration-150 relative group">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-150 flex items-center justify-center font-bold text-sm text-gray-750 shrink-0">
+                      {revision.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{revision.title}</h4>
+                        <span className="text-xs text-gray-400 shrink-0 font-medium">{revision.time}</span>
+                      </div>
+                      <p className="text-sm text-gray-550 mt-1.5 leading-relaxed">{revision.details}</p>
+                      
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 border-dashed">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-gray-700">{revision.author}</span>
+                          <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${revision.badgeBg}`}>
+                            {revision.badge}
+                          </span>
+                        </div>
+                        
+                        <button 
+                          onClick={() => {
+                            alert(`Restoring Revision #${revision.rev}...`);
+                            setShowRevisions(false);
+                          }}
+                          className="text-xs font-extrabold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer duration-150"
+                        >
+                          Restore Version
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showPendingChanges) {
+    return (
+      <div className="fixed inset-0 bg-white z-[60] flex flex-col h-screen w-screen overflow-hidden select-none animate-in fade-in duration-200">
+        {/* Top Header Bar */}
+        <header className="h-16 border-b border-gray-150 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
+          <button
+            onClick={() => {
+              setShowPendingChanges(false);
+              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
+            }}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-655 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center animate-in fade-in"
+            aria-label="Back to Wiki"
+          >
+            <ArrowLeft className="h-6 w-6 text-black" />
+          </button>
+          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
+        </header>
+
+        {/* Changes Body (Like Search & Bookmarks pages) */}
+        <div className="flex-1 overflow-y-auto bg-gray-50/50 p-6 md:p-8 lg:p-12">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Pending Approval</h2>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Review proposed community revisions before publishing</p>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              {[
+                {
+                  rev: 1,
+                  title: "Updated CS Major placement statistics for 2025",
+                  author: "Rohan Sharma",
+                  avatar: "RS",
+                  time: "2 hours ago",
+                  badge: "Student Contributor",
+                  badgeBg: "bg-emerald-50 text-emerald-600 border border-emerald-150",
+                  details: "Proposed update to placements: CS average package changed from 22.4 LPA to 23.8 LPA according to official council records."
+                },
+                {
+                  rev: 2,
+                  title: "Palaj Campus hostel guide clarification",
+                  author: "Aditi Patel",
+                  avatar: "AP",
+                  time: "6 hours ago",
+                  badge: "Guest Editor",
+                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-150",
+                  details: "Suggested formatting and detail cleanups under the hostel guide laundry services."
+                }
+              ].map((pending) => (
+                <div key={pending.rev} className="p-5 border border-gray-150 bg-white rounded-2xl shadow-depth shadow-depth-hover transition-all duration-150 relative group">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-150 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
+                      {pending.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{pending.title}</h4>
+                        <span className="text-xs text-gray-400 shrink-0 font-medium">{pending.time}</span>
+                      </div>
+                      <p className="text-sm text-gray-550 mt-1.5 leading-relaxed">{pending.details}</p>
+                      
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 border-dashed">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-gray-700">{pending.author}</span>
+                          <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${pending.badgeBg}`}>
+                            {pending.badge}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => {
+                              alert(`Proposed change approved successfully!`);
+                              setShowPendingChanges(false);
+                              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
+                            }}
+                            className="text-xs font-extrabold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer duration-150"
+                          >
+                            Approve
+                          </button>
+                          <button 
+                            onClick={() => {
+                              alert(`Proposed change rejected.`);
+                              setShowPendingChanges(false);
+                              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
+                            }}
+                            className="text-xs font-extrabold text-rose-600 hover:text-rose-700 transition-colors cursor-pointer duration-150"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-
+      {/* Main Content Wrapper */}
+      <div className={`flex flex-1 h-full w-full min-w-full lg:min-w-0 overflow-hidden transition-transform duration-300 ease-in-out ${
+        rightSidebarOpen ? "-translate-x-80 lg:translate-x-0" : "translate-x-0"
+      }`}>
         {/* Main Scrollable Article Body */}
-        <main className="flex-1 px-4 md:px-8 pt-8 pb-20 overflow-y-auto bg-white relative scroll-smooth">
+        <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-8 pb-20 overflow-y-auto bg-white relative scroll-smooth">
           <article className="w-full max-w-5xl mx-auto space-y-6">
-
             {/* Teleported editor toolbar container */}
             {isEditing && (
               <div 
@@ -280,39 +513,44 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
             />
           </article>
         </main>
+      </div>
 
-        {rightSidebarOpen && (
-          <>
-            <div
-              onMouseDown={startResizeRight}
-              onDoubleClick={handleRightDoubleClick}
-              className="hidden lg:block w-1.5 -mr-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0"
-              title="Drag to resize, double-click to reset"
-            />
-            {/* Mobile Backdrop for Right Sidebar */}
-            <div
-              onClick={() => setRightSidebarOpen(false)}
-              className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-[2px] z-45 animate-in fade-in duration-200"
-            />
+      {/* Resize Handle - desktop only */}
+      {rightSidebarOpen && (
+        <div
+          onMouseDown={startResizeRight}
+          onDoubleClick={handleRightDoubleClick}
+          className="hidden lg:block w-1.5 -mr-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0"
+          title="Drag to resize, double-click to reset"
+        />
+      )}
 
-            {/* InfoBox (Right Sidebar) */}
-            <aside
-              style={{ width: `${rightWidth}px` }}
-              className={`
-                border-l border-gray-300 shrink-0 overflow-y-auto bg-white flex flex-col select-none right-sidebar-mobile-toggle
-                fixed lg:static top-0 bottom-0 right-0 z-50 lg:z-auto h-full lg:h-auto shadow-2xl lg:shadow-none min-w-sm
-                transition-transform duration-300 ease-in-out translate-x-0
-              `}
-            >
-          {/* Close Button on Mobile */}
-          <div className="lg:hidden absolute top-4 right-4 z-50">
+      {/* InfoBox (Right Sidebar) */}
+      <aside
+        style={{ width: rightSidebarOpen ? (isMobile ? "320px" : `${rightWidth}px`) : undefined }}
+        className={`
+          border-l border-gray-150 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
+          transition-all duration-300 ease-in-out
+          fixed lg:static inset-y-0 right-0 z-50 lg:z-auto lg:h-full lg:border-l lg:border-gray-150
+          ${
+            rightSidebarOpen
+              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none lg:border-l lg:border-gray-150"
+              : "translate-x-full lg:translate-x-0 lg:w-0 lg:border-l-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
+          }
+        `}
+      >
+        {/* Inner fixed-width container to prevent layout squeezing during transitions */}
+        <div style={{ width: isMobile ? "320px" : `${rightWidth}px` }} className="h-full flex flex-col shrink-0 relative">
+          {/* Mobile-only absolute close button */}
+          {rightSidebarOpen && (
             <button
               onClick={() => setRightSidebarOpen(false)}
-              className="p-2 bg-white/95 hover:bg-white backdrop-blur-md rounded-full shadow border border-slate-200 text-gray-500 hover:text-gray-900 transition-all active:scale-95 cursor-pointer"
+              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-gray-450 hover:text-gray-700 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
+              aria-label="Close Right Sidebar"
             >
-              <X className="h-4 w-4" />
+              <X className="h-6 w-6 text-black" />
             </button>
-          </div>
+          )}
           {/* Infobox Image */}
           <div
             className={`w-full relative bg-gray-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
@@ -598,9 +836,8 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
               })}
             </ul>
           </div>
+          </div>
         </aside>
-          </>
-        )}
  
         {/* Material Design 3 Bottom Navigation Bar */}
         <BottomNavbar
@@ -644,15 +881,11 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                 ]
               : [
                   {
-                    id: "back",
-                    label: "Back",
-                    icon: ArrowLeft,
+                    id: "new",
+                    label: "New Page",
+                    icon: PlusCircle,
                     onClick: () => {
-                      if (window.history.length > 1) {
-                        router.back();
-                      } else {
-                        router.push("/");
-                      }
+                      router.push("/wiki/campus/new");
                     },
                   },
                   {
@@ -666,8 +899,11 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                     label: "Changes",
                     icon: History,
                     onClick: () => {
-                      alert("Displaying article revisions & edits list");
+                      setShowPendingChanges(true);
+                      setShowRevisions(false);
+                      window.dispatchEvent(new CustomEvent("show-wiki-pending"));
                     },
+                    badgeCount: 2,
                   },
                   {
                     id: "sidebar",

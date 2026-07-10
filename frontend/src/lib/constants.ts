@@ -216,7 +216,6 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     title: "NAVIGATION",
     items: [
       { name: "Main Page", path: "/", iconName: "Home" },
-      { name: "Random Article", path: "/wiki/random", iconName: "Shuffle" },
     ],
   },
   {
@@ -225,7 +224,6 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
       { name: "Departments", path: "/wiki/departments", iconName: "Building2" },
       { name: "Faculty Profiles", path: "/wiki/faculty", iconName: "Users2" },
       { name: "Courses Info", path: "/wiki/courses", iconName: "BookOpen" },
-      { name: "Research & Labs", path: "/wiki/research", iconName: "FlaskConical" },
     ],
   },
   {
@@ -234,14 +232,12 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
       { name: "Hostels Guide", path: "/wiki/hostels", iconName: "Tent" },
       { name: "Campus Facilities", path: "/wiki/facilities", iconName: "MapPin" },
       { name: "Student Clubs", path: "/wiki/clubs", iconName: "Trophy" },
-      { name: "Student Life (Fests)", path: "/wiki/fests", iconName: "Sparkles" },
     ],
   },
   {
     title: "INSTITUTE DETAILS",
     items: [
       { name: "Academic Calendar", path: "/wiki/calendar", iconName: "Calendar" },
-      { name: "Institute Policies", path: "/wiki/policies", iconName: "Shield" },
       { name: "Placement Stats", path: "/wiki/placements", iconName: "TrendingUp" },
     ],
   },
