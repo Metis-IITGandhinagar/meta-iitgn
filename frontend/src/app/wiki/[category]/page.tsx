@@ -1,6 +1,6 @@
 import { CATEGORIES_DATA } from "@/lib/placeholder-articles";
 import Link from "next/link";
-
+import CategoryPage from "@/components/CategoryPage";
 interface ArticlePageProps {
   params: Promise<{
     category: string;
@@ -29,4 +29,5 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </main>
     );
   }
+  return <CategoryPage categorySlug={category} />;
 }
