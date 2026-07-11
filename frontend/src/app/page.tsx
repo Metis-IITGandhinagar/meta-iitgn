@@ -197,7 +197,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen lg:h-screen bg-gray-50/30 overflow-y-auto lg:overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen lg:h-screen bg-white overflow-y-auto lg:overflow-hidden font-sans">
       {/* Main Container */}
       <div className="flex flex-col lg:flex-row flex-1 relative overflow-visible lg:overflow-hidden w-full h-auto lg:h-full">
         {/* Left panel & collapsible sidebar */}

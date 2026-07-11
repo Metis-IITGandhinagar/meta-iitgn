@@ -29,7 +29,7 @@ export default function WikiLayout({ children }: { children: React.ReactNode }) 
   });
 
   return (
-    <div className="relative h-screen w-screen bg-gray-50/30 overflow-hidden font-sans">
+    <div className="relative h-screen w-screen bg-white overflow-hidden font-sans">
       {/* Top Header Bar - Overlayed */}
       {!hideNavbar && (
         <div className="z-45 fixed top-0 left-0 right-0 transition-transform duration-300 ease-in-out">

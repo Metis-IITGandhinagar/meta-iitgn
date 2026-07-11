@@ -279,7 +279,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
       )}
 
       {/* Main Content Wrapper */}
-      <div className="flex flex-1 h-full w-full min-w-full lg:min-w-0 overflow-hidden order-1">
+      <div className="flex flex-1 h-full mt-2 w-full min-w-full lg:min-w-0 overflow-hidden order-1">
         {/* Main Scrollable Article Body */}
         <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-20 pb-28 overflow-y-auto bg-white relative scroll-smooth">
           <article className="w-full max-w-5xl mx-auto space-y-6">

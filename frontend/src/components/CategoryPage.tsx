@@ -29,7 +29,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   }
 
   return (
-    <main className="flex-1 p-6 md:p-8 bg-[#FCFCFD] overflow-y-auto">
+    <main className="flex-1 p-6 md:p-8 mt-15 bg-[#FCFCFD] overflow-y-auto">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Breadcrumbs */}
@@ -38,11 +38,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
             Home
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <Link href="/wiki" className="hover:text-blue-600 transition-colors">
-            Wiki
-          </Link>
-          <ChevronRight className="h-3 w-3" />
-          <span className="text-gray-700">{category.name}</span>
+          <span className="text-blue-700">{category.name}</span>
         </nav>
 
         {/* Category Header */}
@@ -61,7 +57,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
           
           <div className="shrink-0 mb-1">
             <Link
-              href={`/wiki/new?category=${categorySlug}`}
+              href={`/wiki/${categorySlug}/new`}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
             >
               <PlusCircle className="h-4.5 w-4.5" />
@@ -104,7 +100,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
 
                   <div className="pt-6">
                     <Link
-                      href={`/wiki/${article.slug}`}
+                      href={`/wiki/${categorySlug}/${article.slug}`}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors uppercase tracking-wider cursor-pointer"
                     >
                       <span>Read Article</span>
