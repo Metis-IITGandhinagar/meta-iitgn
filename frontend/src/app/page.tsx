@@ -33,6 +33,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import BottomNavbar from "@/components/BottomNavbar";
 import { QUICK_PORTALS } from "@/lib/constants";
+import { allSearchableItems, CATEGORY_ICON_MAP } from "@/lib/search-data";
 
 export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Collapsed by default
@@ -60,6 +61,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"home" | "search" | "bookmarks">(
     "home"
   );
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Search tab states
   const [searchTabQuery, setSearchTabQuery] = useState("");
@@ -113,6 +115,15 @@ export default function HomePage() {
     }
   }, []);
 
+  // Scroll to top and reset scroll state on tab change
+  useEffect(() => {
+    const panel = document.getElementById("right-scroll-panel");
+    if (panel) {
+      panel.scrollTop = 0;
+    }
+    setIsScrolled(false);
+  }, [activeTab]);
+
   const removeBookmark = (id: string) => {
     const updated = bookmarks.filter((b) => b.id !== id);
     setBookmarks(updated);
@@ -147,66 +158,14 @@ export default function HomePage() {
     }, 1500);
   };
 
-  const allSearchableItems = [
-    {
-      title: "IIT Gandhinagar Campus & Architecture",
-      category: "Campus",
-      path: "/wiki/page/1",
-      description:
-        "Information about Palaj campus facilities, design, architecture, and construction.",
-    },
-    {
-      title: "Amalthea Technical Summit",
-      category: "Fests",
-      path: "/wiki/page/1",
-      description: "The student-organized technical summit of IIT Gandhinagar.",
-    },
-    {
-      title: "Hostels and Student Life",
-      category: "Campus",
-      path: "/wiki/page/1",
-      description:
-        "Everything about hostels, Mess dining, and student council rules.",
-    },
-    {
-      title: "Technical Council & Clubs",
-      category: "Clubs",
-      path: "/wiki/page/1",
-      description:
-        "Explore robotics, coding, animanga, astronomy, and developer clubs.",
-    },
-    {
-      title: "Computer Science Curriculum",
-      category: "Academics",
-      path: "/wiki/page/1",
-      description: "Undergraduate curriculum and course plans for CS major.",
-    },
-    {
-      title: "Research Labs & Facilities",
-      category: "Research",
-      path: "/wiki/page/1",
-      description:
-        "Directory of advanced research instrumentation and centers.",
-    },
-  ];
-
-  const filteredSearchItems = allSearchableItems.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchTabQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTabQuery.toLowerCase());
-    const matchesCategory =
-      searchCategory === "All" || item.category === searchCategory;
-    return matchesSearch && matchesCategory;
-  });
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(
-        `/wiki/page/1?search=${encodeURIComponent(searchQuery.trim())}`
+        `/search-results?query=${encodeURIComponent(searchQuery.trim())}`
       );
     } else {
-      router.push("/wiki/page/1");
+      router.push("/search-results");
     }
   };
 
@@ -399,7 +358,6 @@ export default function HomePage() {
               >
                 <div
                   className="w-full flex items-center h-11 bg-slate-50 border border-slate-200 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-105 rounded-full px-4 transition-all duration-200"
-                  onClick={() => setActiveTab("search")}
                 >
                   <input
                     type="text"
@@ -466,9 +424,20 @@ export default function HomePage() {
           <div
             className="flex-1 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto  scroll-smooth relative"
             id="right-scroll-panel"
+            onScroll={(e) => {
+              const threshold = activeTab === "home" ? (window?.innerHeight || 700) - 80 : 50;
+              const scrolled = e.currentTarget.scrollTop > threshold;
+              if (scrolled !== isScrolled) {
+                setIsScrolled(scrolled);
+              }
+            }}
           >
             {/* slimnav bar for desktop only with bookmark , serach and newpage  */}
-            <div className="hidden lg:flex sticky w-full justify-end top-0 z-30 items-center gap-1  bg-white/20  border-b border-white/10 shadow-[0_1px_12px_rgba(0,0,0,0.06)] px-6 py-1.5 select-none">
+            <div className={`hidden lg:flex sticky mx-auto w-fit top-3 z-30 items-center gap-1 transition-all duration-300 px-4 py-1.5 rounded-full select-none -mb-11 ${
+              activeTab === "home" && !isScrolled
+                ? "bg-white/10 backdrop-blur-md border border-white/10 shadow-none"
+                : "bg-white/25 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.06)]"
+            }`}>
               {[
                 { id: "home", label: "Home", icon: Home },
                 { id: "search", label: "Search", icon: Search },
@@ -476,17 +445,25 @@ export default function HomePage() {
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
+                
+                let buttonStyle = "";
+                if (activeTab === "home" && !isScrolled) {
+                  buttonStyle = isActive
+                    ? "bg-white/20 text-white border border-white/25 shadow-xs"
+                    : "text-white/70 hover:bg-white/10 hover:text-white";
+                } else {
+                  buttonStyle = isActive
+                    ? "bg-blue-500/15 text-blue-700 border border-blue-500/20 shadow-xs"
+                    : "text-slate-700 hover:bg-slate-900/5 hover:text-slate-900";
+                }
+
                 return (
                   <button
                     key={tab.id}
                     onClick={() =>
                       setActiveTab(tab.id as "home" | "search" | "bookmarks")
                     }
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors duration-150 cursor-pointer ${
-                      isActive
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer ${buttonStyle}`}
                   >
                     <Icon className="h-3.5 w-3.5" />
                     {tab.label}
@@ -494,6 +471,7 @@ export default function HomePage() {
                 );
               })}
             </div>
+
             {activeTab === "home" ? (
               <>
                 {/* Mountain Hero Banner */}
@@ -936,116 +914,65 @@ export default function HomePage() {
                 </div>
               </>
             ) : activeTab === "search" ? (
-              <div className="h-full flex flex-col overflow-hidden bg-[#FCFCFD]">
-                {/* Sticky App Header */}
-                <div className="sticky top-0 z-20 bg-white border-b border-slate-100 p-6 md:p-8 shrink-0 select-none space-y-4">
-                  <div className="text-center md:text-left flex">
-                    <div>
-                      <h1 className="text-2xl font-serif font-black text-slate-900 tracking-tight">
-                        Search
-                      </h1>
-                      <p className="text-xs text-slate-500 font-semibold">
-                        Explore student guides, course details, and campus
-                        resources.
-                      </p>
-                    </div>
-                    
+              <div className="h-full flex flex-col items-center justify-center bg-[#FCFCFD] p-6 md:p-12">
+                <div className="max-w-xl w-full text-center space-y-6">
+                  <div className="space-y-2 select-none">
+                    <h1 className="text-3xl font-serif font-black text-slate-900 tracking-tight">
+                      Search Wiki
+                    </h1>
+                    <p className="text-sm text-slate-500 font-medium max-w-sm mx-auto">
+                      Explore courses, clubs, hostels, and campus resources at IITGN.
+                    </p>
                   </div>
 
-                  {/* Sticky Search bar */}
-                  <div className="relative w-full flex items-center h-11 bg-slate-50 border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-105 rounded-xl px-4 transition-all duration-200 shadow-sm">
-                    <Search className="h-4 w-4 text-slate-400 shrink-0" />
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (searchTabQuery.trim()) {
+                        router.push(`/search-results?query=${encodeURIComponent(searchTabQuery.trim())}`);
+                      } else {
+                        router.push("/search-results");
+                      }
+                    }}
+                    className="relative w-full flex items-center h-12 bg-white border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100 rounded-2xl px-4 transition-all duration-200 shadow-sm"
+                  >
+                    <Search className="h-5 w-5 text-slate-400 shrink-0" />
                     <input
                       type="text"
-                      placeholder="Search articles, guides, policies..."
+                      placeholder="Type query and press Enter to search..."
                       value={searchTabQuery}
                       onChange={(e) => setSearchTabQuery(e.target.value)}
-                      className="w-full text-xs text-slate-800 placeholder:text-gray-400 bg-transparent focus:outline-none px-3 h-full"
+                      className="w-full text-sm text-slate-800 placeholder:text-gray-400 bg-transparent focus:outline-none px-3 h-full"
                       autoFocus
                     />
                     {searchTabQuery && (
                       <button
+                        type="button"
                         onClick={() => setSearchTabQuery("")}
-                        className="text-slate-400 hover:text-slate-655 text-[10px] font-bold px-2 py-0.5 bg-slate-200 rounded-md cursor-pointer"
+                        className="text-slate-400 hover:text-slate-600 text-xs font-bold px-2.5 py-1 bg-slate-100 rounded-lg transition-colors cursor-pointer"
                       >
                         Clear
                       </button>
                     )}
-                  </div>
+                  </form>
 
-                  {/* Sticky Category Pills */}
-                  <div className="flex flex-wrap gap-1.5 justify-start select-none">
-                    {[
-                      "All",
-                      "Campus",
-                      "Academics",
-                      "Clubs",
-                      "Fests",
-                      "Research",
-                    ].map((cat) => {
+                  <div className="flex flex-wrap gap-2 justify-center select-none pt-2">
+                    {["Campus", "Academics", "Clubs", "Fests"].map((cat) => {
                       const Icon = CATEGORY_ICON_MAP[cat] || HelpCircle;
                       return (
                         <button
                           key={cat}
-                          onClick={() => setSearchCategory(cat)}
-                          className={`px-3.5 py-1 rounded-lg text-[10px] font-extrabold border transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-                            searchCategory === cat
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                              : "bg-white text-slate-600 border-gray-400 hover:border-slate-350 hover:bg-slate-55"
-                          }`}
+                          onClick={() => {
+                            router.push(`/search-results?query=&category=${cat}`);
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold border bg-white text-slate-600 border-slate-200 hover:border-slate-350 hover:bg-slate-55 transition-all duration-200 cursor-pointer flex items-center gap-1.5"
                         >
-                          <Icon className="h-3 w-3 shrink-0" />
+                          <Icon className="h-3 w-3 shrink-0 text-slate-400" />
                           {cat}
                         </button>
                       );
                     })}
                   </div>
-                </div>
-
-                {/* Scrollable Results Viewport */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 no-scrollbar">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest select-none">
-                    Search Results ({filteredSearchItems.length})
-                  </h3>
-
-                  {filteredSearchItems.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-4">
-                      {filteredSearchItems.map((item) => {
-                        const Icon =
-                          CATEGORY_ICON_MAP[item.category] || HelpCircle;
-                        return (
-                          <Link
-                            key={item.title}
-                            href={item.path}
-                            className="p-4 rounded-xl border border-slate-150 bg-white hover:border-blue-200 hover:shadow-md transition-all duration-200 flex flex-col gap-2 group text-left cursor-pointer shadow-depth shadow-depth-hover"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[9px] uppercase font-black tracking-wider text-blue-600 bg-blue-50/50 px-2 py-0.5 rounded-md flex items-center gap-1">
-                                <Icon className="w-2.5 h-2.5" />
-                                {item.category}
-                              </span>
-                              <span className="text-[9px] font-bold text-gray-400">
-                                3 min read
-                              </span>
-                            </div>
-                            <h4 className="text-sm text-black  font-bold group-hover:text-blue-600 transition-colors font-serif">
-                              {highlightText(item.title, searchTabQuery)}
-                            </h4>
-                            <p className="text-xs text-slate-500  leading-relaxed">
-                              {highlightText(item.description, searchTabQuery)}
-                            </p>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-200/80">
-                      <HelpCircle className="h-8 w-8 text-slate-300 mx-auto mb-2 animate-pulse" />
-                      <p className="text-xs text-slate-500 font-bold">
-                        No matching articles found
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             ) : activeTab === "bookmarks" ? (
