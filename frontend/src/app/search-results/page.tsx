@@ -44,6 +44,13 @@ const CATEGORY_COLOR_MAP: Record<
   All: { bg: "bg-slate-900 text-white", text: "text-slate-900", border: "border-slate-900" },
 };
 
+interface SearchResult {
+  title: string;
+  path: string;
+  category: string;
+  description: string;
+}
+
 function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -55,7 +62,7 @@ function SearchResultsContent() {
   const [searchQuery, setSearchQuery] = useState(queryParam);
   const [category, setCategory] = useState(categoryParam);
   
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
