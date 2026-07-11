@@ -1,0 +1,369 @@
+"use client";
+
+import React from "react";
+import { X, Trash2, Tag } from "lucide-react";
+import { EditableCell } from "@/components/article/editable-cell";
+import { InfoboxData } from "@/lib/types";
+
+interface WikiInfoBoxProps {
+  rightSidebarOpen: boolean;
+  setRightSidebarOpen: (open: boolean) => void;
+  isMobile: boolean;
+  rightWidth: number;
+  isEditing: boolean;
+  parsed: {
+    infobox: InfoboxData;
+    toc: Array<{
+      id: string;
+      title: string;
+      subItems?: Array<{ id: string; title: string }>;
+    }>;
+  };
+  handleInfoboxChange: (newInfobox: InfoboxData) => void;
+  activeSection: string;
+  handleTocClick: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => void;
+  startResizeRight: (e: React.MouseEvent) => void;
+  handleRightDoubleClick: () => void;
+}
+
+export default function WikiInfoBox({
+  rightSidebarOpen,
+  setRightSidebarOpen,
+  isMobile,
+  rightWidth,
+  isEditing,
+  parsed,
+  handleInfoboxChange,
+  activeSection,
+  handleTocClick,
+  startResizeRight,
+  handleRightDoubleClick,
+}: WikiInfoBoxProps) {
+  return (
+    <>
+      {/* Resize Handle - desktop only, sits on the left edge of the right sidebar */}
+      {rightSidebarOpen && (
+        <div
+          onMouseDown={startResizeRight}
+          onDoubleClick={handleRightDoubleClick}
+          className="hidden lg:block w-1.5 -mr-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0 order-2"
+          title="Drag to resize, double-click to reset"
+        />
+      )}
+
+      {/* InfoBox (Right Sidebar) */}
+      <aside
+        style={{ width: rightSidebarOpen ? (isMobile ? "320px" : `${rightWidth}px`) : undefined }}
+        className={`
+          border-l border-gray-200 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
+          transition-transform duration-300 ease-in-out order-3
+          fixed lg:static inset-y-0 right-0 z-50 lg:z-auto lg:h-full
+          ${
+            rightSidebarOpen
+              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none"
+              : "translate-x-full lg:translate-x-0 lg:w-0 lg:border-l-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
+          }
+        `}
+      >
+        {/* Inner fixed-width container to prevent layout squeezing during transitions */}
+        <div style={{ width: isMobile ? "320px" : `${rightWidth}px` }} className="h-full flex flex-col shrink-0 relative">
+          {/* Mobile-only absolute close button */}
+          {rightSidebarOpen && (
+            <button
+              onClick={() => setRightSidebarOpen(false)}
+              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-700 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
+              aria-label="Close Sidebar"
+            >
+              <X className="h-6 w-6 text-gray-900" />
+            </button>
+          )}
+          {/* Infobox Image */}
+          <div
+            className={`w-full relative bg-gray-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
+              isEditing ? "h-32 p-4 bg-gray-50" : "aspect-square"
+            }`}
+          >
+            <div className={`w-full h-full relative overflow-hidden transition-all duration-300 ${
+              isEditing ? "rounded-xl border border-gray-200 shadow-sm bg-white" : ""
+            }`}>
+              {parsed.infobox.image ? (
+                <img
+                  src={parsed.infobox.image}
+                  alt={parsed.infobox.imageAlt}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-gray-300 text-sm font-medium absolute inset-0 flex items-center justify-center bg-gray-55">No Image</div>
+              )}
+            </div>
+          </div>
+
+          {/* Inline Image Editor Fields (In-place, only shown when editing) */}
+          {isEditing && (
+            <div className="p-6 border-b border-gray-100 flex flex-col gap-4 bg-gray-50 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-bold text-gray-450 tracking-wider uppercase">
+                  Image Options
+                </h4>
+                {parsed.infobox.image && (
+                  <button
+                    onClick={() =>
+                      handleInfoboxChange({
+                        ...parsed.infobox,
+                        image: "",
+                        imageAlt: "",
+                      })
+                    }
+                    className="text-rose-500 hover:text-rose-605 p-1.5 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                    title="Remove Image"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Image URL input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                  Image URL
+                </label>
+                <input
+                  type="text"
+                  value={parsed.infobox.image || ""}
+                  onChange={(e) =>
+                    handleInfoboxChange({
+                      ...parsed.infobox,
+                      image: e.target.value,
+                    })
+                  }
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
+                />
+              </div>
+
+              {/* Alt Text input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                  Caption / Alt Text
+                </label>
+                <input
+                  type="text"
+                  value={parsed.infobox.imageAlt || ""}
+                  onChange={(e) =>
+                    handleInfoboxChange({
+                      ...parsed.infobox,
+                      imageAlt: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. Campus View"
+                  className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Infobox Fields Table */}
+          <div className="p-6">
+            <h4 className="text-[10px] font-bold text-gray-450 tracking-wider mb-4 uppercase">
+              Key Information
+            </h4>
+            <table className="w-full text-xs text-gray-700">
+              <tbody>
+                {parsed.infobox.rows.map((row, index) => {
+                  const isLast = index === parsed.infobox.rows.length - 1;
+                  return (
+                    <tr
+                      key={index}
+                      className={isLast ? "" : "border-b border-gray-50"}
+                    >
+                      <td className="py-3 pr-2 align-top w-[35%]">
+                        {isEditing ? (
+                          <EditableCell
+                            initialValue={row.label}
+                            onChange={(newLabel) => {
+                              const newRows = [...parsed.infobox.rows];
+                              newRows[index] = {
+                                ...row,
+                                label: newLabel,
+                              };
+                              handleInfoboxChange({
+                                ...parsed.infobox,
+                                rows: newRows,
+                              });
+                            }}
+                            placeholder="Label"
+                            className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-gray-700 uppercase tracking-wider bg-transparent"
+                          />
+                        ) : (
+                          <span className="font-semibold text-gray-400 uppercase tracking-wider">{row.label}</span>
+                        )}
+                      </td>
+                      <td className="py-3 align-top font-semibold text-gray-900">
+                        {isEditing ? (
+                          <div className="flex gap-2 items-center w-full">
+                            <EditableCell
+                              initialValue={Array.isArray(row.value) ? row.value.join(", ") : (row.value as string)}
+                              onChange={(newVal) => {
+                                const isBadgeType = row.type === "badge";
+                                const parsedValue = isBadgeType
+                                  ? newVal.split(/[,\n\r]+/).map((s) => s.trim()).filter(Boolean)
+                                  : newVal;
+
+                                const newRows = [...parsed.infobox.rows];
+                                newRows[index] = {
+                                  ...row,
+                                  value: parsedValue,
+                                };
+                                handleInfoboxChange({
+                                  ...parsed.infobox,
+                                  rows: newRows,
+                                });
+                              }}
+                              placeholder="Value (use comma for tags)"
+                              className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500 font-normal bg-transparent resize-none"
+                              as={row.type === "badge" ? "textarea" : "input"}
+                            />
+                            <button
+                              onMouseDown={(e) => {
+                                e.preventDefault(); // Prevent input from losing focus
+                                const currentType = row.type || "text";
+                                const nextType = currentType === "badge" ? "text" : "badge";
+                                const newRows = [...parsed.infobox.rows];
+
+                                let nextValue = row.value;
+                                if (nextType === "badge" && typeof row.value === "string") {
+                                  nextValue = row.value.split(",").map((s) => s.trim()).filter(Boolean);
+                                } else if (nextType === "text" && Array.isArray(row.value)) {
+                                  nextValue = row.value.join(", ");
+                                }
+
+                                newRows[index] = {
+                                  ...row,
+                                  type: nextType,
+                                  value: nextValue,
+                                };
+                                handleInfoboxChange({
+                                  ...parsed.infobox,
+                                  rows: newRows,
+                                });
+                              }}
+                              className={`p-1 rounded cursor-pointer transition-colors ${
+                                row.type === "badge"
+                                  ? "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                                  : "text-gray-400 hover:text-indigo-600 hover:bg-gray-50"
+                              }`}
+                              title={`Toggle representation (currently: ${row.type === "badge" ? "Badges/Tags" : "Text line"}). Click to switch.`}
+                            >
+                              <Tag className="h-4 w-4" />
+                            </button>
+                            <button
+                              onMouseDown={(e) => {
+                                e.preventDefault(); // Prevent input from losing focus
+                                const newRows = parsed.infobox.rows.filter((_, idx) => idx !== index);
+                                handleInfoboxChange({
+                                  ...parsed.infobox,
+                                  rows: newRows,
+                                });
+                              }}
+                              className="text-gray-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
+                              title="Delete fact row"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : row.type === "badge" && Array.isArray(row.value) ? (
+                          <div className="flex flex-wrap gap-1">
+                            {row.value.map((val) => (
+                              <span
+                                key={val}
+                                className="text-[10px] text-indigo-600 border border-indigo-200 rounded-full px-2 py-0.5 font-semibold bg-indigo-50"
+                              >
+                                {val}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          row.value
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {isEditing && (
+              <button
+                onClick={() => {
+                  const newRows = [...parsed.infobox.rows];
+                  newRows.push({
+                    label: "",
+                    value: "",
+                    type: "text"
+                  });
+                  handleInfoboxChange({
+                    ...parsed.infobox,
+                    rows: newRows
+                  });
+                }}
+                className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 hover:border-indigo-300 text-gray-400 hover:text-indigo-600 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-155 hover:bg-indigo-50/40"
+              >
+                <span>+ Add</span>
+              </button>
+            )}
+          </div>
+
+          <div className="p-6 select-none pt-0">
+            <h4 className="text-[10px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
+              Table of Contents
+            </h4>
+            <ul className="text-xs flex flex-col gap-2.5 font-semibold">
+              {parsed.toc.map((item, index) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <div key={item.id} className="flex flex-col gap-1.5">
+                    <li className="flex items-center justify-between">
+                      <a
+                        href={`#${item.id}`}
+                        onClick={(e) => handleTocClick(e, item.id)}
+                        className={`truncate flex-1 py-0.5 transition-all duration-150 ${
+                          isActive
+                            ? "text-indigo-600 font-bold translate-x-1"
+                            : "text-gray-500 hover:text-gray-800"
+                        }`}
+                      >
+                        {index + 1}. {item.title}
+                      </a>
+                    </li>
+                    {item.subItems && item.subItems.length > 0 && (
+                      <ul className="flex flex-col gap-1.5 pl-3 text-[11px] font-medium border-l border-gray-100 ml-1.5">
+                        {item.subItems.map((sub, idx) => {
+                          const isSubActive = activeSection === sub.id;
+                          return (
+                            <li key={sub.id}>
+                              <a
+                                href={`#${sub.id}`}
+                                onClick={(e) => handleTocClick(e, sub.id)}
+                                className={`truncate block py-0.5 transition-all duration-150 ${
+                                  isSubActive
+                                    ? "text-indigo-500 font-bold translate-x-0.5"
+                                    : "text-gray-400 hover:text-gray-605"
+                                }`}
+                              >
+                                {index + 1}.{idx + 1} {sub.title}
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}

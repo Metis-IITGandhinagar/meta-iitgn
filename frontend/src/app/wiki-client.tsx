@@ -2,28 +2,26 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import NextLink from "next/link";
 import { parseMarkdown, stringifyMarkdown } from "@/lib/utils";
 import { InfoboxData } from "@/lib/types";
 
 import { EditableCell } from "@/components/article/editable-cell";
 import { useRouter } from "next/navigation";
 import {
-  Share2,
   Edit3,
-  Bookmark,
-  Download,
   Check,
   X,
-  Tag,
   History,
-  Trash2,
   PanelRight,
-  Home,
   ArrowLeft,
   PlusCircle,
 } from "lucide-react";
 import BottomNavbar from "@/components/BottomNavbar";
+
+// Subcomponents
+import RevisionsView from "./components/wiki/RevisionsView";
+import PendingChangesView from "./components/wiki/PendingChangesView";
+import WikiInfoBox from "./components/wiki/WikiInfoBox";
 
 // Dynamically import MilkdownEditor so it doesn't run during SSR
 const MilkdownEditor = dynamic(() => import("@/components/article/milkdown-editor"), {
@@ -42,7 +40,6 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
   const parsed = useMemo(() => parseMarkdown(markdown), [markdown]);
   const [activeSection, setActiveSection] = useState<string>("");
   const [editorLoaded, setEditorLoaded] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [toolbarContainer, setToolbarContainer] = useState<HTMLDivElement | null>(null);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
@@ -88,15 +85,12 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     };
   }, []);
 
-  // Resize handle now sits on the LEFT edge of the sidebar since the
-  // sidebar itself lives on the right side of the screen.
   const startResizeRight = (e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
     const startWidth = rightWidth;
     let currentWidth = startWidth;
     const doDrag = (moveEvent: MouseEvent) => {
-      // Dragging left (negative delta) grows the right-anchored sidebar.
       currentWidth = Math.max(200, Math.min(600, startWidth - (moveEvent.clientX - startX)));
       setRightWidth(currentWidth);
     };
@@ -113,40 +107,17 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     setRightWidth(320);
     localStorage.setItem("wiki-right-sidebar-width", "320");
   };
+
   const markdownRef = useRef(markdown);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
-  const [profileOpen, setProfileOpen] = useState(false);
 
-  // Close menu on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false);
-      }
-    };
-    if (menuOpen || profileOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuOpen, profileOpen]);
-
-  // Sync ref with initialMarkdown / state changes
   useEffect(() => {
     markdownRef.current = markdown;
   }, [markdown]);
 
-  // Reset editor loaded state when switching modes
   useEffect(() => {
     setEditorLoaded(false);
   }, [isEditing]);
 
-  // Debounce state update to keep the UI smooth while typing
   const debouncedSetMarkdown = useMemo(() => {
     let timeout: NodeJS.Timeout;
     return (value: string) => {
@@ -156,8 +127,6 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
       }, 300);
     };
   }, []);
-
-
 
   const handleMarkdownChange = (newContentMarkdown: string) => {
     const newMarkdown = stringifyMarkdown(newContentMarkdown, parsed.infobox, parsed.title);
@@ -197,8 +166,6 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     setIsEditing(false);
   };
 
-
-  // Add IDs to headings dynamically when content changes or is loaded
   useEffect(() => {
     const container = document.querySelector(".milkdown-container");
     if (!container) return;
@@ -224,7 +191,6 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     });
   }, [editorLoaded]);
 
-  // Scrollspy to set active TOC item
   useEffect(() => {
     const mainElement = document.querySelector("main");
     if (!mainElement) return;
@@ -239,7 +205,6 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
       const mainRect = mainElement.getBoundingClientRect();
       let currentActive = "";
 
-      // Find the heading closest to the top of the viewport
       for (const el of headingElements) {
         const rect = el.getBoundingClientRect();
         if (rect.top - mainRect.top < 150) {
@@ -255,13 +220,12 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     };
 
     mainElement.addEventListener("scroll", handleScroll, { passive: true });
-    // Run once on load
     handleScroll();
 
     return () => {
       mainElement.removeEventListener("scroll", handleScroll);
     };
-  }, [editorLoaded]);
+  }, [editorLoaded, activeSection]);
 
   const handleTocClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -274,206 +238,11 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
   };
 
   if (showRevisions) {
-    return (
-      <div className="fixed inset-0 bg-white z-[60] flex flex-col h-screen w-screen overflow-hidden select-none animate-in fade-in duration-200">
-        {/* Top Header Bar */}
-        <header className="h-16 border-b border-gray-200 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
-          <button
-            onClick={() => {
-              setShowRevisions(false);
-              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
-            }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
-            aria-label="Back to Wiki"
-          >
-            <ArrowLeft className="h-6 w-6 text-gray-900" />
-          </button>
-          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
-        </header>
-
-        {/* Changes Body (Like Search & Bookmarks pages) */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-12">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Recent Page Revisions</h2>
-              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Track and restore past edits for this article</p>
-            </div>
-
-            <div className="space-y-4 pt-4">
-              {[
-                {
-                  rev: 3,
-                  title: "Added cs curriculum and policies",
-                  author: "Meta IITGN",
-                  avatar: "MI",
-                  time: "4 hours ago",
-                  badge: "Admin",
-                  badgeBg: "bg-blue-50 text-blue-600 border border-blue-200",
-                  details: "Inserted curriculum listings under CS major and updated hostel rules. Added detail on curriculum pathways."
-                },
-                {
-                  rev: 2,
-                  title: "Updated infobox stats",
-                  author: "Alex Carter",
-                  avatar: "AC",
-                  time: "1 day ago",
-                  badge: "Gold Contributor",
-                  badgeBg: "bg-amber-50 text-amber-600 border border-amber-200",
-                  details: "Modified placement percentages and Amalthea festival dates. Corrected coordinate references."
-                },
-                {
-                  rev: 1,
-                  title: "Initial page creation",
-                  author: "System Init",
-                  avatar: "SY",
-                  time: "2 days ago",
-                  badge: "System",
-                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-200",
-                  details: "Imported markdown core structure, category hierarchies, and initial infobox configurations."
-                }
-              ].map((revision) => (
-                <div key={revision.rev} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
-                      {revision.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
-                        <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{revision.title}</h4>
-                        <span className="text-xs text-gray-400 shrink-0 font-medium">{revision.time}</span>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{revision.details}</p>
-
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 border-dashed">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-700">{revision.author}</span>
-                          <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${revision.badgeBg}`}>
-                            {revision.badge}
-                          </span>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            alert(`Restoring Revision #${revision.rev}...`);
-                            setShowRevisions(false);
-                          }}
-                          className="text-xs font-extrabold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer duration-150"
-                        >
-                          Restore Version
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <RevisionsView setShowRevisions={setShowRevisions} />;
   }
 
   if (showPendingChanges) {
-    return (
-      <div className="fixed inset-0 bg-white z-[60] flex flex-col h-screen w-screen overflow-hidden select-none animate-in fade-in duration-200">
-        {/* Top Header Bar */}
-        <header className="h-16 border-b border-gray-200 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
-          <button
-            onClick={() => {
-              setShowPendingChanges(false);
-              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
-            }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center animate-in fade-in"
-            aria-label="Back to Wiki"
-          >
-            <ArrowLeft className="h-6 w-6 text-gray-900" />
-          </button>
-          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
-        </header>
-
-        {/* Changes Body (Like Search & Bookmarks pages) */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-12">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Pending Approval</h2>
-              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Review proposed community revisions before publishing</p>
-            </div>
-
-            <div className="space-y-4 pt-4">
-              {[
-                {
-                  rev: 1,
-                  title: "Updated CS Major placement statistics for 2025",
-                  author: "Rohan Sharma",
-                  avatar: "RS",
-                  time: "2 hours ago",
-                  badge: "Student Contributor",
-                  badgeBg: "bg-emerald-50 text-emerald-600 border border-emerald-200",
-                  details: "Proposed update to placements: CS average package changed from 22.4 LPA to 23.8 LPA according to official council records."
-                },
-                {
-                  rev: 2,
-                  title: "Palaj Campus hostel guide clarification",
-                  author: "Aditi Patel",
-                  avatar: "AP",
-                  time: "6 hours ago",
-                  badge: "Guest Editor",
-                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-200",
-                  details: "Suggested formatting and detail cleanups under the hostel guide laundry services."
-                }
-              ].map((pending) => (
-                <div key={pending.rev} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
-                      {pending.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
-                        <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{pending.title}</h4>
-                        <span className="text-xs text-gray-400 shrink-0 font-medium">{pending.time}</span>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{pending.details}</p>
-
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100 border-dashed">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-700">{pending.author}</span>
-                          <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${pending.badgeBg}`}>
-                            {pending.badge}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => {
-                              alert(`Proposed change approved successfully!`);
-                              setShowPendingChanges(false);
-                              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
-                            }}
-                            className="text-xs font-extrabold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer duration-150"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => {
-                              alert(`Proposed change rejected.`);
-                              setShowPendingChanges(false);
-                              window.dispatchEvent(new CustomEvent("hide-wiki-history"));
-                            }}
-                            className="text-xs font-extrabold text-rose-600 hover:text-rose-700 transition-colors cursor-pointer duration-150"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <PendingChangesView setShowPendingChanges={setShowPendingChanges} />;
   }
 
   return (
@@ -606,329 +375,20 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
         </main>
       </div>
 
-      {/* Resize Handle - desktop only, sits on the left edge of the right sidebar */}
-      {rightSidebarOpen && (
-        <div
-          onMouseDown={startResizeRight}
-          onDoubleClick={handleRightDoubleClick}
-          className="hidden lg:block w-1.5 -mr-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0 order-2"
-          title="Drag to resize, double-click to reset"
-        />
-      )}
-
       {/* InfoBox (Right Sidebar) */}
-      <aside
-        style={{ width: rightSidebarOpen ? (isMobile ? "320px" : `${rightWidth}px`) : undefined }}
-        className={`
-          border-l border-gray-200 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
-          transition-transform duration-300 ease-in-out order-3
-          fixed lg:static inset-y-0 right-0 z-50 lg:z-auto lg:h-full
-          ${
-            rightSidebarOpen
-              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none"
-              : "translate-x-full lg:translate-x-0 lg:w-0 lg:border-l-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
-          }
-        `}
-      >
-        {/* Inner fixed-width container to prevent layout squeezing during transitions */}
-        <div style={{ width: isMobile ? "320px" : `${rightWidth}px` }} className="h-full flex flex-col shrink-0 relative">
-          {/* Mobile-only absolute close button */}
-          {rightSidebarOpen && (
-            <button
-              onClick={() => setRightSidebarOpen(false)}
-              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-700 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
-              aria-label="Close Sidebar"
-            >
-              <X className="h-6 w-6 text-gray-900" />
-            </button>
-          )}
-          {/* Infobox Image */}
-          <div
-            className={`w-full relative bg-gray-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
-              isEditing ? "h-32 p-4 bg-gray-50" : "aspect-square"
-            }`}
-          >
-            <div className={`w-full h-full relative overflow-hidden transition-all duration-300 ${
-              isEditing ? "rounded-xl border border-gray-200 shadow-sm bg-white" : ""
-            }`}>
-              {parsed.infobox.image ? (
-                <img
-                  src={parsed.infobox.image}
-                  alt={parsed.infobox.imageAlt}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="text-gray-300 text-sm font-medium absolute inset-0 flex items-center justify-center bg-gray-50">No Image</div>
-              )}
-            </div>
-          </div>
-
-          {/* Inline Image Editor Fields (In-place, only shown when editing) */}
-          {isEditing && (
-            <div className="p-6 border-b border-gray-100 flex flex-col gap-4 bg-gray-50 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between">
-                <h4 className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">
-                  Image Options
-                </h4>
-                {parsed.infobox.image && (
-                  <button
-                    onClick={() =>
-                      handleInfoboxChange({
-                        ...parsed.infobox,
-                        image: "",
-                        imageAlt: "",
-                      })
-                    }
-                    className="text-rose-500 hover:text-rose-600 p-1.5 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                    title="Remove Image"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Image URL input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
-                  Image URL
-                </label>
-                <input
-                  type="text"
-                  value={parsed.infobox.image || ""}
-                  onChange={(e) =>
-                    handleInfoboxChange({
-                      ...parsed.infobox,
-                      image: e.target.value,
-                    })
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
-                />
-              </div>
-
-              {/* Alt Text input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
-                  Caption / Alt Text
-                </label>
-                <input
-                  type="text"
-                  value={parsed.infobox.imageAlt || ""}
-                  onChange={(e) =>
-                    handleInfoboxChange({
-                      ...parsed.infobox,
-                      imageAlt: e.target.value,
-                    })
-                  }
-                  placeholder="e.g. Campus View"
-                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Infobox Fields Table */}
-          <div className="p-6">
-            <h4 className="text-[10px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
-              Key Information
-            </h4>
-            <table className="w-full text-xs text-gray-700">
-              <tbody>
-                {parsed.infobox.rows.map((row, index) => {
-                  const isLast = index === parsed.infobox.rows.length - 1;
-                  return (
-                    <tr
-                      key={index}
-                      className={isLast ? "" : "border-b border-gray-50"}
-                    >
-                      <td className="py-3 pr-2 align-top w-[35%]">
-                        {isEditing ? (
-                          <EditableCell
-                            initialValue={row.label}
-                            onChange={(newLabel) => {
-                              const newRows = [...parsed.infobox.rows];
-                              newRows[index] = {
-                                ...row,
-                                label: newLabel,
-                              };
-                              handleInfoboxChange({
-                                ...parsed.infobox,
-                                rows: newRows,
-                              });
-                            }}
-                            placeholder="Label"
-                            className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-gray-700 uppercase tracking-wider bg-transparent"
-                          />
-                        ) : (
-                          <span className="font-semibold text-gray-400 uppercase tracking-wider">{row.label}</span>
-                        )}
-                      </td>
-                      <td className="py-3 align-top font-semibold text-gray-900">
-                        {isEditing ? (
-                          <div className="flex gap-2 items-center w-full">
-                            <EditableCell
-                              initialValue={Array.isArray(row.value) ? row.value.join(", ") : (row.value as string)}
-                              onChange={(newVal) => {
-                                const isBadgeType = row.type === "badge";
-                                const parsedValue = isBadgeType
-                                  ? newVal.split(/[,\n\r]+/).map((s) => s.trim()).filter(Boolean)
-                                  : newVal;
-
-                                const newRows = [...parsed.infobox.rows];
-                                newRows[index] = {
-                                  ...row,
-                                  value: parsedValue,
-                                };
-                                handleInfoboxChange({
-                                  ...parsed.infobox,
-                                  rows: newRows,
-                                });
-                              }}
-                              placeholder="Value (use comma for tags)"
-                              className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500 font-normal bg-transparent resize-none"
-                              as={row.type === "badge" ? "textarea" : "input"}
-                            />
-                            <button
-                              onMouseDown={(e) => {
-                                e.preventDefault(); // Prevent input from losing focus
-                                const currentType = row.type || "text";
-                                const nextType = currentType === "badge" ? "text" : "badge";
-                                const newRows = [...parsed.infobox.rows];
-
-                                let nextValue = row.value;
-                                if (nextType === "badge" && typeof row.value === "string") {
-                                  nextValue = row.value.split(",").map((s) => s.trim()).filter(Boolean);
-                                } else if (nextType === "text" && Array.isArray(row.value)) {
-                                  nextValue = row.value.join(", ");
-                                }
-
-                                newRows[index] = {
-                                  ...row,
-                                  type: nextType,
-                                  value: nextValue,
-                                };
-                                handleInfoboxChange({
-                                  ...parsed.infobox,
-                                  rows: newRows,
-                                });
-                              }}
-                              className={`p-1 rounded cursor-pointer transition-colors ${
-                                row.type === "badge"
-                                  ? "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
-                                  : "text-gray-400 hover:text-indigo-600 hover:bg-gray-50"
-                              }`}
-                              title={`Toggle representation (currently: ${row.type === "badge" ? "Badges/Tags" : "Text line"}). Click to switch.`}
-                            >
-                              <Tag className="h-4 w-4" />
-                            </button>
-                            <button
-                              onMouseDown={(e) => {
-                                e.preventDefault(); // Prevent input from losing focus
-                                const newRows = parsed.infobox.rows.filter((_, idx) => idx !== index);
-                                handleInfoboxChange({
-                                  ...parsed.infobox,
-                                  rows: newRows,
-                                });
-                              }}
-                              className="text-gray-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
-                              title="Delete fact row"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ) : row.type === "badge" && Array.isArray(row.value) ? (
-                          <div className="flex flex-wrap gap-1">
-                            {row.value.map((val) => (
-                              <span
-                                key={val}
-                                className="text-[10px] text-indigo-600 border border-indigo-200 rounded-full px-2 py-0.5 font-semibold bg-indigo-50"
-                              >
-                                {val}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          row.value
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            {isEditing && (
-              <button
-                onClick={() => {
-                  const newRows = [...parsed.infobox.rows];
-                  newRows.push({
-                    label: "",
-                    value: "",
-                    type: "text"
-                  });
-                  handleInfoboxChange({
-                    ...parsed.infobox,
-                    rows: newRows
-                  });
-                }}
-                className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 hover:border-indigo-300 text-gray-400 hover:text-indigo-600 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-150 hover:bg-indigo-50/40"
-              >
-                <span>+ Add</span>
-              </button>
-            )}
-          </div>
-
-          <div className="p-6 select-none pt-0">
-            <h4 className="text-[10px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
-              Table of Contents
-            </h4>
-            <ul className="text-xs flex flex-col gap-2.5 font-semibold">
-              {parsed.toc.map((item, index) => {
-                const isActive = activeSection === item.id;
-                return (
-                  <div key={item.id} className="flex flex-col gap-1.5">
-                    <li className="flex items-center justify-between">
-                      <a
-                        href={`#${item.id}`}
-                        onClick={(e) => handleTocClick(e, item.id)}
-                        className={`truncate flex-1 py-0.5 transition-all duration-150 ${
-                          isActive
-                            ? "text-indigo-600 font-bold translate-x-1"
-                            : "text-gray-500 hover:text-gray-800"
-                        }`}
-                      >
-                        {index + 1}. {item.title}
-                      </a>
-                    </li>
-                    {item.subItems && item.subItems.length > 0 && (
-                      <ul className="flex flex-col gap-1.5 pl-3 text-[11px] font-medium border-l border-gray-100 ml-1.5">
-                        {item.subItems.map((sub, idx) => {
-                          const isSubActive = activeSection === sub.id;
-                          return (
-                            <li key={sub.id}>
-                              <a
-                                href={`#${sub.id}`}
-                                onClick={(e) => handleTocClick(e, sub.id)}
-                                className={`truncate block py-0.5 transition-all duration-150 ${
-                                  isSubActive
-                                    ? "text-indigo-500 font-bold translate-x-0.5"
-                                    : "text-gray-400 hover:text-gray-600"
-                                }`}
-                              >
-                                {index + 1}.{idx + 1} {sub.title}
-                              </a>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-      </aside>
+      <WikiInfoBox
+        rightSidebarOpen={rightSidebarOpen}
+        setRightSidebarOpen={setRightSidebarOpen}
+        isMobile={isMobile}
+        rightWidth={rightWidth}
+        isEditing={isEditing}
+        parsed={parsed}
+        handleInfoboxChange={handleInfoboxChange}
+        activeSection={activeSection}
+        handleTocClick={handleTocClick}
+        startResizeRight={startResizeRight}
+        handleRightDoubleClick={handleRightDoubleClick}
+      />
     </>
   );
 }

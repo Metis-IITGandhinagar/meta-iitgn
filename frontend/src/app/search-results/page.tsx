@@ -195,7 +195,7 @@ function SearchResultsContent() {
                     No results found
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto leading-relaxed">
-                    We couldn't find anything matching "{searchQuery}". Double check your spelling or search another category.
+                    We couldn&apos;t find anything matching &quot;{searchQuery}&quot;. Double check your spelling or search another category.
                   </p>
                 </div>
               )}
