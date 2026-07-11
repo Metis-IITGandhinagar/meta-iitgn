@@ -43,7 +43,8 @@ export default function Navbar({
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const isWiki = pathname?.startsWith("/wiki");
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const isWiki = segments[0] === "wiki" && segments.length >= 3;
 
   const activeTier = currentTier || localTier;
   const setActiveTier = onChangeTier || setLocalTier;
@@ -83,13 +84,29 @@ export default function Navbar({
     <header className="h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 bg-white sticky top-0 z-40 select-none shadow-sm border-b border-gray-150/30">
       {/* Left side: Hamburger and Logo */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={onToggleSidebar}
-          className="p-2 hover:bg-gray-150 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95"
-          aria-label="Toggle Sidebar"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
+        {isWiki ? (
+          <button
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+            aria-label="Go Back"
+          >
+            <ArrowLeft className="h-6 w-6 text-black" />
+          </button>
+        ) : (
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95"
+            aria-label="Toggle Sidebar"
+          >
+            <Menu className="h-6 w-6 text-black" />
+          </button>
+        )}
 
         <Link
           href="/"
@@ -295,7 +312,9 @@ export default function Navbar({
                   onClick={() => setDropdownOpen(false)}
                 >
                   <LogOut className="h-5 w-5 text-slate-400" />
-                  <span className="text-[11px] font-bold text-red-400">Sign Out</span>
+                  <span className="text-[11px] font-bold text-red-400">
+                    Sign Out
+                  </span>
                 </Link>
               </div>
             </div>

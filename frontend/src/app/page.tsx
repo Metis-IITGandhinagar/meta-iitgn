@@ -1128,7 +1128,7 @@ export default function HomePage() {
           <BottomNavbar
             tabs={homeTabs}
             activeTab={activeTab}
-            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 lg:left-[calc(50vw+15rem)] z-9999"
+            className="fixed lg:hidden bottom-6 left-1/2 transform -translate-x-1/2 lg:left-[calc(50vw+15rem)] z-9999"
           />
         )}
       </div>
