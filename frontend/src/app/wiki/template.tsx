@@ -32,9 +32,7 @@ export default function WikiLayout({ children }: { children: React.ReactNode }) 
     <div className="flex flex-col h-screen w-screen bg-gray-50/30 overflow-hidden font-sans">
       {/* Top Header Bar */}
       {!hideNavbar && (
-        <div className={`z-45 relative transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-80 lg:translate-x-0" : "translate-x-0"
-        }`}>
+        <div className={`z-45 relative transition-transform duration-300 ease-in-out`}>
           <Navbar 
             onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
             currentTier={currentTier}
@@ -52,9 +50,7 @@ export default function WikiLayout({ children }: { children: React.ReactNode }) 
           currentTier={currentTier}
           onChangeTier={setCurrentTier}
         />
-        <div className={`flex flex-col lg:flex-row flex-1 h-full w-full min-w-full shrink-0 lg:shrink lg:flex-1 overflow-hidden transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-80 lg:translate-x-0" : "translate-x-0"
-        }`}>
+        <div className={`flex flex-col lg:flex-row flex-1 h-full w-full min-w-full shrink-0 lg:shrink lg:flex-1 overflow-hidden transition-transform duration-300 ease-in-out`}>
           {children}
         </div>
       </div>

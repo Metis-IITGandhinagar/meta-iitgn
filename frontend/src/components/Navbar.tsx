@@ -43,7 +43,8 @@ export default function Navbar({
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const isWiki = pathname?.startsWith("/wiki");
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const isWiki = segments[0] === "wiki" && segments.length >= 3;
 
   const activeTier = currentTier || localTier;
   const setActiveTier = onChangeTier || setLocalTier;
@@ -73,14 +74,14 @@ export default function Navbar({
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/wiki?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/wiki/page/1?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      router.push("/wiki");
+      router.push("/wiki/page/1");
     }
   };
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 bg-white sticky top-0 z-40 select-none shadow-[0_15px_40px_rgba(0,0,0,0.15),0_5px_15px_rgba(0,0,0,0.08)] border-b border-gray-150/30">
+    <header className="h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 bg-white sticky top-0 z-40 select-none shadow-sm border-b border-gray-150/30">
       {/* Left side: Hamburger and Logo */}
       <div className="flex items-center gap-2">
         {isWiki ? (
@@ -92,7 +93,7 @@ export default function Navbar({
                 router.push("/");
               }
             }}
-            className="p-2 hover:bg-gray-155 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
             aria-label="Go Back"
           >
             <ArrowLeft className="h-6 w-6 text-black" />
@@ -100,10 +101,10 @@ export default function Navbar({
         ) : (
           <button
             onClick={onToggleSidebar}
-            className="p-2 hover:bg-gray-150 rounded-lg text-gray-655 transition-colors duration-200 cursor-pointer active:scale-95"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95"
             aria-label="Toggle Sidebar"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6 text-black" />
           </button>
         )}
 
@@ -155,13 +156,17 @@ export default function Navbar({
             }}
             className="flex items-center gap-2 hover:bg-gray-50 border border-gray-150 hover:border-gray-250 py-1.5 px-3 rounded-full shadow-sm transition-all duration-200 cursor-pointer active:scale-97"
           >
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner transition-colors duration-300 ${activeTierData.progressBar}`}>
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner transition-colors duration-300 ${activeTierData.progressBar}`}
+            >
               AC
             </div>
             <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
               Alex Carter
             </span>
-            <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full hidden md:inline-block transition-colors duration-300 ${activeTierData.badgeBg}`}>
+            <span
+              className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full hidden md:inline-block transition-colors duration-300 ${activeTierData.badgeBg}`}
+            >
               {activeTier}
             </span>
             <ChevronDown
@@ -171,20 +176,28 @@ export default function Navbar({
 
           {/* Dropdown Menu */}
           {dropdownOpen && (
-            <div className="absolute right-0 top-12 mt-2 w-80 sm:w-88 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute -right-10 top-12 mt-2 w-80 sm:w-88 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
               {/* Header info */}
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-slate-800 bg-white border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}>
+                <div
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-slate-800 bg-white border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}
+                >
                   AC
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-base font-bold text-slate-900 truncate">Alex Carter</h3>
-                    <span className={`text-[9px] font-black tracking-wider px-2.5 py-0.5 rounded-full shrink-0 uppercase transition-colors duration-300 ${activeTierData.badgeBg}`}>
+                    <h3 className="text-base font-bold text-slate-900 truncate">
+                      Alex Carter
+                    </h3>
+                    <span
+                      className={`text-[9px] font-black tracking-wider px-2.5 py-0.5 rounded-full shrink-0 uppercase transition-colors duration-300 ${activeTierData.badgeBg}`}
+                    >
                       {activeTier}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 truncate mt-0.5">alex.carter@iitgn.ac.in</p>
+                  <p className="text-xs text-slate-400 truncate mt-0.5">
+                    alex.carter@iitgn.ac.in
+                  </p>
                 </div>
               </div>
 
@@ -192,16 +205,28 @@ export default function Navbar({
               <div className="bg-slate-50/70 border border-slate-100/50 rounded-2xl p-3.5 mt-3.5">
                 <div className="grid grid-cols-3 text-center">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">XP Progress</span>
-                    <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">{activeTierData.xp}</span>
+                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                      XP Progress
+                    </span>
+                    <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
+                      {activeTierData.xp}
+                    </span>
                   </div>
                   <div className="flex flex-col border-l border-slate-200/60">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Edits</span>
-                    <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">{activeTierData.edits}</span>
+                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                      Edits
+                    </span>
+                    <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
+                      {activeTierData.edits}
+                    </span>
                   </div>
                   <div className="flex flex-col border-l border-slate-200/60">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Rank</span>
-                    <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">{activeTierData.rank}</span>
+                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                      Rank
+                    </span>
+                    <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
+                      {activeTierData.rank}
+                    </span>
                   </div>
                 </div>
                 {/* Progress Bar */}
@@ -220,18 +245,26 @@ export default function Navbar({
                   <span className="text-black">Contribution Value</span>
                 </div>
                 <p className="text-slate-600 font-medium">
-                  Current Perks: <span className="font-semibold text-slate-800">{activeTierData.benefits.join(", ")}</span>
+                  Current Perks:{" "}
+                  <span className="font-semibold text-slate-800">
+                    {activeTierData.benefits.join(", ")}
+                  </span>
                 </p>
                 {activeTierData.nextTier && (
                   <p className="text-blue-700 font-semibold mt-1">
-                    💡 Contribute more to unlock <span className="underline">{activeTierData.nextTier} Perks</span>
+                    💡 Contribute more to unlock{" "}
+                    <span className="underline">
+                      {activeTierData.nextTier} Perks
+                    </span>
                   </p>
                 )}
               </div>
 
               {/* Simulator Tier Switcher */}
               <div className="mt-4 pt-3 border-t border-slate-100">
-                <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-2">Simulator Tier Switcher</h4>
+                <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-2">
+                  Simulator Tier Switcher
+                </h4>
                 <div className="grid grid-cols-3 gap-1.5">
                   {Object.keys(TIERS).map((tierKey) => {
                     const t = TIERS[tierKey as keyof typeof TIERS];
@@ -279,7 +312,9 @@ export default function Navbar({
                   onClick={() => setDropdownOpen(false)}
                 >
                   <LogOut className="h-5 w-5 text-slate-400" />
-                  <span className="text-[11px] font-bold">Sign Out</span>
+                  <span className="text-[11px] font-bold text-red-400">
+                    Sign Out
+                  </span>
                 </Link>
               </div>
             </div>
@@ -302,35 +337,52 @@ export default function Navbar({
             {moreMenuOpen && (
               <div className="absolute right-0 top-12 mt-2 w-52 bg-white border border-slate-200 shadow-xl py-1 z-50 select-none animate-in fade-in duration-200">
                 <button
-                  onClick={() => { alert("Sharing link copied!"); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    alert("Sharing link copied!");
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <Share2 className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Share Page</span>
                 </button>
                 <button
-                  onClick={() => { alert("Page bookmarked successfully!"); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    alert("Page bookmarked successfully!");
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <Bookmark className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Bookmark Page</span>
                 </button>
                 <button
-                  onClick={() => { alert("Exporting to PDF..."); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    alert("Exporting to PDF...");
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <Download className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Export PDF</span>
                 </button>
                 <button
-                  onClick={() => { window.dispatchEvent(new CustomEvent("show-wiki-revisions")); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("show-wiki-revisions")
+                    );
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Earlier Versions</span>
                 </button>
                 <button
-                  onClick={() => { window.print(); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    window.print();
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <Printer className="h-4.5 w-4.5 text-slate-500 shrink-0" />
@@ -338,34 +390,36 @@ export default function Navbar({
                 </button>
                 <div className="border-t border-slate-100 my-1" />
                 <button
-                  onClick={() => { alert("Toggling dark mode..."); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    alert("Toggling dark mode...");
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <Moon className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Dark Mode</span>
                 </button>
                 <button
-                  onClick={() => { alert("Loading settings..."); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    alert("Loading settings...");
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <Settings className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Page Settings</span>
                 </button>
                 <button
-                  onClick={() => { alert("Report page submitted."); setMoreMenuOpen(false); }}
+                  onClick={() => {
+                    alert("Report page submitted.");
+                    setMoreMenuOpen(false);
+                  }}
                   className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                 >
                   <AlertTriangle className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                   <span>Report Content</span>
                 </button>
                 <div className="border-t border-slate-100 my-1" />
-                <button
-                  onClick={() => { alert("Page deletion requested."); setMoreMenuOpen(false); }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-100/50 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
-                >
-                  <Trash2 className="h-4.5 w-4.5 text-rose-500 shrink-0" />
-                  <span>Delete Page</span>
-                </button>
               </div>
             )}
           </div>

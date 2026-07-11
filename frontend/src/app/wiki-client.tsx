@@ -54,10 +54,14 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
   useEffect(() => {
     const savedRight = localStorage.getItem("wiki-right-sidebar-width");
     if (savedRight) setRightWidth(Math.max(200, Number(savedRight)));
-    if (window.innerWidth < 1024) {
-      setRightSidebarOpen(false);
-      setIsMobile(true);
-    }
+
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) setRightSidebarOpen(false);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
 
     const handleShowRevisions = () => {
       setShowRevisions(true);
@@ -76,6 +80,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     window.addEventListener("show-wiki-pending", handleShowPending);
     window.addEventListener("hide-wiki-history", handleHideHistory);
     return () => {
+      window.removeEventListener("resize", checkMobile);
       window.removeEventListener("show-wiki-history", handleShowRevisions);
       window.removeEventListener("show-wiki-revisions", handleShowRevisions);
       window.removeEventListener("show-wiki-pending", handleShowPending);
@@ -83,13 +88,16 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     };
   }, []);
 
+  // Resize handle now sits on the LEFT edge of the sidebar since the
+  // sidebar itself lives on the right side of the screen.
   const startResizeRight = (e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
     const startWidth = rightWidth;
     let currentWidth = startWidth;
     const doDrag = (moveEvent: MouseEvent) => {
-      currentWidth = Math.max(200, Math.min(600, startWidth + (moveEvent.clientX - startX)));
+      // Dragging left (negative delta) grows the right-anchored sidebar.
+      currentWidth = Math.max(200, Math.min(600, startWidth - (moveEvent.clientX - startX)));
       setRightWidth(currentWidth);
     };
     const stopDrag = () => {
@@ -201,7 +209,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
       const text = heading.textContent || "";
       let baseId = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
       if (!baseId) baseId = "heading";
-      
+
       let finalId = baseId;
       if (seenIds[baseId] === undefined) {
         seenIds[baseId] = 0;
@@ -265,30 +273,26 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     }
   };
 
-
-
-
-
   if (showRevisions) {
     return (
       <div className="fixed inset-0 bg-white z-[60] flex flex-col h-screen w-screen overflow-hidden select-none animate-in fade-in duration-200">
         {/* Top Header Bar */}
-        <header className="h-16 border-b border-gray-150 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
+        <header className="h-16 border-b border-gray-200 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
           <button
             onClick={() => {
               setShowRevisions(false);
               window.dispatchEvent(new CustomEvent("hide-wiki-history"));
             }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-655 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
             aria-label="Back to Wiki"
           >
-            <ArrowLeft className="h-6 w-6 text-black" />
+            <ArrowLeft className="h-6 w-6 text-gray-900" />
           </button>
           <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
         </header>
 
         {/* Changes Body (Like Search & Bookmarks pages) */}
-        <div className="flex-1 overflow-y-auto bg-gray-50/50 p-6 md:p-8 lg:p-12">
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-12">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="flex flex-col gap-2">
               <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Recent Page Revisions</h2>
@@ -304,7 +308,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                   avatar: "MI",
                   time: "4 hours ago",
                   badge: "Admin",
-                  badgeBg: "bg-blue-50 text-blue-600 border border-blue-150",
+                  badgeBg: "bg-blue-50 text-blue-600 border border-blue-200",
                   details: "Inserted curriculum listings under CS major and updated hostel rules. Added detail on curriculum pathways."
                 },
                 {
@@ -314,7 +318,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                   avatar: "AC",
                   time: "1 day ago",
                   badge: "Gold Contributor",
-                  badgeBg: "bg-amber-50 text-amber-600 border border-amber-150",
+                  badgeBg: "bg-amber-50 text-amber-600 border border-amber-200",
                   details: "Modified placement percentages and Amalthea festival dates. Corrected coordinate references."
                 },
                 {
@@ -324,22 +328,22 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                   avatar: "SY",
                   time: "2 days ago",
                   badge: "System",
-                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-150",
+                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-200",
                   details: "Imported markdown core structure, category hierarchies, and initial infobox configurations."
                 }
               ].map((revision) => (
-                <div key={revision.rev} className="p-5 border border-gray-150 bg-white rounded-2xl shadow-depth shadow-depth-hover transition-all duration-150 relative group">
+                <div key={revision.rev} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-150 flex items-center justify-center font-bold text-sm text-gray-750 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
                       {revision.avatar}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
                         <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{revision.title}</h4>
                         <span className="text-xs text-gray-400 shrink-0 font-medium">{revision.time}</span>
                       </div>
-                      <p className="text-sm text-gray-550 mt-1.5 leading-relaxed">{revision.details}</p>
-                      
+                      <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{revision.details}</p>
+
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 border-dashed">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold text-gray-700">{revision.author}</span>
@@ -347,8 +351,8 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                             {revision.badge}
                           </span>
                         </div>
-                        
-                        <button 
+
+                        <button
                           onClick={() => {
                             alert(`Restoring Revision #${revision.rev}...`);
                             setShowRevisions(false);
@@ -373,22 +377,22 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
     return (
       <div className="fixed inset-0 bg-white z-[60] flex flex-col h-screen w-screen overflow-hidden select-none animate-in fade-in duration-200">
         {/* Top Header Bar */}
-        <header className="h-16 border-b border-gray-150 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
+        <header className="h-16 border-b border-gray-200 flex items-center gap-4 px-4 lg:px-6 shrink-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] select-none">
           <button
             onClick={() => {
               setShowPendingChanges(false);
               window.dispatchEvent(new CustomEvent("hide-wiki-history"));
             }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-655 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center animate-in fade-in"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center animate-in fade-in"
             aria-label="Back to Wiki"
           >
-            <ArrowLeft className="h-6 w-6 text-black" />
+            <ArrowLeft className="h-6 w-6 text-gray-900" />
           </button>
           <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
         </header>
 
         {/* Changes Body (Like Search & Bookmarks pages) */}
-        <div className="flex-1 overflow-y-auto bg-gray-50/50 p-6 md:p-8 lg:p-12">
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-12">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="flex flex-col gap-2">
               <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Pending Approval</h2>
@@ -404,7 +408,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                   avatar: "RS",
                   time: "2 hours ago",
                   badge: "Student Contributor",
-                  badgeBg: "bg-emerald-50 text-emerald-600 border border-emerald-150",
+                  badgeBg: "bg-emerald-50 text-emerald-600 border border-emerald-200",
                   details: "Proposed update to placements: CS average package changed from 22.4 LPA to 23.8 LPA according to official council records."
                 },
                 {
@@ -414,32 +418,32 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                   avatar: "AP",
                   time: "6 hours ago",
                   badge: "Guest Editor",
-                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-150",
+                  badgeBg: "bg-gray-50 text-gray-600 border border-gray-200",
                   details: "Suggested formatting and detail cleanups under the hostel guide laundry services."
                 }
               ].map((pending) => (
-                <div key={pending.rev} className="p-5 border border-gray-150 bg-white rounded-2xl shadow-depth shadow-depth-hover transition-all duration-150 relative group">
+                <div key={pending.rev} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-150 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
                       {pending.avatar}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
                         <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{pending.title}</h4>
                         <span className="text-xs text-gray-400 shrink-0 font-medium">{pending.time}</span>
                       </div>
-                      <p className="text-sm text-gray-550 mt-1.5 leading-relaxed">{pending.details}</p>
-                      
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 border-dashed">
+                      <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{pending.details}</p>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100 border-dashed">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold text-gray-700">{pending.author}</span>
                           <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${pending.badgeBg}`}>
                             {pending.badge}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-3">
-                          <button 
+                          <button
                             onClick={() => {
                               alert(`Proposed change approved successfully!`);
                               setShowPendingChanges(false);
@@ -449,7 +453,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                           >
                             Approve
                           </button>
-                          <button 
+                          <button
                             onClick={() => {
                               alert(`Proposed change rejected.`);
                               setShowPendingChanges(false);
@@ -474,17 +478,155 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
 
   return (
     <>
-      {/* InfoBox (Left Sidebar) */}
+      {/* Mobile backdrop for the drawer — tap to close instead of shifting the whole page */}
+      {isMobile && rightSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-40 lg:hidden animate-in fade-in duration-200"
+          onClick={() => setRightSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Main Content Wrapper */}
+      <div className="flex flex-1 h-full w-full min-w-full lg:min-w-0 overflow-hidden order-1">
+        {/* Main Scrollable Article Body */}
+        <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-8 pb-28 overflow-y-auto bg-white relative scroll-smooth">
+          <article className="w-full max-w-5xl mx-auto space-y-6">
+            {/* Teleported editor toolbar container */}
+            {isEditing && (
+              <div
+                ref={setToolbarContainer}
+                className="border border-gray-200 rounded-xl bg-gray-50 p-1.5 mb-6 milkdown flex items-center justify-center min-h-10"
+              />
+            )}
+            {/* Title Header (Separated from editor to prevent accidental deletion) */}
+            {isEditing ? (
+              <EditableCell
+                initialValue={parsed.title}
+                onChange={handleTitleChange}
+                placeholder="Untitled Page"
+                className="text-3xl sm:text-4xl font-display font-black tracking-tight text-gray-900 w-full border-none focus:outline-none focus:ring-0 mb-8 bg-transparent placeholder-gray-300"
+              />
+            ) : (
+              <h1 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-gray-900 mb-8">
+                {parsed.title}
+              </h1>
+            )}
+
+            {/* Milkdown Editor */}
+            <MilkdownEditor
+              key={isEditing ? "edit" : "view"}
+              initialMarkdown={parsed.contentMarkdown}
+              onMarkdownChange={handleMarkdownChange}
+              readOnly={!isEditing}
+              onLoaded={() => setEditorLoaded(true)}
+              toolbarContainer={toolbarContainer}
+            />
+          </article>
+          {/* Material Design 3 Bottom Navigation Bar */}
+          <BottomNavbar
+            tabs={
+              isEditing
+                ? [
+                    {
+                      id: "back",
+                      label: "Back",
+                      icon: ArrowLeft,
+                      onClick: () => {
+                        if (window.history.length > 1) {
+                          router.back();
+                        } else {
+                          router.push("/");
+                        }
+                      },
+                    },
+                    {
+                      id: "save",
+                      label: "Save",
+                      icon: Check,
+                      onClick: handleSave,
+                    },
+                    {
+                      id: "cancel",
+                      label: "Cancel",
+                      icon: X,
+                      onClick: () => {
+                        setMarkdown(initialMarkdown);
+                        markdownRef.current = initialMarkdown;
+                        setIsEditing(false);
+                      },
+                    },
+                    {
+                      id: "sidebar",
+                      label: "Sidebar",
+                      icon: PanelRight,
+                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
+                    },
+                  ]
+                : [
+                    {
+                      id: "edit",
+                      label: "Edit Page",
+                      icon: Edit3,
+                      onClick: () => setIsEditing(true),
+                    },
+                    {
+                      id: "changes",
+                      label: "Changes",
+                      icon: History,
+                      onClick: () => {
+                        setShowPendingChanges(true);
+                        setShowRevisions(false);
+                        window.dispatchEvent(new CustomEvent("show-wiki-pending"));
+                      },
+                      badgeCount: 2,
+                    },
+                    {
+                      id: "new",
+                      label: "New Page",
+                      icon: PlusCircle,
+                      onClick: () => {
+                        router.push("/wiki/campus/new");
+                      },
+                    },
+                    {
+                      id: "sidebar",
+                      label: "Sidebar",
+                      icon: PanelRight,
+                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
+                    },
+                  ]
+            }
+            activeTab={rightSidebarOpen ? "sidebar" : (isEditing ? "edit" : undefined)}
+            style={{
+              left: !isMobile && rightSidebarOpen ? `calc((100vw - ${rightWidth}px) / 2)` : "50%",
+            }}
+            className="fixed bottom-6 transform -translate-x-1/2 z-[9999]"
+          />
+        </main>
+      </div>
+
+      {/* Resize Handle - desktop only, sits on the left edge of the right sidebar */}
+      {rightSidebarOpen && (
+        <div
+          onMouseDown={startResizeRight}
+          onDoubleClick={handleRightDoubleClick}
+          className="hidden lg:block w-1.5 -mr-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0 order-2"
+          title="Drag to resize, double-click to reset"
+        />
+      )}
+
+      {/* InfoBox (Right Sidebar) */}
       <aside
         style={{ width: rightSidebarOpen ? (isMobile ? "320px" : `${rightWidth}px`) : undefined }}
         className={`
-          border-r border-gray-150 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
-          transition-all duration-300 ease-in-out
-          fixed lg:static inset-y-0 left-0 z-50 lg:z-auto lg:h-full lg:border-r lg:border-gray-150
+          border-l border-gray-200 shrink-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar
+          transition-transform duration-300 ease-in-out order-3
+          fixed lg:static inset-y-0 right-0 z-50 lg:z-auto lg:h-full
           ${
             rightSidebarOpen
-              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none lg:border-r lg:border-gray-150"
-              : "-translate-x-full lg:translate-x-0 lg:w-0 lg:border-r-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
+              ? "translate-x-0 w-80 shadow-2xl lg:shadow-none"
+              : "translate-x-full lg:translate-x-0 lg:w-0 lg:border-l-0 overflow-hidden pointer-events-none lg:pointer-events-auto"
           }
         `}
       >
@@ -494,16 +636,16 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
           {rightSidebarOpen && (
             <button
               onClick={() => setRightSidebarOpen(false)}
-              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-gray-450 hover:text-gray-700 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
-              aria-label="Close Right Sidebar"
+              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-700 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
+              aria-label="Close Sidebar"
             >
-              <X className="h-6 w-6 text-black" />
+              <X className="h-6 w-6 text-gray-900" />
             </button>
           )}
           {/* Infobox Image */}
           <div
             className={`w-full relative bg-gray-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
-              isEditing ? "h-32 p-4 bg-gray-50/50" : "aspect-square"
+              isEditing ? "h-32 p-4 bg-gray-50" : "aspect-square"
             }`}
           >
             <div className={`w-full h-full relative overflow-hidden transition-all duration-300 ${
@@ -523,7 +665,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
 
           {/* Inline Image Editor Fields (In-place, only shown when editing) */}
           {isEditing && (
-            <div className="p-6 border-b border-gray-100 flex flex-col gap-4 bg-gray-50/30 animate-in fade-in duration-300">
+            <div className="p-6 border-b border-gray-100 flex flex-col gap-4 bg-gray-50 animate-in fade-in duration-300">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">
                   Image Options
@@ -544,7 +686,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                   </button>
                 )}
               </div>
-              
+
               {/* Image URL input */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
@@ -631,7 +773,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                                 const parsedValue = isBadgeType
                                   ? newVal.split(/[,\n\r]+/).map((s) => s.trim()).filter(Boolean)
                                   : newVal;
-                                
+
                                 const newRows = [...parsed.infobox.rows];
                                 newRows[index] = {
                                   ...row,
@@ -652,7 +794,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                                 const currentType = row.type || "text";
                                 const nextType = currentType === "badge" ? "text" : "badge";
                                 const newRows = [...parsed.infobox.rows];
-                                
+
                                 let nextValue = row.value;
                                 if (nextType === "badge" && typeof row.value === "string") {
                                   nextValue = row.value.split(",").map((s) => s.trim()).filter(Boolean);
@@ -672,7 +814,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                               }}
                               className={`p-1 rounded cursor-pointer transition-colors ${
                                 row.type === "badge"
-                                  ? "text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80"
+                                  ? "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
                                   : "text-gray-400 hover:text-indigo-600 hover:bg-gray-50"
                               }`}
                               title={`Toggle representation (currently: ${row.type === "badge" ? "Badges/Tags" : "Text line"}). Click to switch.`}
@@ -688,7 +830,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                                   rows: newRows,
                                 });
                               }}
-                              className="text-gray-450 hover:text-rose-500 p-1 cursor-pointer transition-colors"
+                              className="text-gray-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
                               title="Delete fact row"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -699,7 +841,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                             {row.value.map((val) => (
                               <span
                                 key={val}
-                                className="text-[10px] text-indigo-600 border border-indigo-200 rounded-full px-2 py-0.5 font-semibold bg-indigo-50/50"
+                                className="text-[10px] text-indigo-600 border border-indigo-200 rounded-full px-2 py-0.5 font-semibold bg-indigo-50"
                               >
                                 {val}
                               </span>
@@ -729,7 +871,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
                     rows: newRows
                   });
                 }}
-                className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 hover:border-indigo-300 text-gray-400 hover:text-indigo-600 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-150 hover:bg-indigo-50/5"
+                className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 hover:border-indigo-300 text-gray-400 hover:text-indigo-600 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-150 hover:bg-indigo-50/40"
               >
                 <span>+ Add</span>
               </button>
@@ -787,137 +929,6 @@ export default function WikiClient({ initialMarkdown, defaultEditing }: WikiClie
           </div>
         </div>
       </aside>
-
-      {/* Resize Handle - desktop only */}
-      {rightSidebarOpen && (
-        <div
-          onMouseDown={startResizeRight}
-          onDoubleClick={handleRightDoubleClick}
-          className="hidden lg:block w-1.5 -ml-1 cursor-col-resize hover:bg-indigo-500/30 active:bg-indigo-500/50 transition-colors z-20 h-full shrink-0"
-          title="Drag to resize, double-click to reset"
-        />
-      )}
-
-      {/* Main Content Wrapper */}
-      <div className={`flex flex-1 h-full w-full min-w-full lg:min-w-0 overflow-hidden transition-transform duration-300 ease-in-out ${
-        rightSidebarOpen ? "translate-x-80 lg:translate-x-0" : "translate-x-0"
-      }`}>
-        {/* Main Scrollable Article Body */}
-        <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-8 pb-28 overflow-y-auto bg-white relative scroll-smooth">
-          <article className="w-full max-w-5xl mx-auto space-y-6">
-            {/* Teleported editor toolbar container */}
-            {isEditing && (
-              <div 
-                ref={setToolbarContainer} 
-                className="border border-gray-150 rounded-xl bg-gray-50 p-1.5 mb-6 milkdown flex items-center justify-center min-h-10"
-              />
-            )}
-            {/* Title Header (Separated from editor to prevent accidental deletion) */}
-            {isEditing ? (
-              <EditableCell
-                initialValue={parsed.title}
-                onChange={handleTitleChange}
-                placeholder="Untitled Page"
-                className="text-4xl font-display font-black tracking-tight text-gray-900 w-full border-none focus:outline-none focus:ring-0 mb-8 bg-transparent placeholder-gray-200"
-              />
-            ) : (
-              <h1 className="text-4xl font-display font-black tracking-tight text-gray-900 mb-8">
-                {parsed.title}
-              </h1>
-            )}
-
-            {/* Milkdown Editor */}
-            <MilkdownEditor
-              key={isEditing ? "edit" : "view"}
-              initialMarkdown={parsed.contentMarkdown}
-              onMarkdownChange={handleMarkdownChange}
-              readOnly={!isEditing}
-              onLoaded={() => setEditorLoaded(true)}
-              toolbarContainer={toolbarContainer}
-            />
-          </article>
-          {/* Material Design 3 Bottom Navigation Bar */}
-          <BottomNavbar
-            tabs={
-              isEditing
-                ? [
-                    {
-                      id: "back",
-                      label: "Back",
-                      icon: ArrowLeft,
-                      onClick: () => {
-                        if (window.history.length > 1) {
-                          router.back();
-                        } else {
-                          router.push("/");
-                        }
-                      },
-                    },
-                    {
-                      id: "save",
-                      label: "Save",
-                      icon: Check,
-                      onClick: handleSave,
-                    },
-                    {
-                      id: "cancel",
-                      label: "Cancel",
-                      icon: X,
-                      onClick: () => {
-                        setMarkdown(initialMarkdown);
-                        markdownRef.current = initialMarkdown;
-                        setIsEditing(false);
-                      },
-                    },
-                    {
-                      id: "sidebar",
-                      label: "Sidebar",
-                      icon: PanelRight,
-                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
-                    },
-                  ]
-                : [
-                    {
-                      id: "sidebar",
-                      label: "Sidebar",
-                      icon: PanelRight,
-                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
-                    },
-                    {
-                      id: "edit",
-                      label: "Edit Page",
-                      icon: Edit3,
-                      onClick: () => setIsEditing(true),
-                    },
-                    {
-                      id: "changes",
-                      label: "Changes",
-                      icon: History,
-                      onClick: () => {
-                        setShowPendingChanges(true);
-                        setShowRevisions(false);
-                        window.dispatchEvent(new CustomEvent("show-wiki-pending"));
-                      },
-                      badgeCount: 2,
-                    },
-                    {
-                      id: "new",
-                      label: "New Page",
-                      icon: PlusCircle,
-                      onClick: () => {
-                        router.push("/wiki/campus/new");
-                      },
-                    },
-                  ]
-            }
-            activeTab={rightSidebarOpen ? "sidebar" : (isEditing ? "edit" : undefined)}
-            style={{
-              left: !isMobile && rightSidebarOpen ? `calc((100vw - ${rightWidth}px) / 2)` : '50%'
-            }}
-            className="fixed bottom-6 transform -translate-x-1/2 z-[9999]"
-          />
-        </main>
-      </div>
-      </>
-    );
+    </>
+  );
 }

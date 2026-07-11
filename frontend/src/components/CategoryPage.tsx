@@ -51,7 +51,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
             <div className="inline-flex items-center justify-center p-3 bg-blue-50 text-blue-600 rounded-2xl shadow-sm">
               <BookOpen className="h-6 w-6" />
             </div>
-            <h1 className="text-4xl font-serif font-black text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-serif font-black text-gray-900 tracking-tight">
               {category.name}
             </h1>
             <p className="text-gray-500 max-w-2xl text-sm md:text-base leading-relaxed">
@@ -93,11 +93,11 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                       <span>Article</span>
                     </div>
                     
-                    <h3 className="text-lg font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300">
+                    <h3 className="text-base font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300">
                       {article.title}
                     </h3>
                     
-                    <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
+                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
                       {article.snippet}
                     </p>
                   </div>
