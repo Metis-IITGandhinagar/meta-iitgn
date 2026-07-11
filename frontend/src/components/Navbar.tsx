@@ -35,6 +35,8 @@ interface NavbarProps {
   searchQuery?: string;
   setSearchQuery?: (query: string) => void;
   hideSearch?: boolean;
+  currentTier?: string;
+  onChangeTier?: (tier: string) => void;
 }
 
 const TIERS = {
