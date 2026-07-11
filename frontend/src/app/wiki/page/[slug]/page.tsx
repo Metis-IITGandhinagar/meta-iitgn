@@ -37,8 +37,9 @@ Write your content here...`;
   try {
     // Runs on the server automatically inside a Server Component —
     // no "use server" directive needed for a plain data fetch.
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://meta-iitgn-vercel.onrender.com";
     const response = await fetch(
-      `https://meta-iitgn-vercel.onrender.com/page/${slug}`,
+      `${apiBase}/pages/${slug}`,
       { cache: "no-store" }
     );
 

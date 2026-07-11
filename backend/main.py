@@ -141,19 +141,67 @@ class SupabaseRepo(DatabaseRepository):
         return response.data[0]
 
     def submit_draft(self, draft: DraftSubmit) -> Dict[str, Any]:
-        # If it's an edit to an existing page, check the optimistic lock
-        # if draft.page_id:
-        #     if draft.base_version is None:
-        #         raise HTTPException(status_code=400, detail="base_version is required for edits.")
-        # 
-        #     current = self.client.table("live_pages").select("version").eq("page_id", draft.page_id).execute()
-        #     if not current.data or current.data[0]["version"] != draft.base_version:
-        #          raise HTTPException(status_code=409, detail="Version conflict. Page has been updated by someone else.")
-        pass
+        if draft.page_id is None:
+            # BRAND NEW PAGE - bypass review and write directly to live_pages
+            import re
+            from datetime import datetime
+            base_slug = re.sub(r'[^a-zA-Z0-9\s-]', '', draft.title).strip().lower()
+            base_slug = re.sub(r'[\s-]+', '-', base_slug)
+            if not base_slug:
+                base_slug = "untitled"
+            
+            # Ensure slug is unique
+            metadata = draft.metadata
+            slug = None
+            if isinstance(metadata, dict):
+                slug = metadata.get("slug")
+            elif isinstance(metadata, str):
+                try:
+                    import json
+                    slug = json.loads(metadata).get("slug")
+                except Exception:
+                    pass
+                    
+            if not slug:
+                slug = base_slug
+                counter = 1
+                while True:
+                    existing = self.client.table("live_pages").select("page_id").eq("slug", slug).execute()
+                    if not existing.data:
+                        break
+                    slug = f"{base_slug}-{counter}"
+                    counter += 1
+            
+            now_str = datetime.utcnow().isoformat()
+            live_insert = self.client.table("live_pages").insert({
+                "title": draft.title,
+                "slug": slug,
+                "content": draft.content,
+                "metadata": draft.metadata,
+                "original_author_id": draft.editor_id,
+                "contributors": [draft.editor_id],
+                "version": 1,
+                "created_at": now_str,
+                "updated_at": now_str,
+            }).execute()
+            
+            if not live_insert.data:
+                raise HTTPException(status_code=500, detail="Failed to create live page directly")
+            
+            # Log audit event
+            self.client.table("audit_logs").insert({
+                "actor_id": draft.editor_id,
+                "action": "CREATE_NEW_PAGE_DIRECT",
+                "table_name": "live_pages",
+                "record_id": str(live_insert.data[0]["page_id"]),
+                "ip_address": "127.0.0.1",
+            }).execute()
 
-        # Insert into pending_pages (status defaults to 'draft' or 'in_review')
+            return live_insert.data[0]
+
+        # Edits to existing pages - still require review (inserted into pending_pages)
         response = self.client.table("pending_pages").insert({
-            "page_id": draft.page_id, # Will be null for brand new pages
+            "page_id": draft.page_id,
             "title": draft.title,
             "content": draft.content,
             "metadata": draft.metadata,
@@ -359,7 +407,7 @@ class SupabaseRepo(DatabaseRepository):
             results.append({
                 "title": p["title"],
                 "slug": p["slug"],
-                "path": f"/wiki/{p['slug']}",
+                "path": f"/wiki/page/{p['slug']}",
                 "category": p.get("metadata", {}).get("category", "Campus") if p.get("metadata") else "Campus",
                 "description": snippet,
                 "is_pending": False
@@ -387,7 +435,7 @@ class SupabaseRepo(DatabaseRepository):
             results.append({
                 "title": p["title"],
                 "slug": draft_slug,
-                "path": f"/wiki/{draft_slug}",
+                "path": f"/wiki/page/{draft_slug}",
                 "category": p.get("metadata", {}).get("category", "Campus") if p.get("metadata") else "Campus",
                 "description": snippet,
                 "is_pending": True

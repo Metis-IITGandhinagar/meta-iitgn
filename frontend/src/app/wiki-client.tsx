@@ -173,7 +173,11 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
       });
 
       if (response.ok) {
-        alert("Draft successfully submitted for review!");
+        if (!dbPageId) {
+          alert("Page successfully published!");
+        } else {
+          alert("Draft successfully submitted for review!");
+        }
         // Keep the local editor state updated with the unsaved changes for immediate feedback
         setMarkdown(markdownRef.current);
       } else {
