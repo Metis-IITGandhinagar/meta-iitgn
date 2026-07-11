@@ -36,9 +36,19 @@ Write your content here...`;
   let found = false;
 
   try {
-    const data = await apiService.getPage(slug);
-    pageContent = data.content;
-    found = true;
+    // Runs on the server automatically inside a Server Component —
+    // no "use server" directive needed for a plain data fetch.
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://meta-iitgn-vercel.onrender.com";
+    const response = await fetch(
+      `${apiBase}/pages/${slug}`,
+      { cache: "no-store" }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      pageContent = data.content;
+      found = true;
+    }
   } catch (error) {
     console.error(
       "Failed to fetch initial page content during build/render:",

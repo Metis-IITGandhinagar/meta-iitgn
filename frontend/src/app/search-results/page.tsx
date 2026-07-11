@@ -45,6 +45,13 @@ const CATEGORY_COLOR_MAP: Record<
   All: { bg: "bg-slate-900 text-white", text: "text-slate-900", border: "border-slate-900" },
 };
 
+interface SearchResult {
+  title: string;
+  path: string;
+  category: string;
+  description: string;
+}
+
 function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -56,15 +63,19 @@ function SearchResultsContent() {
   const [searchQuery, setSearchQuery] = useState(queryParam);
   const [category, setCategory] = useState(categoryParam);
   
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const data = await apiService.searchPages(queryParam);
-        setResults(data);
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://meta-iitgn-vercel.onrender.com";
+        const res = await fetch(`${apiBase}/pages/search?query=${encodeURIComponent(queryParam)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data);
+        }
       } catch (err) {
         console.error("Failed to fetch search results:", err);
       } finally {

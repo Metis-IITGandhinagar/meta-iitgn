@@ -152,6 +152,9 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
   };
 
   const handleSave = async () => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://meta-iitgn-vercel.onrender.com";
+    const targetUrl = `${apiBase}/drafts`;
+
     try {
       const payload = {
         page_id: dbPageId ? Number(dbPageId) : null,
@@ -162,12 +165,28 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
         base_version: version !== undefined ? Number(version) : null,
       };
 
-      await apiService.submitDraft(payload);
+      const response = await fetch(targetUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      alert("Draft successfully submitted for review!");
-      // Keep the local editor state updated with the unsaved changes for immediate feedback
-      setMarkdown(markdownRef.current);
-    } catch (error: any) {
+      if (response.ok) {
+        if (!dbPageId) {
+          alert("Page successfully published!");
+        } else {
+          alert("Draft successfully submitted for review!");
+        }
+        // Keep the local editor state updated with the unsaved changes for immediate feedback
+        setMarkdown(markdownRef.current);
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        console.error("Failed to submit draft. Server returned status:", response.status, errData);
+        alert(`Failed to submit draft: ${errData.detail || "Unknown error"}`);
+      }
+    } catch (error) {
       console.error("Error submitting draft to backend:", error);
       const detail = error.response?.data?.detail || error.response?.data?.error || "Unknown error";
       alert(`Failed to submit draft: ${detail}`);
