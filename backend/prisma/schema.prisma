@@ -188,3 +188,13 @@ model audit_logs {
   @@index([actor_id], name: "idx_audit_actor")
   @@index([table_name, record_id], name: "idx_audit_target")
 }
+
+model categories {
+  category_id    Int      @id @default(autoincrement())
+  slug           String   @unique
+  name           String
+  description    String
+  total_articles Int      @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now()) @updatedAt
+}

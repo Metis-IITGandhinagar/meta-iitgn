@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Article } from "@/lib/placeholder-articles";
-import { getAllCategories } from "@/lib/categories";
+import { useAuth } from "@/hooks/useAuth";
 import { ArrowRight, ArrowLeft, BookOpen, ChevronRight, FileText, PlusCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
@@ -13,8 +13,8 @@ interface CategoryPageProps {
 }
 
 export default function CategoryPage({ categorySlug }: CategoryPageProps) {
-  const categories = getAllCategories();
-  const category = categories[categorySlug];
+  const { categories } = useAuth();
+  const category = categories.find(c => c.slug === categorySlug);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 

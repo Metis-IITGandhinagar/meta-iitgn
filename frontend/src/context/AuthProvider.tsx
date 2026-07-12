@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { AuthContext, type User } from "./AuthContext";
-import {api} from "../lib/api";
-
+import { AuthContext, type User, type Category } from "./AuthContext";
+import { api } from "../lib/api";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState<boolean | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const logout = async () => {
     try {
       await api.post(
@@ -32,7 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ]);
 
       setUser(userRes.data.user);
-
       setAuth(true);
     } catch {
       setUser(null);
@@ -42,6 +42,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const cached = localStorage.getItem("wiki-categories");
+      if (cached) {
+        setCategories(JSON.parse(cached));
+      } else {
+        const res = await api.get("/categories");
+        setCategories(res.data);
+        localStorage.setItem("wiki-categories", JSON.stringify(res.data));
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  }, []);
+
+  const addCategoryState = useCallback((newCat: Category) => {
+    setCategories((prev) => {
+      const updated = [...prev, newCat];
+      localStorage.setItem("wiki-categories", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const updateCategoryState = useCallback((updatedCat: Category) => {
+    setCategories((prev) => {
+      const updated = prev.map((cat) =>
+        cat.category_id === updatedCat.category_id ? updatedCat : cat
+      );
+      localStorage.setItem("wiki-categories", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   useEffect(() => {
     const id = setTimeout(() => {
       void checkAuth();
@@ -49,6 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => clearTimeout(id);
   }, [checkAuth]);
+
+  useEffect(() => {
+    void fetchCategories();
+  }, [fetchCategories]);
 
   return (
     <AuthContext.Provider
@@ -60,6 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser,
         logout,
         checkAuth,
+        categories,
+        setCategories,
+        addCategoryState,
+        updateCategoryState,
       }}>
       {children}
     </AuthContext.Provider>

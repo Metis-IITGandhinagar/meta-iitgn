@@ -11,6 +11,6 @@ router.get("/", getUsers);
 router.get("/auth/google", handleGoogleAuth);
 router.post("/auth/google", handleGoogleAuth);
 router.post("/auth/logout", clearUser);
-router.get("/auth/me", protect, handleMe);
+router.get("/auth/me", protect(), handleMe);
 
 export default router;

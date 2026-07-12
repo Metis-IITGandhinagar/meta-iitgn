@@ -12,6 +12,16 @@ export interface User {
   updated_at: string;
 }
 
+export interface Category {
+  category_id: number;
+  slug: string;
+  name: string;
+  description: string;
+  total_articles: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
   auth: boolean | null;
@@ -20,6 +30,10 @@ interface AuthContextType {
   setAuth: React.Dispatch<React.SetStateAction<boolean | null>>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  categories: Category[];
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  addCategoryState: (newCat: Category) => void;
+  updateCategoryState: (updatedCat: Category) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

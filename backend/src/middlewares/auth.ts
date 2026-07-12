@@ -10,52 +10,32 @@ declare global {
   }
 }
 
-function checkAuth(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({
-      ok: false,
-    });
-  }
-  const user = validateToken(token);
+export function protect(...allowedRoles: string[]) {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    const token = req.cookies.token;
 
-  if (!user) {
-    return res.status(401).json({
-      ok: false,
-    });
-  }
-  req.user = user;
-  next();
-}
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication token missing",
+      });
+    }
 
-async function protect(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const token = req.cookies.token;
+    const tokenUser = validateToken(token);
 
-  if (!token) {
-    return res.status(401).json({
-      ok: false,
-    });
-  }
+    if (!tokenUser) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
 
-  const tokenUser = validateToken(token);
-
-  if (!tokenUser) {
-    return res.status(401).json({
-      ok: false,
-    });
-  }
-
-  const dbUser = await prisma.users
-    .findUnique({
-      where: { user_id: Number(tokenUser.user_id)},
+    const dbUser = await prisma.users.findUnique({
+      where: { user_id: Number(tokenUser.user_id) },
       select: {
         user_id: true,
         name: true,
@@ -64,15 +44,25 @@ async function protect(
       },
     });
 
-  if (!dbUser) {
-    return res.status(401).json({
-      ok: false,
-    });
-  }
+    if (!dbUser) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-  req.user = dbUser;
+    if (allowedRoles.length > 0) {
+      const userRole = dbUser.role.toLowerCase();
+      const hasRole = allowedRoles.some((role) => role.toLowerCase() === userRole);
+      if (!hasRole) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied: insufficient permissions",
+        });
+      }
+    }
 
-  next();
+    req.user = dbUser;
+    next();
+  };
 }
-
-export { checkAuth, protect };

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 import ParallaxBackground from "@/components/ParallaxBackground";
-import { getAllCategories } from "@/lib/categories";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HomeTabProps {
   mousePos: { x: number; y: number };
@@ -74,12 +74,14 @@ export default function HomeTab({
   setShowAllEditors,
   totalPagesCount,
 }: HomeTabProps) {
-  const router = useRouter();
+  const { categories } = useAuth();
   const [categoriesCount, setCategoriesCount] = useState(11);
 
   useEffect(() => {
-    setCategoriesCount(Object.keys(getAllCategories()).length);
-  }, []);
+    if (categories && categories.length > 0) {
+      setCategoriesCount(categories.length);
+    }
+  }, [categories]);
 
   return (
     <>
