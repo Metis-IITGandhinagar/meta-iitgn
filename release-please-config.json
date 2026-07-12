@@ -12,6 +12,7 @@
   },
   "bootstrap-sha": "HEAD",
   "pr-title-pattern": "🚀 release: ${component} v${version}",
+  "separate-pull-requests": true,
   "include-component-in-tag": true,
   "plugins": [],
   "changelog-sections": [
