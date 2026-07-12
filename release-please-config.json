@@ -3,53 +3,28 @@
   "packages": {
     "frontend": {
       "release-type": "node",
-      "package-name": "frontend"
+      "package-name": "frontend",
+      "pr-title-pattern": "🚀 release: ${component} v${version}"
     },
     "backend": {
       "release-type": "node",
-      "package-name": "backend"
+      "package-name": "backend",
+      "pr-title-pattern": "🚀 release: ${component} v${version}"
     }
   },
   "bootstrap-sha": "HEAD",
-  "pr-title-pattern": "🚀 release: ${version}",
+  "separate-pull-requests": true,
   "include-component-in-tag": true,
   "plugins": [],
   "changelog-sections": [
-    {
-      "type": "feat",
-      "section": "Features"
-    },
-    {
-      "type": "fix",
-      "section": "Bug Fixes"
-    },
-    {
-      "type": "chore",
-      "section": "Miscellaneous"
-    },
-    {
-      "type": "docs",
-      "section": "Documentation"
-    },
-    {
-      "type": "style",
-      "section": "Styles"
-    },
-    {
-      "type": "refactor",
-      "section": "Code Refactoring"
-    },
-    {
-      "type": "perf",
-      "section": "Performance Improvements"
-    },
-    {
-      "type": "test",
-      "section": "Tests"
-    },
-    {
-      "type": "other",
-      "section": "Other Changes"
-    }
+    {"type": "feat", "section": "Features"},
+    {"type": "fix", "section": "Bug Fixes"},
+    {"type": "chore", "section": "Miscellaneous"},
+    {"type": "docs", "section": "Documentation"},
+    {"type": "style", "section": "Styles"},
+    {"type": "refactor", "section": "Code Refactoring"},
+    {"type": "perf", "section": "Performance Improvements"},
+    {"type": "test", "section": "Tests"},
+    {"type": "other", "section": "Other Changes"}
   ]
 }
