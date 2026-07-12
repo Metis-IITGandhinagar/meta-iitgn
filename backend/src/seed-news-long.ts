@@ -9,7 +9,7 @@ async function seed() {
       data: {
         name: "Admin User",
         email: "admin@meta-iitgn.edu",
-        role: "Singularity",
+        role: "admin",
       }
     });
   }

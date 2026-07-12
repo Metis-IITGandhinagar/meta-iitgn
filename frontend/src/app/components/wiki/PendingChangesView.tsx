@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { apiService } from "../../../lib/api";
+import { apiService } from "../../../api";
 
 interface PendingChangesViewProps {
   setShowPendingChanges: (show: boolean) => void;

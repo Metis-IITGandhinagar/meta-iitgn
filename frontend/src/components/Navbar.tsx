@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
 import {
@@ -91,6 +92,7 @@ export default function Navbar({
   hideSearch = false,
 }: NavbarProps) {
   const router = useRouter();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
   const isWiki = (segments[0] === "wiki" && segments.length >= 2) || segments[0] === "search-results";
@@ -99,9 +101,25 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState(externalQuery || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const [activeTier, setActiveTier] = useState<"bronze" | "silver" | "gold">(
-    "gold"
-  );
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  const roleToTier = (role: string): "bronze" | "silver" | "gold" => {
+    const r = role?.toLowerCase();
+    if (r === "admin") return "gold";
+    if (r === "moderator") return "silver";
+    return "bronze";
+  };
+
+  const [activeTier, setActiveTier] = useState<"bronze" | "silver" | "gold">("bronze");
+
+  useEffect(() => {
+    if (user?.role) {
+      setActiveTier(roleToTier(user.role));
+    }
+  }, [user?.role]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -207,70 +225,94 @@ export default function Navbar({
 
         {/* Right side: User avatar & dropdown & Kebab Actions */}
         <div className="flex items-center gap-2">
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropdownOpen(!dropdownOpen);
-              }}
-              className="flex items-center gap-2 py-1.5 px-3 rounded-full transition-all duration-200 cursor-pointer active:scale-97"
+          {!user ? (
+            <Link
+              href="/login"
+              className="py-1.5 px-4 bg-blue-600 hover:bg-violet-750 text-white text-sm font-semibold rounded-full shadow-md cursor-pointer transition-all duration-200"
             >
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner transition-colors duration-300 ${activeTierData.progressBar}`}
+              Sign In
+            </Link>
+          ) : (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen(!dropdownOpen);
+                }}
+                className="flex items-center gap-2 py-1.5 px-3 rounded-full transition-all duration-200 cursor-pointer active:scale-97"
               >
-                AC
-              </div>
-              <span className="text-sm font-bold text-gray-800 hidden sm:inline">
-                Alex Carter
-              </span>
-              <span
-                className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full hidden md:inline-block transition-colors duration-300 ${activeTierData.badgeBg}`}
-              >
-                {activeTier}
-              </span>
-              <ChevronDown
-                className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <div
-                className={`absolute ${isWiki ? "-right-10" : "right-0"} top-12 mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
-              >
-                {/* Header info */}
-                <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.name}
+                    className="w-7 h-7 rounded-full shadow-inner object-cover"
+                  />
+                ) : (
                   <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-slate-800 bg-white border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner transition-colors duration-300 ${activeTierData.progressBar}`}
                   >
-                    AC
+                    {getInitials(user.name)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-base font-bold text-slate-900 truncate">
-                        Alex Carter
-                      </h3>
-                      <span
-                        className={`text-[9px] font-black tracking-wider px-2.5 py-0.5 rounded-full shrink-0 uppercase transition-colors duration-300 ${activeTierData.badgeBg}`}
+                )}
+                <span className="text-sm font-bold text-gray-800 hidden sm:inline">
+                  {user.name}
+                </span>
+                <span
+                  className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full hidden md:inline-block transition-colors duration-300 ${activeTierData.badgeBg}`}
+                >
+                  {user.role}
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <div
+                  className={`absolute ${isWiki ? "-right-10" : "right-0"} top-12 mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
+                >
+                  {/* Header info */}
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                    {user.avatar_url ? (
+                      <img
+                        src={user.avatar_url}
+                        alt={user.name}
+                        className={`w-14 h-14 rounded-2xl border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0 object-cover`}
+                      />
+                    ) : (
+                      <div
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-slate-800 bg-white border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}
                       >
-                        {activeTier}
-                      </span>
+                        {getInitials(user.name)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-base font-bold text-slate-900 truncate">
+                          {user.name}
+                        </h3>
+                        <span
+                          className={`text-[9px] font-black tracking-wider px-2.5 py-0.5 rounded-full shrink-0 uppercase transition-colors duration-300 ${activeTierData.badgeBg}`}
+                        >
+                          {user.role}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 truncate mt-0.5">
+                        {user.email}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-400 truncate mt-0.5">
-                      alex.carter@iitgn.ac.in
-                    </p>
                   </div>
-                </div>
 
                 {/* Stats */}
                 <div className="bg-slate-50/70 border border-slate-100/50 rounded-2xl p-3.5 mt-3.5">
                   <div className="grid grid-cols-3 text-center">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                        XP Progress
+                        Points
                       </span>
                       <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
-                        {activeTierData.xp}
+                        {user.points}
                       </span>
                     </div>
                     <div className="flex flex-col border-l border-slate-200/60">
@@ -372,9 +414,9 @@ export default function Navbar({
                     <span className="text-[11px] font-bold">Settings</span>
                   </Link>
                   <Link
-                    href="/user/signout"
-                    className="flex flex-col items-center gap-1 py-1 text-slate-455 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors duration-150"
+                    href="/logout"
                     onClick={() => setDropdownOpen(false)}
+                    className="flex flex-col items-center gap-1 py-1 text-slate-455 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors duration-150 w-full"
                   >
                     <LogOut className="h-5 w-5 text-slate-400" />
                     <span className="text-[11px] font-bold text-red-400">
@@ -385,6 +427,7 @@ export default function Navbar({
               </div>
             )}
           </div>
+          )}
 
           {/* Kebab More Menu (Wiki Page Only) */}
           {isWikiArticlePage && (

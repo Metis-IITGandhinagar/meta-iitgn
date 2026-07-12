@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { apiService } from "@/api";
 import {
   Menu,
   Heart,

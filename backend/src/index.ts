@@ -8,6 +8,7 @@ const router = Router();
 
 // Users routes
 router.use("/users", UserRouter);
+router.use("/user", UserRouter);
 
 // Pages routes
 router.use("/pages",PageRouter);

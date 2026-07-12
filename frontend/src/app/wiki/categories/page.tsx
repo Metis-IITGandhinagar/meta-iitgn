@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, BookOpen, ChevronRight, FolderPlus, PlusCircle, Search, Sparkles } from "lucide-react";
 import { getAllCategories, addCustomCategory } from "@/lib/categories";
-import { apiService } from "@/lib/api";
+import { apiService } from "@/api";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<any>({});

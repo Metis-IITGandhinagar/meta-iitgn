@@ -8,13 +8,9 @@ generator client {
 }
 
 enum user_role {
-  Bronze
-  Silver
-  Gold
-  Platinum
-  Diamond
-  Stardust
-  Singularity
+  normal
+  moderator
+  admin
 }
 
 enum pending_status {
@@ -27,10 +23,11 @@ enum pending_status {
 model users {
   user_id                 Int                     @id @default(autoincrement())
   name                    String
-  role                    user_role               @default(Bronze)
+  role                    user_role               @default(normal)
   email                   String                  @unique
   avatar_url              String?
   is_banned               Boolean                 @default(false)
+  points                  Int                     @default(0)
   last_login_at           DateTime?
   created_at              DateTime                @default(now())
   updated_at              DateTime                @default(now()) @updatedAt

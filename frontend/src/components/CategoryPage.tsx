@@ -5,7 +5,7 @@ import { Article } from "@/lib/placeholder-articles";
 import { getAllCategories } from "@/lib/categories";
 import { ArrowRight, ArrowLeft, BookOpen, ChevronRight, FileText, PlusCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiService } from "@/lib/api";
+import { apiService } from "@/api";
 import { parseMarkdown } from "@/lib/utils";
 
 interface CategoryPageProps {

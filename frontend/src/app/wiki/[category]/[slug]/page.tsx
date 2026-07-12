@@ -1,7 +1,7 @@
 import { CATEGORIES_DATA } from "@/lib/placeholder-articles";
 import WikiClient from "../../../wiki-client";
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { apiService } from "@/api";
 
 interface ArticlePageProps {
   params: Promise<{

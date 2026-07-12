@@ -10,7 +10,7 @@ async function seed() {
       data: {
         name: "Admin User",
         email: "admin@meta-iitgn.edu",
-        role: "Singularity",
+        role: "admin",
       }
     });
     console.log("Created admin user for seeding:", user.user_id);
