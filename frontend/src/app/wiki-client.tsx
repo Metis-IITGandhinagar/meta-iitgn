@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { parseMarkdown, stringifyMarkdown } from "@/lib/utils";
 import { InfoboxData } from "@/lib/types";
-import { apiService } from "@/lib/api";
+import { apiService } from "@/api";
+import { useAuth } from "@/hooks/useAuth";
 
 import { EditableCell } from "@/components/article/editable-cell";
 import { useRouter } from "next/navigation";
@@ -40,6 +41,7 @@ interface WikiClientProps {
 }
 
 export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, version, categorySlug, initialMetadata }: WikiClientProps) {
+  const { user } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
   const [markdown, setMarkdown] = useState(initialMarkdown);
@@ -214,7 +216,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
         title: parsed.title || "Untitled Page",
         content: markdownRef.current,
         metadata: { category: category },
-        editor_id: 0, // Simulated default editor_id
+        editor_id: user?.user_id || 0,
         base_version: version !== undefined ? Number(version) : null,
       };
 
@@ -435,7 +437,13 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
                       id: "edit",
                       label: "Edit Page",
                       icon: Edit3,
-                      onClick: () => setIsEditing(true),
+                      onClick: () => {
+                        if (!user) {
+                          router.push("/login");
+                        } else {
+                          setIsEditing(true);
+                        }
+                      },
                     },
                     {
                       id: "sidebar",

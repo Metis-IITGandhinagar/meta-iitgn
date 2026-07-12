@@ -10,8 +10,9 @@ import {
   Loader2,
   Pencil,
 } from "lucide-react";
-import { apiService } from "@/lib/api";
+import { apiService } from "@/api";
 import BottomNavbar from "@/components/BottomNavbar";
+import { useAuth } from "@/hooks/useAuth";
 
 // Subcomponents
 import LeftPanel from "./components/home/LeftPanel";
@@ -29,6 +30,7 @@ import HistoryOverlay from "./components/home/overlays/HistoryOverlay";
 import EditorsOverlay from "./components/home/overlays/EditorsOverlay";
 
 export default function HomePage() {
+  const { user, auth, loading: authLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false); // Collapsed by default
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -89,10 +91,10 @@ export default function HomePage() {
         setTotalPagesCount(stats.totalPages);
       }
 
-      // Fetch 100 recent new and 100 recent updated pages, merge and filter
+      // Fetch 10 recent new and 10 recent updated pages, merge and filter
       const [recentNewList, recentUpdatedList] = await Promise.all([
-        apiService.getRecentNewPages(100),
-        apiService.getRecentUpdatedPages(100)
+        apiService.getRecentNewPages(10),
+        apiService.getRecentUpdatedPages(10)
       ]);
 
       const merged = [...recentNewList, ...recentUpdatedList];
@@ -151,7 +153,7 @@ export default function HomePage() {
   const handleReview = async (pendingId: number, action: "approve" | "reject") => {
     try {
       await apiService.reviewDraft(pendingId, {
-        reviewer_id: 0,
+        reviewer_id: user?.user_id || 0,
         action: action,
         rejection_reason: action === "reject" ? "Rejected by reviewer/moderator." : undefined,
       });
@@ -471,6 +473,14 @@ ${newHistoryContent}`,
       onClick: () => setActiveTab("bookmarks"),
     },
   ];
+
+  if (authLoading || auth === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen lg:h-screen bg-white overflow-y-auto lg:overflow-hidden font-sans">

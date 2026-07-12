@@ -1,11 +1,7 @@
 Enum user_role {
-  Bronze
-  Silver
-  Gold
-  Platinum
-  Diamond
-  Stardust
-  Singularity
+  normal
+  moderator
+  admin
 }
 
 Enum pending_status {
@@ -65,10 +61,11 @@ Table pending_page_comments [headercolor: #175e7a] {
 Table users [headercolor: #175e7a] {
   user_id integer [ pk, increment, not null ]
   name varchar [ not null ]
-  role user_role [ not null, default: 'Bronze' ]
+  role user_role [ not null, default: 'normal' ]
   email varchar [ not null, unique ]
   avatar_url varchar
   is_banned boolean [ default: false ]
+  points integer [ not null, default: 0 ]
   last_login_at timestamp
   created_at timestamp [ not null, default: `now()` ]
   updated_at timestamp [ not null, default: `now()` ]

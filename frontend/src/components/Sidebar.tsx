@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Home,
   Shuffle,
@@ -85,14 +86,16 @@ export default function Sidebar({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const user: userType = {
-    name: "Meta IITGN",
-    image: "Image",
-    email: "meta.iitgn@iitgn.ac.in",
-    currentTier: currentTier as string,
+  const { user } = useAuth();
+
+  const roleToTier = (role: string): "bronze" | "silver" | "gold" => {
+    const r = role?.toLowerCase();
+    if (r === "admin") return "gold";
+    if (r === "moderator") return "silver";
+    return "bronze";
   };
 
-  const activeTier = user?.currentTier || "bronze";
+  const activeTier = roleToTier(user?.role || "normal");
   const activeTierData = TIERS[activeTier as keyof typeof TIERS] || TIERS.gold;
 
   // Helper to render Lucide icons dynamically from their string names
@@ -126,9 +129,24 @@ export default function Sidebar({
             : "w-0 -translate-x-full lg:border-r-0"
         }`}
       >
-
-
-
+        {/* Sidebar Header with Brand Logo & Close Button */}
+        <div className="flex items-center justify-between px-5 border-b border-gray-100 h-16 shrink-0 bg-white">
+          <div className="flex items-center gap-2.5">
+            <span className="font-serif text-2xl font-extrabold tracking-tight  text-blue-500">
+              META
+            </span>
+            <span className="ml-1 text-sm font-semibold uppercase tracking-wider text-gray-500">
+              IITGN
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+            aria-label="Close sidebar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Navigation list area */}
         <div className="flex-1 overflow-hidden p-4 space-y-6">
@@ -141,7 +159,10 @@ export default function Sidebar({
 
               {/* Section Items */}
               <div className="space-y-0.5">
-                {(section.title === "NAVIGATION" ? section.items : section.items.slice(0, maxItems)).map((item) => {
+                {(section.title === "NAVIGATION"
+                  ? section.items
+                  : section.items.slice(0, maxItems)
+                ).map((item) => {
                   const isActive = pathname === item.path;
 
                   return (
@@ -237,7 +258,7 @@ export default function Sidebar({
                   <span className="truncate">Settings</span>
                 </Link>
                 <Link
-                  href="/user/signout"
+                  href="/logout"
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
@@ -296,13 +317,18 @@ export default function Sidebar({
               )}
             </div>
           ) : (
-            <>
-              <div className="p-1 py-2 mx-2 cursor-pointer transition-all duration-100 ease-in-out hover:scale-105 rounded-xl border flex justify-center border-gray-150 bg-blue-500">
-                <div className="flex items-center justify-center">
-                  <button>Login</button>
-                </div>
-              </div>
-            </>
+            <div className="px-2 mt-4">
+              <Link
+                href="/login"
+                onClick={() => {
+                  if (window.innerWidth < 1024) onClose();
+                }}
+                className="w-full py-2 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-100 ease-in-out hover:scale-105"
+              >
+                <User className="w-4 h-4" />
+                <span>Login</span>
+              </Link>
+            </div>
           )}
         </div>
       </aside>

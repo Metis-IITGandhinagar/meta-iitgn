@@ -24,6 +24,8 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+import { Providers } from "./providers";
+
 export const metadata: Metadata = {
   title: "META IITGN",
   description: "The collaborative campus wiki for IIT Gandhinagar.",
@@ -42,7 +44,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${playfair.variable} antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
