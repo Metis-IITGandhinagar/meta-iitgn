@@ -4,17 +4,21 @@
     "frontend": {
       "release-type": "node",
       "package-name": "frontend",
-      "pr-title-pattern": "🚀 release: ${component} v${version}"
+      "pr-title-pattern": "🚀 release: ${component} v${version}",
+      "pull-request-title-pattern": "🚀 release: ${component} v${version}"
     },
     "backend": {
       "release-type": "node",
       "package-name": "backend",
-      "pr-title-pattern": "🚀 release: ${component} v${version}"
+      "pr-title-pattern": "🚀 release: ${component} v${version}",
+      "pull-request-title-pattern": "🚀 release: ${component} v${version}"
     }
   },
   "bootstrap-sha": "HEAD",
   "separate-pull-requests": true,
   "include-component-in-tag": true,
+  "pr-title-pattern": "🚀 release: ${component} v${version}",
+  "pull-request-title-pattern": "🚀 release: ${component} v${version}",
   "plugins": [],
   "changelog-sections": [
     {"type": "feat", "section": "Features"},
