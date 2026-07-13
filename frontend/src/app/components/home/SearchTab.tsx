@@ -28,7 +28,7 @@ export default function SearchTab({
   };
 
   return (
-    <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-slate-900 overflow-hidden select-none">
+    <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-primary overflow-hidden select-none">
       {/* Shared Reusable Parallax Background Component */}
       <ParallaxBackground
         mousePos={mousePos}

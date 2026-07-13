@@ -105,7 +105,7 @@ export default function Sidebar({
     return (
       <IconComponent
         className={`h-5 w-5 transition-colors duration-200 ${
-          isActive ? "text-blue-600" : "text-gray-400 group-hover:text-gray-650"
+          isActive ? "text-primary" : "text-base-content/50 group-hover:text-base-content/80"
         }`}
       />
     );
@@ -123,25 +123,25 @@ export default function Sidebar({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full bg-white border-r border-gray-150 transition-all duration-300 ease-in-out shrink-0 select-none overflow-hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full bg-base-100 border-r border-base-200 transition-all duration-300 ease-in-out shrink-0 select-none overflow-hidden ${
           isOpen
             ? "w-70 lg:w-80 translate-x-0 shadow-2xl"
             : "w-0 -translate-x-full lg:border-r-0"
         }`}
       >
         {/* Sidebar Header with Brand Logo & Close Button */}
-        <div className="flex items-center justify-between px-5 border-b border-gray-100 h-16 shrink-0 bg-white">
+        <div className="flex items-center justify-between px-5 border-b border-base-200 h-16 shrink-0 bg-base-100">
           <div className="flex items-center gap-2.5">
-            <span className="font-serif text-2xl font-extrabold tracking-tight  text-blue-500">
+            <span className="font-serif text-2xl font-extrabold tracking-tight text-primary">
               META
             </span>
-            <span className="ml-1 text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <span className="ml-1 text-sm font-semibold uppercase tracking-wider text-base-content/70">
               IITGN
             </span>
           </div>
           <button
             onClick={onClose}
-            className="btn btn-ghost btn-square btn-sm text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+            className="btn btn-ghost btn-square btn-sm text-base-content/50 hover:text-base-content/80 transition-colors cursor-pointer"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -153,7 +153,7 @@ export default function Sidebar({
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.title} className="space-y-1.5">
               {/* Section Header */}
-              <h3 className="px-3 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+              <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/50 uppercase">
                 {section.title}
               </h3>
 
@@ -192,7 +192,7 @@ export default function Sidebar({
 
           {/* Account/Profile Section */}
           {user ? (
-            <div className="space-y-1.5 border-t border-gray-100 pt-4">
+            <div className="space-y-1.5 border-t border-base-200 pt-4">
               <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/40 uppercase">
                 Account
               </h3>
@@ -209,11 +209,11 @@ export default function Sidebar({
                   }`}
                 >
                   <User
-                    className={`h-5 w-5 transition-colors duration-200 ${
-                      pathname === "/user/profile"
-                        ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
-                    }`}
+                  className={`h-5 w-5 transition-colors duration-200 ${
+                    pathname === "/user/profile"
+                      ? "text-primary"
+                      : "text-base-content/50 group-hover:text-base-content/80"
+                  }`}
                   />
                   <span className="truncate">My Profile</span>
                 </Link>
@@ -229,11 +229,11 @@ export default function Sidebar({
                   }`}
                 >
                   <History
-                    className={`h-5 w-5 transition-colors duration-200 ${
-                      pathname === "/user/contributions"
-                        ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
-                    }`}
+                  className={`h-5 w-5 transition-colors duration-200 ${
+                    pathname === "/user/contributions"
+                      ? "text-primary"
+                      : "text-base-content/50 group-hover:text-base-content/80"
+                  }`}
                   />
                   <span className="truncate">My Contributions</span>
                 </Link>
@@ -254,9 +254,9 @@ export default function Sidebar({
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className="group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 text-rose-600 hover:text-rose-800 hover:bg-rose-50/50"
+                  className="group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 text-error hover:bg-error/10"
                 >
-                  <LogOut className="h-5 w-5 text-rose-500 group-hover:text-rose-600" />
+                  <LogOut className="h-5 w-5 text-error group-hover:text-error/80" />
                   <span className="truncate">Sign Out</span>
                 </Link>
               </div>

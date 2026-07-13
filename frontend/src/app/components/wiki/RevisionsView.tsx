@@ -20,17 +20,17 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
           aria-label="Back to Wiki"
         >
-          <ArrowLeft className="h-6 w-6 text-gray-900" />
+          <ArrowLeft className="h-6 w-6 text-base-content" />
         </button>
-        <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Changes</span>
+        <span className="text-sm font-bold text-base-content uppercase tracking-wider">Changes</span>
       </header>
 
       {/* Changes Body (Like Search & Bookmarks pages) */}
       <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-12">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-serif font-black text-gray-900 tracking-tight">Recent Page Revisions</h2>
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Track and restore past edits for this article</p>
+            <h2 className="text-2xl font-serif font-black text-base-content tracking-tight">Recent Page Revisions</h2>
+            <p className="text-xs text-base-content/50 font-semibold uppercase tracking-wider">Track and restore past edits for this article</p>
           </div>
 
           <div className="space-y-4 pt-4">
@@ -42,7 +42,7 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
                 avatar: "MI",
                 time: "4 hours ago",
                 badge: "Admin",
-                badgeBg: "bg-blue-50 text-blue-600 border border-blue-200",
+                badgeBg: "bg-blue-50 text-primary border border-blue-200",
                 details: "Inserted curriculum listings under CS major and updated hostel rules. Added detail on curriculum pathways."
               },
               {
@@ -68,19 +68,19 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
             ].map((revision) => (
               <div key={revision.rev} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-sm text-gray-700 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-base-200 border border-base-300 flex items-center justify-center font-bold text-sm text-base-content/80 shrink-0">
                     {revision.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
-                      <h4 className="text-base font-bold text-gray-800 truncate leading-snug">{revision.title}</h4>
-                      <span className="text-xs text-gray-400 shrink-0 font-medium">{revision.time}</span>
+                      <h4 className="text-base font-bold text-base-content truncate leading-snug">{revision.title}</h4>
+                      <span className="text-xs text-base-content/50 shrink-0 font-medium">{revision.time}</span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{revision.details}</p>
+                    <p className="text-sm text-base-content/60 mt-1.5 leading-relaxed">{revision.details}</p>
 
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 border-dashed">
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-base-200 border-dashed">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-700">{revision.author}</span>
+                        <span className="text-xs font-semibold text-base-content/80">{revision.author}</span>
                         <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${revision.badgeBg}`}>
                           {revision.badge}
                         </span>
@@ -91,7 +91,7 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
                           alert(`Restoring Revision #${revision.rev}...`);
                           setShowRevisions(false);
                         }}
-                        className="text-xs font-extrabold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer duration-150"
+                        className="text-xs font-extrabold text-primary hover:text-blue-700 transition-colors cursor-pointer duration-150"
                       >
                         Restore Version
                       </button>

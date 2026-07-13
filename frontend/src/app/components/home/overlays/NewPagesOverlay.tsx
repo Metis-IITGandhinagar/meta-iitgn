@@ -32,7 +32,7 @@ export default function NewPagesOverlay({
           onClick={onClose}
           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
         >
-          <ArrowLeft className="h-6 w-6 text-gray-900" />
+          <ArrowLeft className="h-6 w-6 text-base-content" />
         </button>
         <span className="text-sm font-bold text-blue-400 uppercase tracking-wider">Recently Created Pages</span>
       </header>
@@ -40,7 +40,7 @@ export default function NewPagesOverlay({
         <div className="max-w-3xl mx-auto space-y-4">
           {newPages.length === 0 ? (
             <div className="text-center py-20 border border-dashed border-gray-300 bg-white rounded-2xl">
-              <p className="text-gray-500 font-medium">No new pages created yet.</p>
+              <p className="text-base-content/60 font-medium">No new pages created yet.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -53,8 +53,8 @@ export default function NewPagesOverlay({
                   }}
                   className="p-5 border border-gray-250/60 bg-white rounded-2xl shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer text-left"
                 >
-                  <h4 className="text-base font-bold text-blue-500">{page.title}</h4>
-                  <p className="text-[10px] text-gray-400 font-semibold mt-1">
+                  <h4 className="text-base font-bold text-primary">{page.title}</h4>
+                  <p className="text-[10px] text-base-content/50 font-semibold mt-1">
                     Created: {getRelativeTime(page.created_at)} ({new Date(page.created_at).toLocaleString()})
                   </p>
                 </div>
@@ -64,7 +64,7 @@ export default function NewPagesOverlay({
                 <div className="flex justify-center pt-4">
                   <button
                     onClick={onLoadMore}
-                    className="inline-flex items-center gap-2 px-6 py-2 border border-gray-200 hover:border-gray-300 text-gray-700 bg-white hover:bg-gray-55 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
+                    className="inline-flex items-center gap-2 px-6 py-2 border border-gray-200 hover:border-gray-300 text-base-content/80 bg-white hover:bg-gray-55 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
                   >
                     Load More Pages
                   </button>

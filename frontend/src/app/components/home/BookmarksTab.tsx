@@ -140,7 +140,7 @@ export default function BookmarksTab({
   };
 
   return (
-    <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col bg-slate-900 overflow-hidden pb-24 pt-16 lg:pt-22">
+    <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col bg-primary overflow-hidden pb-24 pt-16 lg:pt-22">
       {/* Reusable Parallax Background Component matching Home & Search */}
       <ParallaxBackground
         mousePos={mousePos}
@@ -190,7 +190,7 @@ export default function BookmarksTab({
                 onClick={() => setSelectedCategory("All")}
                 className={`px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                   selectedCategory === "All"
-                    ? "bg-white text-slate-900 border-white shadow-md"
+                    ? "bg-white text-base-content border-white shadow-md"
                     : "bg-white/10 text-white/90 border-white/15 hover:bg-white/15"
                 }`}
               >
@@ -224,14 +224,14 @@ export default function BookmarksTab({
                         <div
                           key={item.id}
                           onClick={() => handleCardClick(pagePath)}
-                          className="card card-compact card-bordered bg-white/95 border-slate-200/60 hover:border-blue-400/80 p-4 flex flex-row items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] group cursor-pointer"
+                          className="card card-compact card-bordered bg-white/95 border-base-300/60 hover:border-blue-400/80 p-4 flex flex-row items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] group cursor-pointer"
                         >
                           <div className="min-w-0 flex-1 pr-3">
                             {/* Card Content (Title & Category display) */}
-                            <h4 className="text-xs md:text-sm font-semibold text-slate-800 truncate leading-snug group-hover:text-blue-650 transition-colors">
+                            <h4 className="text-xs md:text-sm font-semibold text-base-content truncate leading-snug group-hover:text-blue-650 transition-colors">
                               {item.title}
                             </h4>
-                            <span className="text-[8px] font-bold uppercase tracking-wider block mt-1 text-blue-600">
+                            <span className="text-[8px] font-bold uppercase tracking-wider block mt-1 text-primary">
                               {getCategoryDisplayName(item.category)}
                             </span>
                           </div>
@@ -243,7 +243,7 @@ export default function BookmarksTab({
                               className={`btn btn-square btn-xs border transition-all cursor-pointer ${
                                 isCopied
                                   ? "btn-success bg-emerald-50 text-emerald-600 border-emerald-100"
-                                  : "btn-ghost bg-slate-100 hover:bg-slate-200 border-slate-150 text-slate-500"
+                                  : "btn-ghost bg-base-200 hover:bg-base-300 border-base-200 text-base-content/50"
                               }`}
                               title="Copy link"
                             >
@@ -255,7 +255,7 @@ export default function BookmarksTab({
                             </button>
                             <button
                               onClick={(e) => handleDelete(e, item.id)}
-                              className="btn btn-square btn-xs btn-ghost bg-slate-100 hover:bg-rose-50 border-slate-150 hover:border-rose-100 text-slate-500 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
+                              className="btn btn-square btn-xs btn-ghost bg-base-200 hover:bg-rose-50 border-base-200 hover:border-rose-100 text-base-content/50 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
                               title="Remove"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

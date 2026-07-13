@@ -81,7 +81,7 @@ export default function LeftPanel({
       { bg: "bg-emerald-50 text-emerald-600", icon: "text-emerald-600", textBg: "hover:bg-emerald-50/50" },
       { bg: "bg-indigo-50 text-indigo-600", icon: "text-indigo-600", textBg: "hover:bg-indigo-50/50" },
       { bg: "bg-sky-50 text-sky-500", icon: "text-sky-500", textBg: "hover:bg-sky-50/50" },
-      { bg: "bg-purple-50 text-purple-500", icon: "text-purple-500", textBg: "hover:bg-purple-50/50" },
+      { bg: "bg-secondary/10 text-secondary", icon: "text-purple-500", textBg: "hover:bg-purple-50/50" },
     ];
 
     return pinned.map((c, idx) => ({
@@ -134,12 +134,12 @@ export default function LeftPanel({
 
       {/* Left Panel: Fixed Dashboard on Desktop */}
       <div
-        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-150 flex flex-col justify-between p-4 bg-base-100 z-20 h-auto lg:h-full mb-10 md:mb-0 overflow-y-visible lg:overflow-hidden select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"
+        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4 bg-base-100 z-20 h-auto lg:h-full mb-10 md:mb-0 overflow-y-visible lg:overflow-hidden select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"
           }`}
       >
         <div className="space-y-2">
           {/* Header with Hamburger Menu and Profile Dropdown inside Left Panel */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 w-full shrink-0">
+          <div className="flex items-center justify-between pb-3 border-b border-base-200 w-full shrink-0">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="btn btn-ghost btn-square btn-sm transition-colors duration-200 cursor-pointer active:scale-95 text-base-content"
@@ -168,7 +168,7 @@ export default function LeftPanel({
               <span className="block text-2xl font-serif font-black text-base-content tracking-tight">
                 {pageCount !== null ? pageCount.toLocaleString() : "..."}
               </span>
-              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="block text-[9px] font-bold text-base-content/50 uppercase tracking-widest">
                 Articles & Campus Pages
               </span>
             </div>
@@ -193,7 +193,7 @@ export default function LeftPanel({
               {isGold ? (
                 <Link
                   href="/wiki/categories"
-                  className="text-[10px] font-extrabold text-blue-500 hover:text-blue-700 hover:underline tracking-wider uppercase shrink-0"
+                  className="text-[10px] font-extrabold text-primary hover:text-blue-700 hover:underline tracking-wider uppercase shrink-0"
                 >
                   Manage
                 </Link>
@@ -221,7 +221,7 @@ export default function LeftPanel({
                 <p className="text-xs text-base-content/50 font-semibold mb-2">No Quick Portals pinned</p>
                 <Link
                   href="/wiki/categories"
-                  className="inline-flex text-[10px] font-extrabold text-blue-500 hover:text-blue-700 uppercase tracking-wider hover:underline"
+                  className="inline-flex text-[10px] font-extrabold text-primary hover:text-blue-700 uppercase tracking-wider hover:underline"
                 >
                   Pin Portals
                 </Link>
@@ -244,7 +244,7 @@ export default function LeftPanel({
               Technical Council, IITGN
             </span>
           </div>
-          <div className="text-[9px] font-bold text-slate-400/60 tracking-widest uppercase mt-1">
+          <div className="text-[9px] font-bold text-base-content/50/60 tracking-widest uppercase mt-1">
             © {new Date().getFullYear()} IIT Gandhinagar
           </div>
         </div>

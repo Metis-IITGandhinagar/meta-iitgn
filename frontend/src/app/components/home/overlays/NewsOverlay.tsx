@@ -209,7 +209,7 @@ ${editNewsContent.trim()}`;
             }}
             className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
           >
-            <ArrowLeft className="h-6 w-6 text-gray-900" />
+            <ArrowLeft className="h-6 w-6 text-base-content" />
           </button>
           <span className="text-sm font-bold text-blue-400 uppercase tracking-wider ml-2">
             {showAddNewsForm
@@ -230,7 +230,7 @@ ${editNewsContent.trim()}`;
               className="p-2.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
               title="Edit News Article"
             >
-              <Pencil className="h-5 w-5 text-gray-900" />
+              <Pencil className="h-5 w-5 text-base-content" />
             </button>
             <button
               onClick={handleDeleteNews}
@@ -263,7 +263,7 @@ ${editNewsContent.trim()}`;
                 value={newNewsTitle}
                 onChange={(e) => setNewNewsTitle(e.target.value)}
                 placeholder="e.g. Annual Sports Fest Hallabol 2026 Announced"
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -273,7 +273,7 @@ ${editNewsContent.trim()}`;
                 value={newNewsVideoUrl}
                 onChange={(e) => setNewNewsVideoUrl(e.target.value)}
                 placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -284,7 +284,7 @@ ${editNewsContent.trim()}`;
                 value={newNewsContent}
                 onChange={(e) => setNewNewsContent(e.target.value)}
                 placeholder="Write the news details here..."
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <button
@@ -305,7 +305,7 @@ ${editNewsContent.trim()}`;
                 value={editNewsTitle}
                 onChange={(e) => setEditNewsTitle(e.target.value)}
                 placeholder="e.g. News Title"
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -315,7 +315,7 @@ ${editNewsContent.trim()}`;
                 value={editNewsVideoUrl}
                 onChange={(e) => setEditNewsVideoUrl(e.target.value)}
                 placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -326,14 +326,14 @@ ${editNewsContent.trim()}`;
                 value={editNewsContent}
                 onChange={(e) => setEditNewsContent(e.target.value)}
                 placeholder="Write the news details here..."
-                className="w-full border border-gray-200 rounded-xl px-4 text-gray-700 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-gray-200 rounded-xl px-4 text-base-content/80 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="btn btn-outline btn-md w-1/2 text-gray-700 hover:bg-gray-50 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
+                className="btn btn-outline btn-md w-1/2 text-base-content/80 hover:bg-gray-50 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
               >
                 Cancel
               </button>
@@ -348,15 +348,15 @@ ${editNewsContent.trim()}`;
           </form>
         ) : activeNewsItem ? (
           <div className="max-w-2xl w-full mx-auto text-left space-y-4 pt-4 overflow-y-auto overscroll-contain flex-1 pr-2">
-            <h3 className="text-2xl font-bold text-gray-900 leading-snug">{activeNewsItem.title}</h3>
-            <span className="text-[10px] text-gray-400 font-semibold block">
+            <h3 className="text-2xl font-bold text-base-content leading-snug">{activeNewsItem.title}</h3>
+            <span className="text-[10px] text-base-content/50 font-semibold block">
               Posted: {getRelativeTime(activeNewsItem.created_at)}
             </span>
             {activeNewsItem.video_url && (() => {
               const videoId = getYouTubeId(activeNewsItem.video_url);
               if (videoId) {
                 return (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md mt-4 border border-gray-150 relative z-10 pointer-events-auto">
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md mt-4 border border-base-200 relative z-10 pointer-events-auto">
                     <iframe
                       className="w-full h-full"
                       src={`https://www.youtube.com/embed/${videoId}`}
@@ -369,7 +369,7 @@ ${editNewsContent.trim()}`;
               }
               return null;
             })()}
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pt-4 font-semibold border-t border-gray-100">
+            <div className="text-sm text-base-content/80 leading-relaxed whitespace-pre-wrap pt-4 font-semibold border-t border-base-200">
               {activeNewsItem.content ? activeNewsItem.content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : activeNewsItem.description}
             </div>
           </div>
@@ -377,11 +377,11 @@ ${editNewsContent.trim()}`;
           <div className="max-w-3xl mx-auto space-y-4 w-full">
             {loading ? (
               <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
               </div>
             ) : newsList.length === 0 ? (
               <div className="text-center py-20 border border-dashed border-gray-300 bg-white rounded-2xl">
-                <p className="text-gray-500 font-medium">No campus news found.</p>
+                <p className="text-base-content/60 font-medium">No campus news found.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -392,10 +392,10 @@ ${editNewsContent.trim()}`;
                     className="card card-bordered p-5 border-gray-250/60 bg-base-100 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer text-left animate-in fade-in"
                   >
                     <h4 className="text-base font-bold text-blue-400">{item.title}</h4>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                    <p className="text-xs text-base-content/60 mt-1 line-clamp-2">
                       {item.content ? item.content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : item.description}
                     </p>
-                    <span className="text-[9px] text-gray-400 font-semibold block mt-2">
+                    <span className="text-[9px] text-base-content/50 font-semibold block mt-2">
                       Posted: {getRelativeTime(item.created_at)}
                     </span>
                   </div>
@@ -410,7 +410,7 @@ ${editNewsContent.trim()}`;
                     >
                       {loadingMore ? (
                         <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                           <span>Loading...</span>
                         </>
                       ) : (

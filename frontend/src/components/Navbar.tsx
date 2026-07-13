@@ -159,7 +159,7 @@ export default function Navbar({
 
   return (
     <header
-      className={`h-16 shrink-0 sticky top-0 z-40 select-none w-full bg-white border-b border-slate-200 shadow-sm transition-all duration-200`}
+      className={`h-16 shrink-0 sticky top-0 z-40 select-none w-full bg-base-100 border-b border-base-200 shadow-xs transition-all duration-200`}
     >
       {/* Actual Nav Content */}
       <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-4 lg:px-8">
@@ -403,9 +403,7 @@ export default function Navbar({
             )}
             </div>
           </div>
-          )}
-
-          {/* Kebab More Menu (Wiki Page Only) */}
+          )}          {/* Kebab More Menu (Wiki Page Only) */}
           {isWikiArticlePage && (
             <div className="relative flex items-center" ref={moreMenuRef}>
               <button
@@ -413,10 +411,10 @@ export default function Navbar({
                   e.stopPropagation();
                   setMoreMenuOpen(!moreMenuOpen);
                 }}
-                className="btn btn-circle btn-ghost btn-sm bg-slate-50/90 hover:bg-slate-100 border border-slate-200/80 text-slate-800 hover:text-black cursor-pointer flex items-center justify-center shadow-xs"
+                className="btn btn-circle btn-ghost btn-sm bg-base-200 hover:bg-base-300 border border-base-300 text-base-content hover:text-base-content/85 cursor-pointer flex items-center justify-center shadow-xs"
                 aria-label="More Actions"
               >
-                <MoreVertical className="h-5 w-5 text-slate-800" />
+                <MoreVertical className="h-5 w-5 text-base-content" />
               </button>
               {moreMenuOpen && (
                 <div className="absolute -right-2 md:right-0 top-10 mt-1 w-52 max-h-[calc(100vh-80px)] overflow-y-auto card card-bordered bg-base-100 shadow-[0_0_25px_rgba(0,0,0,0.15)] py-1 z-[100] select-none animate-in fade-in duration-200 rounded-xl no-scrollbar">
@@ -425,7 +423,7 @@ export default function Navbar({
                       alert("Sharing link copied!");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none animate-none"
                   >
                     <Share2 className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Share Page</span>
@@ -475,7 +473,7 @@ export default function Navbar({
                         setMoreMenuOpen(false);
                       });
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Bookmark className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Bookmark Page</span>
@@ -485,7 +483,7 @@ export default function Navbar({
                       alert("Opening history logs...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Page History</span>
@@ -495,7 +493,7 @@ export default function Navbar({
                       alert("Redirecting to editor...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <FileEdit className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Edit Article</span>
@@ -505,7 +503,7 @@ export default function Navbar({
                       alert("Exporting to PDF...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Download className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Export PDF</span>
@@ -517,7 +515,7 @@ export default function Navbar({
                       );
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Earlier Versions</span>
@@ -527,18 +525,18 @@ export default function Navbar({
                       window.print();
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Printer className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Print Article</span>
                   </button>
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className="border-t border-base-200 my-1" />
                   <button
                     onClick={() => {
                       alert("Toggling dark mode...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Moon className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Dark Mode</span>
@@ -548,18 +546,18 @@ export default function Navbar({
                       setSettingsTab("layout");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Settings className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Page Settings</span>
                   </button>
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className="border-t border-base-200 my-1" />
                   <button
                     onClick={() => {
                       alert("Report page submitted.");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <AlertTriangle className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Report Content</span>

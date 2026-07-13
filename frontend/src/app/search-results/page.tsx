@@ -37,12 +37,12 @@ const CATEGORY_COLOR_MAP: Record<
   { bg: string; text: string; border: string }
 > = {
   Campus: { bg: "bg-emerald-50/70", text: "text-emerald-700", border: "border-emerald-100" },
-  Academics: { bg: "bg-blue-50/70", text: "text-blue-700", border: "border-blue-100" },
+  Academics: { bg: "bg-blue-50/70", text: "text-primary", border: "border-primary/20" },
   Clubs: { bg: "bg-purple-50/70", text: "text-purple-700", border: "border-purple-100" },
   Fests: { bg: "bg-amber-50/70", text: "text-amber-700", border: "border-amber-100" },
   Research: { bg: "bg-rose-50/70", text: "text-rose-700", border: "border-rose-100" },
   Policies: { bg: "bg-indigo-50/70", text: "text-indigo-700", border: "border-indigo-100" },
-  All: { bg: "bg-slate-900 text-white", text: "text-slate-900", border: "border-slate-900" },
+  All: { bg: "bg-primary text-white", text: "text-base-content", border: "border-slate-900" },
 };
 
 interface SearchResult {
@@ -127,7 +127,7 @@ function SearchResultsContent() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen lg:h-screen bg-slate-50/20 overflow-y-auto lg:overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen lg:h-screen bg-base-200/20 overflow-y-auto lg:overflow-hidden font-sans">
       {/* Navbar */}
       <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} hideSearch={true} />
 
@@ -141,7 +141,7 @@ function SearchResultsContent() {
         />
 
         {/* Content Layout */}
-        <div className="flex-1 flex flex-col h-auto lg:h-full w-full bg-white relative overflow-y-auto p-4 md:p-8 lg:p-10 no-scrollbar pb-24">
+        <div className="flex-1 flex flex-col h-auto lg:h-full w-full bg-base-100 relative overflow-y-auto p-4 md:p-8 lg:p-10 no-scrollbar pb-24">
           <div className="max-w-4xl mx-auto w-full space-y-6 pt-2">
 
             {/* Glassmorphic Search Box & Category Tab Bar */}
@@ -174,7 +174,7 @@ function SearchResultsContent() {
             {/* Results Cards List */}
             <div className="space-y-4 pt-1">
               <div className="flex items-center justify-between select-none">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">
+                <h3 className="text-[10px] font-black text-base-content/50 uppercase tracking-widest text-left">
                   Matches Found ({filteredItems.length})
                 </h3>
               </div>
@@ -183,25 +183,25 @@ function SearchResultsContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredItems.map((item) => {
                     const colors = CATEGORY_COLOR_MAP[item.category] || {
-                      bg: "bg-slate-50",
+                      bg: "bg-base-200",
                       text: "text-slate-605",
                     };
                     return (
                       <Link
                         key={item.path}
                         href={item.path}
-                        className="p-5 bg-white border border-slate-150 hover:border-blue-200 rounded-2xl flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.03)] group text-left cursor-pointer"
+                        className="p-5 bg-base-100 border border-base-200 hover:border-blue-200 rounded-2xl flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.03)] group text-left cursor-pointer"
                       >
                         <div>
                           <div className="flex items-center justify-between mb-3.5">
-                            <span className={`text-[9px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-lg border ${colors.bg} ${colors.text} border-slate-100`}>
+                            <span className={`text-[9px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-lg border ${colors.bg} ${colors.text} border-base-200`}>
                               {item.category}
                             </span>
                           </div>
-                          <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors leading-snug">
+                          <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug">
                             {item.title}
                           </h4>
-                          <p className="text-xs text-slate-500 leading-relaxed mt-2 line-clamp-3">
+                          <p className="text-xs text-base-content/50 leading-relaxed mt-2 line-clamp-3">
                             {item.description}
                           </p>
                         </div>
@@ -210,14 +210,14 @@ function SearchResultsContent() {
                   })}
                 </div>
               ) : (
-                <div className="py-16 text-center select-none border border-dashed border-slate-200 rounded-2xl bg-slate-50/50 max-w-md mx-auto">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                <div className="py-16 text-center select-none border border-dashed border-base-300 rounded-2xl bg-base-200/50 max-w-md mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center mx-auto text-base-content/50">
                     <Search className="w-5 h-5" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-700 mt-4">
+                  <h4 className="text-sm font-bold text-base-content/85 mt-4">
                     No results found
                   </h4>
-                  <p className="text-xs text-slate-500 mt-1.5 px-6 leading-relaxed">
+                  <p className="text-xs text-base-content/50 mt-1.5 px-6 leading-relaxed">
                     We couldn&apos;t find anything matching &quot;{searchQuery}&quot;. Double check your spelling or choose another category filter.
                   </p>
                 </div>
@@ -236,7 +236,7 @@ function SearchResultsContent() {
 export default function SearchResultsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-white font-sans text-sm text-slate-500 font-bold select-none">
+      <div className="min-h-screen flex items-center justify-center bg-base-100 font-sans text-sm text-base-content/50 font-bold select-none">
         Loading Search Results...
       </div>
     }>

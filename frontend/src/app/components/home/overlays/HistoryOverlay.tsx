@@ -68,7 +68,7 @@ export default function HistoryOverlay({
             }}
             className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
           >
-            <ArrowLeft className="h-6 w-6 text-gray-900" />
+            <ArrowLeft className="h-6 w-6 text-base-content" />
           </button>
           <span className="text-sm font-bold text-blue-400 uppercase tracking-wider ml-2">
             {showAddHistoryForm ? "Add History Event" : activeHistoryItem ? "Read History" : "Campus History"}
@@ -82,7 +82,7 @@ export default function HistoryOverlay({
             className="p-2.5 hover:bg-gray-105 rounded-lg text-gray-650 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
             title="Edit Wiki Page"
           >
-            <Pencil className="h-5 w-5 text-gray-900" />
+            <Pencil className="h-5 w-5 text-base-content" />
           </button>
         )}
         {!activeHistoryItem && !showAddHistoryForm && (
@@ -106,7 +106,7 @@ export default function HistoryOverlay({
                 value={newHistoryTitle}
                 onChange={(e) => setNewHistoryTitle(e.target.value)}
                 placeholder="e.g. Inauguration of the Academic Blocks 2016"
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -116,7 +116,7 @@ export default function HistoryOverlay({
                 value={newHistoryVideoUrl}
                 onChange={(e) => setNewHistoryVideoUrl(e.target.value)}
                 placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -127,7 +127,7 @@ export default function HistoryOverlay({
                 value={newHistoryContent}
                 onChange={(e) => setNewHistoryContent(e.target.value)}
                 placeholder="Write the history details here..."
-                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <button
@@ -140,15 +140,15 @@ export default function HistoryOverlay({
           </form>
         ) : activeHistoryItem ? (
           <div className="max-w-2xl w-full mx-auto text-left space-y-4 pt-4 overflow-y-auto overscroll-contain flex-1 pr-2">
-            <h3 className="text-2xl font-bold text-gray-900 leading-snug">{activeHistoryItem.title}</h3>
-            <span className="text-[10px] text-gray-400 font-semibold block">
+            <h3 className="text-2xl font-bold text-base-content leading-snug">{activeHistoryItem.title}</h3>
+            <span className="text-[10px] text-base-content/50 font-semibold block">
               Posted: {getRelativeTime(activeHistoryItem.created_at)}
             </span>
             {activeHistoryItem.video_url && (() => {
               const videoId = getYouTubeId(activeHistoryItem.video_url);
               if (videoId) {
                 return (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md mt-4 border border-gray-150 relative z-10 pointer-events-auto">
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md mt-4 border border-base-200 relative z-10 pointer-events-auto">
                     <iframe
                       className="w-full h-full"
                       src={`https://www.youtube.com/embed/${videoId}`}
@@ -161,7 +161,7 @@ export default function HistoryOverlay({
               }
               return null;
             })()}
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pt-4 font-semibold border-t border-gray-100">
+            <div className="text-sm text-base-content/80 leading-relaxed whitespace-pre-wrap pt-4 font-semibold border-t border-base-200">
               {activeHistoryItem.content ? activeHistoryItem.content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : activeHistoryItem.description}
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function HistoryOverlay({
           <div className="max-w-3xl mx-auto space-y-4">
             {historyPages.length === 0 ? (
               <div className="text-center py-20 border border-dashed border-gray-300 bg-white rounded-2xl">
-                <p className="text-gray-500 font-medium">No history pages found.</p>
+                <p className="text-base-content/60 font-medium">No history pages found.</p>
               </div>
             ) : (
               historyPages.map((item, idx) => (
@@ -179,10 +179,10 @@ export default function HistoryOverlay({
                   className="p-5 border border-gray-250/60 bg-white rounded-2xl shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer text-left animate-in fade-in"
                 >
                   <h4 className="text-base font-bold text-gray-855">{item.title}</h4>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  <p className="text-xs text-base-content/60 mt-1 line-clamp-2">
                     {item.content ? item.content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : item.description}
                   </p>
-                  <span className="text-[9px] text-gray-400 font-semibold block mt-2">
+                  <span className="text-[9px] text-base-content/50 font-semibold block mt-2">
                     Posted: {getRelativeTime(item.created_at)}
                   </span>
                 </div>

@@ -86,7 +86,7 @@ export default function HomeTab({
   return (
     <>
       {/* Mountain Hero Banner */}
-      <div className="relative w-full h-[85vh] lg:h-dvh min-h-125 hidden md:flex flex-col items-center justify-center text-center p-6 bg-slate-900 overflow-hidden select-none">
+      <div className="relative w-full h-[85vh] lg:h-dvh min-h-125 hidden md:flex flex-col items-center justify-center text-center p-6 bg-primary overflow-hidden select-none">
         {/* Reusable Parallax Background Component */}
         <ParallaxBackground
           mousePos={mousePos}
@@ -154,7 +154,7 @@ export default function HomeTab({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Featured Article */}
           <div className="lg:col-span-7 flex flex-col h-full space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2 border-b border-base-200 pb-2">
               <h2 className="text-xl sm:text-2xl font-serif font-black text-base-content tracking-tight">
                 Featured Article
               </h2>
@@ -163,7 +163,7 @@ export default function HomeTab({
                 Special Feature
               </span>
             </div>
-            <div className="card card-bordered bg-base-100 border-slate-150 overflow-hidden shadow-depth shadow-depth-hover flex flex-col flex-1 h-full">
+            <div className="card card-bordered bg-base-100 border-base-200 overflow-hidden shadow-depth shadow-depth-hover flex flex-col flex-1 h-full">
               <img
                 src="/iitgn_campus.png"
                 alt="IIT Gandhinagar Campus"
@@ -180,7 +180,7 @@ export default function HomeTab({
                 </div>
                 <Link
                   href="/wiki/campus/campuses-and-surroundings"
-                  className="inline-flex items-center gap-1 text-[11px] font-extrabold text-blue-500 hover:text-blue-800 uppercase tracking-wider pt-2 self-start"
+                  className="inline-flex items-center gap-1 text-[11px] font-extrabold text-primary hover:text-blue-800 uppercase tracking-wider pt-2 self-start"
                 >
                   Read campus wiki <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
@@ -190,26 +190,26 @@ export default function HomeTab({
 
           {/* In the News */}
           <div className="lg:col-span-5 flex flex-col h-full space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center justify-between border-b border-base-200 pb-2">
               <h2 className="text-xl sm:text-2xl font-serif font-black text-base-content tracking-tight">
                 In the News
               </h2>
               <button
                 onClick={() => setShowAllNews(true)}
-                className="btn btn-ghost btn-xs text-blue-500 font-bold hover:underline cursor-pointer"
+                className="btn btn-ghost btn-xs text-primary font-bold hover:underline cursor-pointer"
               >
                 View all
               </button>
             </div>
-            <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover space-y-4 text-left flex flex-col flex-1 h-full justify-between">
+            <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover space-y-4 text-left flex flex-col flex-1 h-full justify-between">
               <div className="space-y-4">
                 {newsPages.slice(0, 5).map((item, index) => {
                   const Icons = [Sparkles, FlaskConical, Trophy];
                   const IconComponent = Icons[index % Icons.length];
                   const colors = [
-                    "bg-blue-50 text-blue-500",
-                    "bg-emerald-50 text-emerald-500",
-                    "bg-purple-50 text-purple-500"
+                    "bg-primary/10 text-primary",
+                    "bg-success/10 text-success",
+                    "bg-secondary/10 text-secondary"
                   ];
                   const colorClass = colors[index % colors.length];
 
@@ -220,16 +220,16 @@ export default function HomeTab({
                         setActiveNewsItem(item);
                         setShowAllNews(true);
                       }}
-                      className="flex items-start gap-3 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0 cursor-pointer group"
+                      className="flex items-start gap-3 border-b border-base-200 pb-3 last:border-b-0 last:pb-0 cursor-pointer group"
                     >
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
                         <IconComponent className="h-4.5 w-4.5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-bold text-slate-800 group-hover:text-blue-500 transition-colors line-clamp-2">
+                        <h4 className="text-xs font-bold text-base-content group-hover:text-primary transition-colors line-clamp-2">
                           {item.title}
                         </h4>
-                        <span className="text-[10px] text-slate-400 mt-0.5 block font-semibold">
+                        <span className="text-[10px] text-base-content/50 mt-0.5 block font-semibold">
                           {getRelativeTime(item.created_at)}
                         </span>
                       </div>
@@ -240,7 +240,7 @@ export default function HomeTab({
 
               <button
                 onClick={() => setShowAllNews(true)}
-                className="btn btn-ghost btn-xs text-blue-500 font-extrabold uppercase tracking-wider gap-1 pt-2 self-start cursor-pointer"
+                className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider gap-1 pt-2 self-start cursor-pointer"
               >
                 More campus news <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -251,9 +251,9 @@ export default function HomeTab({
         {/* Three Column Highlights Section with Balanced Heights */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pt-2 items-stretch select-none">
           {/* Card 1: Did You Know? */}
-          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
-              <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
+              <h3 className="text-sm font-black text-base-content font-serif mb-2.5">
                 Did You Know?
               </h3>
               {triviaPages.length > 0 ? (
@@ -264,7 +264,7 @@ export default function HomeTab({
                   }}
                   className="cursor-pointer group"
                 >
-                  <h4 className="text-xs font-bold text-base-content group-hover:text-blue-500 transition-colors mb-1">
+                  <h4 className="text-xs font-bold text-base-content group-hover:text-primary transition-colors mb-1">
                     {triviaPages[0].title}
                   </h4>
                   <p className="text-xs text-base-content/60 leading-relaxed font-semibold line-clamp-3">
@@ -279,22 +279,22 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllTrivia(true)}
-              className="btn btn-ghost btn-xs text-blue-500 font-extrabold uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
+              className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
             >
               More trivia
             </button>
           </div>
 
           {/* Card 2: On This Day */}
-          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-blue-500" />
+                <Calendar className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-black text-base-content font-serif">
                   On This Day
                 </h3>
               </div>
-              <div className="text-blue-500 text-xs font-extrabold mb-1.5">
+              <div className="text-primary text-xs font-extrabold mb-1.5">
                 {new Date().toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
@@ -308,7 +308,7 @@ export default function HomeTab({
                   }}
                   className="cursor-pointer group"
                 >
-                  <h4 className="text-xs font-bold text-base-content group-hover:text-blue-500 transition-colors mb-1">
+                  <h4 className="text-xs font-bold text-base-content group-hover:text-primary transition-colors mb-1">
                     {historyPages[0].title}
                   </h4>
                   <p className="text-xs text-base-content/60 leading-relaxed font-semibold line-clamp-3">
@@ -323,14 +323,14 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllHistory(true)}
-              className="btn btn-ghost btn-xs text-blue-500 font-extrabold uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
+              className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
             >
               History timeline
             </button>
           </div>
 
           {/* Card 3: Active Contributors */}
-          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <h3 className="text-sm font-black text-base-content font-serif mb-2.5">
                 Wiki Contributors
@@ -367,29 +367,29 @@ export default function HomeTab({
         {/* Three Column Recent Activity Section with Balanced Heights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-stretch select-none">
           {/* Card 4: New Pages */}
-          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
-              <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
+              <h3 className="text-sm font-black text-base-content font-serif mb-2.5">
                 New Pages
               </h3>
               {loading ? (
                 <div className="flex items-center gap-2 py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                  <span className="text-xs text-gray-400">Loading new pages...</span>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-xs text-base-content/50">Loading new pages...</span>
                 </div>
               ) : newPages.length === 0 ? (
-                <p className="text-xs text-gray-400 py-4">No new pages created yet.</p>
+                <p className="text-xs text-base-content/50 py-4">No new pages created yet.</p>
               ) : (
                 <ul className="space-y-3">
                   {newPages.slice(0, 3).map((page, index) => (
                     <li key={`new-page-${page.page_id || index}`}>
                       <Link
                         href={`/wiki/campus/${page.slug}`}
-                        className="block text-xs font-semibold text-slate-700 hover:text-blue-600 transition-colors truncate"
+                        className="block text-xs font-semibold text-base-content/85 hover:text-primary transition-colors truncate"
                       >
                         {page.title || "Untitled"}
                       </Link>
-                      <span className="text-[9px] text-slate-400 font-semibold block">
+                      <span className="text-[9px] text-base-content/50 font-semibold block">
                         Created {getRelativeTime(page.created_at)}
                       </span>
                     </li>
@@ -399,36 +399,36 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllNew(true)}
-              className="btn btn-ghost btn-xs text-blue-500 font-bold uppercase tracking-wider mt-4 text-left cursor-pointer"
+              className="btn btn-ghost btn-xs text-primary font-bold uppercase tracking-wider mt-4 text-left cursor-pointer"
             >
               View all new pages
             </button>
           </div>
 
           {/* Card 5: Updated Pages */}
-          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
-              <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
+              <h3 className="text-sm font-black text-base-content font-serif mb-2.5">
                 Updated Pages
               </h3>
               {loading ? (
                 <div className="flex items-center gap-2 py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                  <span className="text-xs text-gray-400">Loading updates...</span>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-xs text-base-content/50">Loading updates...</span>
                 </div>
               ) : updatedPages.length === 0 ? (
-                <p className="text-xs text-gray-400 py-4">No pages updated yet.</p>
+                <p className="text-xs text-base-content/50 py-4">No pages updated yet.</p>
               ) : (
                 <ul className="space-y-3">
                   {updatedPages.slice(0, 3).map((page, index) => (
                     <li key={`updated-page-${page.page_id || index}`}>
                       <Link
                         href={`/wiki/campus/${page.slug}`}
-                        className="block text-xs font-semibold text-slate-700 hover:text-blue-600 transition-colors truncate"
+                        className="block text-xs font-semibold text-base-content/85 hover:text-primary transition-colors truncate"
                       >
                         {page.title || "Untitled"}
                       </Link>
-                      <span className="text-[9px] text-slate-400 font-semibold block">
+                      <span className="text-[9px] text-base-content/50 font-semibold block">
                         Updated {getRelativeTime(page.updated_at)}
                       </span>
                     </li>
@@ -438,35 +438,35 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllUpdated(true)}
-              className="btn btn-ghost btn-xs text-blue-500 font-bold uppercase tracking-wider mt-4 text-left cursor-pointer"
+              className="btn btn-ghost btn-xs text-primary font-bold uppercase tracking-wider mt-4 text-left cursor-pointer"
             >
               View all edits
             </button>
           </div>
 
           {/* Card 6: Pending Pages */}
-          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-base-200 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
-              <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
+              <h3 className="text-sm font-black text-base-content font-serif mb-2.5">
                 Pending Pages
               </h3>
               {loading ? (
                 <div className="flex items-center gap-2 py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                  <span className="text-xs text-gray-400">Loading pending...</span>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-xs text-base-content/50">Loading pending...</span>
                 </div>
               ) : pendingPages.length === 0 ? (
-                <p className="text-xs text-gray-400 py-4">No pending pages awaiting review.</p>
+                <p className="text-xs text-base-content/50 py-4">No pending pages awaiting review.</p>
               ) : (
                 <ul className="space-y-3">
                   {pendingPages.slice(0, 3).map((pending, index) => {
                     const authorName = pending.users?.name || `User #${pending.editor_id}`;
                     return (
                       <li key={`pending-page-${pending.pending_id || index}`}>
-                        <span className="block text-xs font-semibold text-slate-700 truncate">
+                        <span className="block text-xs font-semibold text-base-content/85 truncate">
                           {pending.title}
                         </span>
-                        <span className="text-[9px] text-slate-400 font-semibold block">
+                        <span className="text-[9px] text-base-content/50 font-semibold block">
                           Submitted by {authorName} · {getRelativeTime(pending.created_at)}
                         </span>
                       </li>
@@ -485,61 +485,61 @@ export default function HomeTab({
         </div>
 
         {/* Statistics Footer Strip */}
-        <div className="card card-bordered grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border-slate-150 bg-slate-50/50 text-center pt-5 pb-5">
+        <div className="card card-bordered grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border-base-200 bg-base-200/50 text-center pt-5 pb-5">
           <div className="flex flex-col items-center gap-1 select-none">
-            <BookOpen className="h-5 w-5 text-blue-600" />
-            <span className="text-[14px] font-extrabold text-slate-800 mt-1">
+            <BookOpen className="h-5 w-5 text-primary" />
+            <span className="text-[14px] font-extrabold text-base-content mt-1">
               {totalPagesCount !== null ? totalPagesCount.toLocaleString() : "..."}
             </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-base-content/50 uppercase tracking-wider">
               Total Articles
             </span>
           </div>
-          <div className="flex flex-col items-center gap-1 border-l border-slate-200/50 max-md:border-none select-none">
+          <div className="flex flex-col items-center gap-1 border-l border-base-300 max-md:border-none select-none">
             <Languages className="h-5 w-5 text-emerald-600" />
-            <span className="text-[14px] font-extrabold text-slate-800 mt-1">
+            <span className="text-[14px] font-extrabold text-base-content mt-1">
               {categoriesCount}
             </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-base-content/50 uppercase tracking-wider">
               Guides Categories
             </span>
           </div>
-          <div className="flex flex-col items-center gap-1 border-l border-slate-200/50 max-md:border-none select-none">
+          <div className="flex flex-col items-center gap-1 border-l border-base-300 max-md:border-none select-none">
             <Users2 className="h-5 w-5 text-purple-600" />
-            <span className="text-[14px] font-extrabold text-slate-800 mt-1">
+            <span className="text-[14px] font-extrabold text-base-content mt-1">
               {editors.length || "..."}
             </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-base-content/50 uppercase tracking-wider">
               Active Editors
             </span>
           </div>
-          <div className="flex flex-col items-center gap-1 border-l border-slate-200/50 max-md:border-none select-none">
+          <div className="flex flex-col items-center gap-1 border-l border-base-300 max-md:border-none select-none">
             <Eye className="h-5 w-5 text-amber-600" />
-            <span className="text-[14px] font-extrabold text-slate-800 mt-1">
+            <span className="text-[14px] font-extrabold text-base-content mt-1">
               {totalPagesCount !== null ? (totalPagesCount * 45).toLocaleString() + "+" : "..."}
             </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-base-content/50 uppercase tracking-wider">
               Monthly Views
             </span>
           </div>
         </div>
         
         {/* footer Credits */}
-        <div className="pt-4 border-t border-slate-100 bg-white flex md:hidden flex-col items-center text-center gap-1.5 select-none mt-6 w-full">
-          <div className="text-[12px] text-slate-500 font-medium flex items-center justify-center gap-1.5 uppercase tracking-wider">
+        <div className="pt-4 border-t border-base-200 bg-white flex md:hidden flex-col items-center text-center gap-1.5 select-none mt-6 w-full">
+          <div className="text-[12px] text-base-content/50 font-medium flex items-center justify-center gap-1.5 uppercase tracking-wider">
             <span>Made with</span>
             <Heart
               onClick={spawnHearts}
               className="w-6 h-6 text-red-500 fill-red-500 cursor-pointer hover:scale-130 transition-transform duration-200 filter drop-shadow-[0_0_4px_rgba(239,68,68,0.4)] animate-pulse shrink-0"
             />
           </div>
-          <div className="text-[12px] text-slate-500 font-semibold tracking-wide">
+          <div className="text-[12px] text-base-content/50 font-semibold tracking-wide">
             by{" "}
             <span className="font-extrabold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 transition-colors">
               Technical Council, IITGN
             </span>
           </div>
-          <div className="text-[9px] font-bold text-slate-400/60 tracking-widest uppercase mt-1">
+          <div className="text-[9px] font-bold text-base-content/50/60 tracking-widest uppercase mt-1">
             © {new Date().getFullYear()} IIT Gandhinagar
           </div>
         </div>
