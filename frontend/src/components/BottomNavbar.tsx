@@ -31,7 +31,7 @@ export default function BottomNavbar({
       style={style}
       className={`z-9999 w-[90%] max-w-lg transition-all duration-300 ${className}`}
     >
-      <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 shadow-[0_20px_50px_rgba(0,0,0,0.12),0_10px_30px_rgba(0,0,0,0.06)] rounded-full px-3 py-2 flex items-center justify-around select-none">
+      <div className="bg-base-100/80 backdrop-blur-lg border border-base-200/80 shadow-[0_20px_50px_rgba(0,0,0,0.12),0_10px_30px_rgba(0,0,0,0.06)] rounded-full px-3 py-2 flex items-center justify-around select-none">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -42,20 +42,20 @@ export default function BottomNavbar({
               onClick={tab.onClick}
               className={`flex flex-col items-center gap-1 group cursor-pointer relative py-1 flex-1 transition-all duration-200 active:scale-95 ${
                 isActive 
-                  ? "text-slate-900 font-extrabold" 
+                  ? "text-primary font-extrabold" 
                   : tab.colorClass 
-                    ? "text-slate-900" 
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "text-base-content" 
+                    : "text-base-content/50 hover:text-base-content/85"
               }`}
             >
               {/* Pill Backdrop for Active Icon */}
               <div
                 className={`flex items-center justify-center px-5 py-1.5 rounded-full transition-all duration-300 ${
                   isActive
-                    ? "bg-slate-950 text-white shadow-md shadow-slate-950/10 scale-105"
+                    ? "bg-primary text-primary-content shadow-md shadow-primary/10 scale-105"
                     : tab.colorClass
                       ? tab.colorClass
-                      : "hover:bg-slate-100 text-slate-500 hover:text-slate-700"
+                      : "hover:bg-base-200 text-base-content/70 hover:text-base-content"
                 }`}
               >
                 <div className="relative">
@@ -72,10 +72,10 @@ export default function BottomNavbar({
               {showLabels && (
                 <span className={`text-[8px] uppercase tracking-wider font-extrabold transition-all duration-200 ${
                   isActive 
-                    ? "text-slate-900" 
+                    ? "text-primary" 
                     : tab.colorClass 
-                      ? "text-slate-700 font-bold" 
-                      : "text-slate-400 group-hover:text-slate-600"
+                      ? "text-base-content/80 font-bold" 
+                      : "text-base-content/40 group-hover:text-base-content/70"
                 }`}>
                   {tab.label}
                 </span>

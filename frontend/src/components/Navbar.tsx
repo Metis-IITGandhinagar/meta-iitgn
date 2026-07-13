@@ -159,7 +159,7 @@ export default function Navbar({
 
   return (
     <header
-      className={`h-16 shrink-0 sticky top-0 z-40 select-none w-full bg-white border-b border-slate-200 shadow-sm transition-all duration-200`}
+      className={`h-16 shrink-0 sticky top-0 z-40 select-none w-full bg-base-100 border-b border-base-200 shadow-xs transition-all duration-200`}
     >
       {/* Actual Nav Content */}
       <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-4 lg:px-8">
@@ -174,18 +174,18 @@ export default function Navbar({
                   router.push("/");
                 }
               }}
-              className="p-2 text-slate-800 hover:text-black transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+              className="btn btn-ghost btn-circle p-2 text-base-content hover:bg-base-200/50 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
               aria-label="Go Back"
             >
-              <ArrowLeft className="h-5 w-5 text-slate-800 font-bold" />
+              <ArrowLeft className="h-5 w-5 text-base-content font-bold" />
             </button>
           ) : (
             <button
               onClick={onToggleSidebar}
-              className="p-2 bg-slate-50/90 hover:bg-slate-100 border border-slate-200/80 rounded-lg text-slate-855 hover:text-black transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center shadow-xs"
+              className="btn btn-square btn-ghost btn-sm bg-base-200 border border-base-300 text-base-content hover:bg-base-300 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center shadow-xs"
               aria-label="Toggle Sidebar"
             >
-              <Menu className="h-5 w-5 text-slate-800" />
+              <Menu className="h-5 w-5 text-base-content" />
             </button>
           )}
 
@@ -197,7 +197,7 @@ export default function Navbar({
               <span className="font-serif text-2xl font-extrabold tracking-tight text-blue-600 group-hover:text-blue-700 transition-colors duration-200">
                 META
               </span>
-              <span className="ml-1 text-sm font-semibold text-black uppercase tracking-wider  group-hover:text-gray-800 transition-colors duration-200">
+              <span className="ml-1 text-sm font-semibold text-base-content uppercase tracking-wider group-hover:opacity-80 transition-opacity duration-200">
                 IITGN
               </span>
             </div>
@@ -222,12 +222,22 @@ export default function Navbar({
           {!user ? (
             <Link
               href="/login"
-              className="py-1.5 px-4 bg-blue-600 hover:bg-violet-750 text-white text-sm font-semibold rounded-full shadow-md cursor-pointer transition-all duration-200"
+              className="btn btn-primary btn-sm rounded-full text-white font-semibold shadow-md cursor-pointer transition-all duration-200"
             >
               Sign In
             </Link>
           ) : (
-            <div className="relative" ref={dropdownRef}>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSettingsTab?.("appearance")}
+                className="btn btn-ghost btn-circle btn-sm text-base-content hover:bg-base-200/50 transition-colors duration-200 cursor-pointer active:scale-95"
+                title="Open Settings"
+                aria-label="Open Settings"
+              >
+                <Settings className="w-5 h-5 text-base-content/80" />
+              </button>
+
+              <div className="relative" ref={dropdownRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -248,7 +258,7 @@ export default function Navbar({
                     {getInitials(user.name)}
                   </div>
                 )}
-                <span className="text-sm font-bold text-gray-800 hidden sm:inline">
+                <span className="text-sm font-bold text-base-content hidden sm:inline">
                   {user.name}
                 </span>
                 <span
@@ -257,17 +267,17 @@ export default function Navbar({
                   {user.role}
                 </span>
                 <ChevronDown
-                  className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 text-base-content/60 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
                 />
               </button>
 
               {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div
-                  className={`absolute ${isWiki ? "-right-10" : "right-0"} top-12 mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
+                  className={`absolute ${isWiki ? "-right-10" : "right-0"} top-12 mt-2 w-80 sm:w-88 card card-bordered bg-base-100 shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
                 >
                   {/* Header info */}
-                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3 pb-3 border-b border-base-200">
                     {user.avatar_url ? (
                       <img
                         src={user.avatar_url}
@@ -276,14 +286,14 @@ export default function Navbar({
                       />
                     ) : (
                       <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-slate-800 bg-white border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-base-content bg-base-200 border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}
                       >
                         {getInitials(user.name)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-base font-bold text-slate-900 truncate">
+                        <h3 className="text-base font-bold text-base-content truncate">
                           {user.name}
                         </h3>
                         <span
@@ -292,42 +302,42 @@ export default function Navbar({
                           {user.role}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 truncate mt-0.5">
+                      <p className="text-xs text-base-content/60 truncate mt-0.5">
                         {user.email}
                       </p>
                     </div>
                   </div>
 
                 {/* Stats */}
-                <div className="bg-slate-50/70 border border-slate-100/50 rounded-2xl p-3.5 mt-3.5">
+                <div className="bg-base-200 border border-base-300 rounded-2xl p-3.5 mt-3.5">
                   <div className="grid grid-cols-3 text-center">
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                      <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
                         Points
                       </span>
-                      <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
+                      <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
                         {user.points}
                       </span>
                     </div>
-                    <div className="flex flex-col border-l border-slate-200/60">
-                      <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                    <div className="flex flex-col border-l border-base-300">
+                      <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
                         Edits
                       </span>
-                      <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
+                      <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
                         {activeTierData.edits}
                       </span>
                     </div>
-                    <div className="flex flex-col border-l border-slate-200/60">
-                      <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                    <div className="flex flex-col border-l border-base-300">
+                      <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
                         Rank
                       </span>
-                      <span className="text-[13px] font-extrabold text-slate-800 mt-1 transition-all duration-300">
+                      <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
                         {activeTierData.rank}
                       </span>
                     </div>
                   </div>
                   {/* Progress Bar */}
-                  <div className="w-full h-2 bg-slate-100 rounded-full mt-3.5 overflow-hidden">
+                  <div className="w-full h-2 bg-base-300 rounded-full mt-3.5 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${activeTierData.progressBar}`}
                       style={{ width: `${activeTierData.percent}%` }}
@@ -359,13 +369,13 @@ export default function Navbar({
 
 
                 {/* Bottom Actions */}
-                <div className="border-t border-slate-100 mt-4 pt-2.5 grid grid-cols-3 text-center">
+                <div className="border-t border-base-200 mt-4 pt-2.5 grid grid-cols-3 text-center">
                   <Link
                     href="/user/profile"
-                    className="flex flex-col items-center gap-1 py-1 text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-xl transition-colors duration-150"
+                    className="flex flex-col items-center gap-1 py-1 text-base-content/80 hover:text-blue-600 hover:bg-base-200 rounded-xl transition-colors duration-150"
                     onClick={() => setDropdownOpen(false)}
                   >
-                    <User className="h-5 w-5 text-slate-400" />
+                    <User className="h-5 w-5 text-base-content/50" />
                     <span className="text-[11px] font-bold">Profile</span>
                   </Link>
                   <button
@@ -373,17 +383,17 @@ export default function Navbar({
                       setDropdownOpen(false);
                       setSettingsTab("appearance");
                     }}
-                    className="flex flex-col items-center gap-1 py-1 text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-xl transition-colors duration-150 cursor-pointer"
+                    className="flex flex-col items-center gap-1 py-1 text-base-content/80 hover:text-blue-600 hover:bg-base-200 rounded-xl transition-colors duration-150 cursor-pointer"
                   >
-                    <Settings className="h-5 w-5 text-slate-400" />
+                    <Settings className="h-5 w-5 text-base-content/50" />
                     <span className="text-[11px] font-bold">Settings</span>
                   </button>
                   <Link
                     href="/logout"
                     onClick={() => setDropdownOpen(false)}
-                    className="flex flex-col items-center gap-1 py-1 text-slate-455 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors duration-150 w-full"
+                    className="flex flex-col items-center gap-1 py-1 text-base-content/75 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors duration-150 w-full"
                   >
-                    <LogOut className="h-5 w-5 text-slate-400" />
+                    <LogOut className="h-5 w-5 text-base-content/50" />
                     <span className="text-[11px] font-bold text-red-400">
                       Sign Out
                     </span>
@@ -391,10 +401,9 @@ export default function Navbar({
                 </div>
               </div>
             )}
+            </div>
           </div>
-          )}
-
-          {/* Kebab More Menu (Wiki Page Only) */}
+          )}          {/* Kebab More Menu (Wiki Page Only) */}
           {isWikiArticlePage && (
             <div className="relative flex items-center" ref={moreMenuRef}>
               <button
@@ -402,19 +411,19 @@ export default function Navbar({
                   e.stopPropagation();
                   setMoreMenuOpen(!moreMenuOpen);
                 }}
-                className="p-2 bg-slate-50/90 hover:bg-slate-100 border border-slate-200/80 rounded-full text-slate-800 hover:text-black transition-all duration-200 cursor-pointer flex items-center justify-center shadow-xs"
+                className="btn btn-circle btn-ghost btn-sm bg-base-200 hover:bg-base-300 border border-base-300 text-base-content hover:text-base-content/85 cursor-pointer flex items-center justify-center shadow-xs"
                 aria-label="More Actions"
               >
-                <MoreVertical className="h-5 w-5 text-slate-800" />
+                <MoreVertical className="h-5 w-5 text-base-content" />
               </button>
               {moreMenuOpen && (
-                <div className="absolute -right-2 md:right-0 top-10 mt-1 w-52 max-h-[calc(100vh-80px)] overflow-y-auto bg-white border border-slate-200 shadow-[0_0_25px_rgba(0,0,0,0.15)] py-1 z-[100] select-none animate-in fade-in duration-200 rounded-xl no-scrollbar">
+                <div className="absolute -right-2 md:right-0 top-10 mt-1 w-52 max-h-[calc(100vh-80px)] overflow-y-auto card card-bordered bg-base-100 shadow-[0_0_25px_rgba(0,0,0,0.15)] py-1 z-[100] select-none animate-in fade-in duration-200 rounded-xl no-scrollbar">
                   <button
                     onClick={() => {
                       alert("Sharing link copied!");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none animate-none"
                   >
                     <Share2 className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Share Page</span>
@@ -464,7 +473,7 @@ export default function Navbar({
                         setMoreMenuOpen(false);
                       });
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Bookmark className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Bookmark Page</span>
@@ -474,7 +483,7 @@ export default function Navbar({
                       alert("Opening history logs...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Page History</span>
@@ -484,7 +493,7 @@ export default function Navbar({
                       alert("Redirecting to editor...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <FileEdit className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Edit Article</span>
@@ -494,7 +503,7 @@ export default function Navbar({
                       alert("Exporting to PDF...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Download className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Export PDF</span>
@@ -506,7 +515,7 @@ export default function Navbar({
                       );
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Earlier Versions</span>
@@ -516,18 +525,18 @@ export default function Navbar({
                       window.print();
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Printer className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Print Article</span>
                   </button>
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className="border-t border-base-200 my-1" />
                   <button
                     onClick={() => {
                       alert("Toggling dark mode...");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Moon className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Dark Mode</span>
@@ -537,18 +546,18 @@ export default function Navbar({
                       setSettingsTab("layout");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <Settings className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Page Settings</span>
                   </button>
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className="border-t border-base-200 my-1" />
                   <button
                     onClick={() => {
                       alert("Report page submitted.");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
                     <AlertTriangle className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Report Content</span>

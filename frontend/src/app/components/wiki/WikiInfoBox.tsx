@@ -72,15 +72,15 @@ export default function WikiInfoBox({
           {rightSidebarOpen && (
             <button
               onClick={() => setRightSidebarOpen(false)}
-              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-700 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
+              className="lg:hidden absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg text-base-content/50 hover:text-base-content/80 transition-colors duration-200 cursor-pointer active:scale-95 z-50"
               aria-label="Close Sidebar"
             >
-              <X className="h-6 w-6 text-gray-900" />
+              <X className="h-6 w-6 text-base-content" />
             </button>
           )}
           {/* Infobox Image */}
           <div
-            className={`w-full relative bg-gray-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
+            className={`w-full relative bg-gray-50 border-b border-base-200 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
               isEditing ? "h-32 p-4 bg-gray-50" : "aspect-square"
             }`}
           >
@@ -101,8 +101,8 @@ export default function WikiInfoBox({
 
           {/* Description below image in read mode */}
           {parsed.infobox.description && !isEditing && (
-            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-              <p className="text-xs text-gray-500 italic leading-relaxed whitespace-pre-wrap">
+            <div className="px-6 py-4 border-b border-base-200 bg-gray-50/50">
+              <p className="text-xs text-base-content/60 italic leading-relaxed whitespace-pre-wrap">
                 {parsed.infobox.description}
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function WikiInfoBox({
 
           {/* Inline Image Editor Fields (In-place, only shown when editing) */}
           {isEditing && (
-            <div className="p-6 border-b border-gray-100 flex flex-col gap-4 bg-gray-50 animate-in fade-in duration-300">
+            <div className="p-6 border-b border-base-200 flex flex-col gap-4 bg-gray-50 animate-in fade-in duration-300">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-bold text-gray-450 tracking-wider uppercase">
                   Image & Description Options
@@ -134,7 +134,7 @@ export default function WikiInfoBox({
 
               {/* Image URL input */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
                   Image URL
                 </label>
                 <input
@@ -147,13 +147,13 @@ export default function WikiInfoBox({
                     })
                   }
                   placeholder="https://example.com/image.jpg"
-                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
+                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-base-content placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
                 />
               </div>
 
               {/* Upload Image input */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
                   Or Upload Local Image
                 </label>
                 <input
@@ -187,13 +187,13 @@ export default function WikiInfoBox({
                       alert(err.response?.data?.error || err.message || "Failed to upload image");
                     }
                   }}
-                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-2 py-1 text-xs text-gray-800 bg-white focus:outline-none transition-all duration-150 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-2 py-1 text-xs text-base-content bg-white focus:outline-none transition-all duration-150 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                 />
               </div>
 
               {/* Alt Text input */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
                   Caption / Alt Text
                 </label>
                 <input
@@ -206,13 +206,13 @@ export default function WikiInfoBox({
                     })
                   }
                   placeholder="e.g. Campus View"
-                  className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
+                  className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-base-content placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
                 />
               </div>
 
               {/* Description Input */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
                   Article Description
                 </label>
                 <textarea
@@ -225,7 +225,7 @@ export default function WikiInfoBox({
                   }
                   placeholder="Enter a short description..."
                   rows={3}
-                  className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm resize-none"
+                  className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-base-content placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm resize-none"
                 />
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function WikiInfoBox({
             <h4 className="text-[10px] font-bold text-gray-450 tracking-wider mb-4 uppercase">
               Key Information
             </h4>
-            <table className="w-full text-xs text-gray-700">
+            <table className="w-full text-xs text-base-content/80">
               <tbody>
                 {parsed.infobox.rows.map((row, index) => {
                   const isLast = index === parsed.infobox.rows.length - 1;
@@ -261,13 +261,13 @@ export default function WikiInfoBox({
                               });
                             }}
                             placeholder="Label"
-                            className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-gray-700 uppercase tracking-wider bg-transparent"
+                            className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-base-content/80 uppercase tracking-wider bg-transparent"
                           />
                         ) : (
-                          <span className="font-semibold text-gray-400 uppercase tracking-wider">{row.label}</span>
+                          <span className="font-semibold text-base-content/50 uppercase tracking-wider">{row.label}</span>
                         )}
                       </td>
-                      <td className="py-3 align-top font-semibold text-gray-900">
+                      <td className="py-3 align-top font-semibold text-base-content">
                         {isEditing ? (
                           <div className="flex gap-2 items-center w-full">
                             <EditableCell
@@ -319,7 +319,7 @@ export default function WikiInfoBox({
                               className={`p-1 rounded cursor-pointer transition-colors ${
                                 row.type === "badge"
                                   ? "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
-                                  : "text-gray-400 hover:text-indigo-600 hover:bg-gray-50"
+                                  : "text-base-content/50 hover:text-indigo-600 hover:bg-gray-50"
                               }`}
                               title={`Toggle representation (currently: ${row.type === "badge" ? "Badges/Tags" : "Text line"}). Click to switch.`}
                             >
@@ -334,7 +334,7 @@ export default function WikiInfoBox({
                                   rows: newRows,
                                 });
                               }}
-                              className="text-gray-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
+                              className="text-base-content/50 hover:text-rose-500 p-1 cursor-pointer transition-colors"
                               title="Delete fact row"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -375,7 +375,7 @@ export default function WikiInfoBox({
                     rows: newRows
                   });
                 }}
-                className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 hover:border-indigo-300 text-gray-400 hover:text-indigo-600 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-155 hover:bg-indigo-50/40"
+                className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 hover:border-indigo-300 text-base-content/50 hover:text-indigo-600 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-155 hover:bg-indigo-50/40"
               >
                 <span>+ Add</span>
               </button>
@@ -383,7 +383,7 @@ export default function WikiInfoBox({
           </div>
 
           <div className="p-6 select-none pt-0">
-            <h4 className="text-[10px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
+            <h4 className="text-[10px] font-bold text-base-content/50 tracking-wider mb-4 uppercase">
               Table of Contents
             </h4>
             <ul className="text-xs flex flex-col gap-2.5 font-semibold">
@@ -398,14 +398,14 @@ export default function WikiInfoBox({
                         className={`truncate flex-1 py-0.5 transition-all duration-150 ${
                           isActive
                             ? "text-indigo-600 font-bold translate-x-1"
-                            : "text-gray-500 hover:text-gray-800"
+                            : "text-base-content/60 hover:text-base-content"
                         }`}
                       >
                         {index + 1}. {item.title}
                       </a>
                     </li>
                     {item.subItems && item.subItems.length > 0 && (
-                      <ul className="flex flex-col gap-1.5 pl-3 text-[11px] font-medium border-l border-gray-100 ml-1.5">
+                      <ul className="flex flex-col gap-1.5 pl-3 text-[11px] font-medium border-l border-base-200 ml-1.5">
                         {item.subItems.map((sub, idx) => {
                           const isSubActive = activeSection === sub.id;
                           return (
@@ -416,7 +416,7 @@ export default function WikiInfoBox({
                                 className={`truncate block py-0.5 transition-all duration-150 ${
                                   isSubActive
                                     ? "text-indigo-500 font-bold translate-x-0.5"
-                                    : "text-gray-400 hover:text-gray-605"
+                                    : "text-base-content/50 hover:text-gray-605"
                                 }`}
                               >
                                 {index + 1}.{idx + 1} {sub.title}

@@ -794,14 +794,14 @@ ${newHistoryContent}`,
 
   if (authLoading || auth === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-base-100">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen lg:h-screen bg-white overflow-y-auto lg:overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen lg:h-screen bg-base-100 overflow-y-auto lg:overflow-hidden font-sans">
       {/* Main Container */}
       <div className="flex flex-col lg:flex-row flex-1 relative overflow-visible lg:overflow-hidden w-full h-auto lg:h-full">
         {/* Left panel & collapsible sidebar */}
@@ -819,7 +819,7 @@ ${newHistoryContent}`,
         />
 
         {/* Split Screen Layout */}
-        <div className="flex-1 flex flex-col lg:flex-row h-auto lg:h-full w-full bg-white relative min-w-full shrink-0 lg:min-w-0 lg:shrink transition-transform duration-300 ease-in-out">
+        <div className="flex-1 flex flex-col lg:flex-row h-auto lg:h-full w-full bg-base-100 relative min-w-full shrink-0 lg:min-w-0 lg:shrink transition-transform duration-300 ease-in-out">
           {/* Right Panel: Scrollable Hero + Highlights Feed */}
           <div
             className="flex-1 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto scroll-smooth relative"
@@ -838,7 +838,7 @@ ${newHistoryContent}`,
               className={`hidden lg:flex sticky mx-auto w-fit top-3 z-30 items-center gap-1 transition-all duration-300 px-4 py-1.5 rounded-full select-none -mb-11 ${
                 activeTab === "home" && !isScrolled
                   ? "bg-white/10 backdrop-blur-md border border-white/10 shadow-none"
-                  : "bg-white/25 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.06)]"
+                  : "bg-base-200/80 backdrop-blur-xl border border-base-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.06)]"
               }`}
             >
               {[
@@ -849,13 +849,13 @@ ${newHistoryContent}`,
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
 
-                const buttonStyle = !isScrolled
+                const buttonStyle = (activeTab === "home" && !isScrolled)
                   ? isActive
                     ? "bg-white/20 text-white border border-white/25 shadow-xs"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                   : isActive
-                    ? "bg-slate-900/15 text-slate-950 border border-slate-900/20 shadow-xs"
-                    : "text-slate-700 hover:bg-slate-900/5 hover:text-slate-950";
+                    ? "bg-primary text-primary-content border border-transparent shadow-xs"
+                    : "text-base-content/70 hover:bg-base-300 hover:text-base-content";
 
                 return (
                   <button

@@ -114,13 +114,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 overflow-hidden font-sans p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/65 overflow-hidden font-sans p-4">
       {/* Background decoration blobs inside popover */}
       <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Popover container card */}
-      <div className="relative w-full max-w-md bg-white border border-slate-200/80 rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.25)] p-8 flex flex-col items-center animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md bg-base-100 border border-base-300/80 rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.25)] p-8 flex flex-col items-center animate-in zoom-in-95 duration-200">
         
         {/* Close Button */}
         <button
@@ -131,7 +131,7 @@ export default function LoginPage() {
               router.push("/");
             }
           }}
-          className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all duration-200 cursor-pointer active:scale-95"
+          className="absolute top-5 right-5 p-1.5 text-base-content/50 hover:text-base-content/85 hover:bg-base-200 rounded-xl transition-all duration-200 cursor-pointer active:scale-95"
           aria-label="Close Login Modal"
         >
           <X className="w-5 h-5" />
@@ -142,11 +142,11 @@ export default function LoginPage() {
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0">
             <BookOpen className="w-4.5 h-4.5 text-white" />
           </div>
-          <span className="text-xl font-serif font-black tracking-tight text-slate-900">
-            META <span className="text-blue-600">IITGN</span>
+          <span className="text-xl font-serif font-black tracking-tight text-base-content">
+            META <span className="text-primary">IITGN</span>
           </span>
         </div>
-        <p className="text-slate-400 text-xs text-center mb-8 font-medium tracking-wide uppercase">
+        <p className="text-base-content/50 text-xs text-center mb-8 font-medium tracking-wide uppercase">
           The Collaborative Campus Wiki
         </p>
 
@@ -175,7 +175,7 @@ export default function LoginPage() {
         <button
           onClick={() => handleGoogleLogin()}
           disabled={loading}
-          className="w-full h-11 flex items-center justify-center gap-3 px-6 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-350 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed select-none active:scale-98 text-sm"
+          className="w-full h-11 flex items-center justify-center gap-3 px-6 bg-primary hover:bg-slate-800 disabled:bg-slate-350 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed select-none active:scale-98 text-sm"
         >
           <svg className="w-4.5 h-4.5 text-white fill-current shrink-0" viewBox="0 0 24 24">
             <path
@@ -201,7 +201,7 @@ export default function LoginPage() {
         {/* Divider */}
         <div className="w-full flex items-center my-6">
           <div className="flex-1 h-px bg-slate-150" />
-          <span className="px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider">or bypass</span>
+          <span className="px-3 text-[10px] text-base-content/50 font-bold uppercase tracking-wider">or bypass</span>
           <div className="flex-1 h-px bg-slate-150" />
         </div>
 
@@ -209,21 +209,21 @@ export default function LoginPage() {
         <div className="w-full">
           <button
             onClick={() => setShowDevBypass(!showDevBypass)}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-slate-500 hover:text-slate-800 text-xs font-bold border border-dashed border-slate-300 hover:border-slate-400 rounded-xl transition-all duration-200 cursor-pointer bg-slate-50/50 hover:bg-slate-50"
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-base-content/50 hover:text-base-content text-xs font-bold border border-dashed border-slate-300 hover:border-slate-400 rounded-xl transition-all duration-200 cursor-pointer bg-base-200/50 hover:bg-base-200"
           >
-            <Cpu className="w-3.5 h-3.5 text-slate-500" />
+            <Cpu className="w-3.5 h-3.5 text-base-content/50" />
             {showDevBypass ? "Hide Sandbox Bypass" : "Show Sandbox Bypass"}
           </button>
 
           {showDevBypass && (
-            <form onSubmit={handleDevBypass} className="mt-3.5 p-4 rounded-2xl bg-slate-50 border border-slate-150 flex flex-col gap-3.5 transition-all duration-300">
+            <form onSubmit={handleDevBypass} className="mt-3.5 p-4 rounded-2xl bg-base-200 border border-base-200 flex flex-col gap-3.5 transition-all duration-300">
               <div className="flex items-center gap-1.5 text-amber-600 text-xs font-bold">
                 <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>Local Sandbox Login Bypass</span>
               </div>
 
                <div className="space-y-1">
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                <label className="block text-[10px] uppercase font-bold tracking-wider text-base-content/50">
                   Select Dev Account (Role/Tier)
                 </label>
                 <select
@@ -236,7 +236,7 @@ export default function LoginPage() {
                       setDevRole(selected.role);
                     }
                   }}
-                  className="w-full h-9.5 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                  className="w-full h-9.5 px-3 bg-base-100 border border-base-300 rounded-xl text-xs font-bold text-base-content/85 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
                 >
                   {DEV_ACCOUNTS.map((acc) => (
                     <option key={acc.email} value={acc.email}>
@@ -266,7 +266,7 @@ export default function LoginPage() {
               router.push("/");
             }
           }}
-          className="mt-6 text-xs font-bold text-slate-400 hover:text-slate-650 hover:underline cursor-pointer flex items-center justify-center gap-1 active:scale-95 transition-all select-none"
+          className="mt-6 text-xs font-bold text-base-content/50 hover:text-slate-650 hover:underline cursor-pointer flex items-center justify-center gap-1 active:scale-95 transition-all select-none"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Go Back</span>

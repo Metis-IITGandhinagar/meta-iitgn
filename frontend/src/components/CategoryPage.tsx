@@ -124,13 +124,13 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
 
   if (!category) {
     return (
-      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-[#FCFCFD]">
+      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-transparent">
         <div className="max-w-4xl mx-auto text-center py-20">
-          <h1 className="text-3xl font-bold text-gray-800">Category Not Found</h1>
-          <p className="text-gray-500 mt-2">The requested wiki category does not exist.</p>
+          <h1 className="text-3xl font-bold text-base-content">Category Not Found</h1>
+          <p className="text-base-content/60 mt-2">The requested wiki category does not exist.</p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors"
+            className="btn btn-primary inline-flex items-center gap-2 mt-6 text-primary-content rounded-lg text-sm font-semibold transition-colors"
           >
             Go to Home
           </Link>
@@ -140,31 +140,31 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   }
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-15 bg-[#FCFCFD] overflow-y-auto">
+    <main className="flex-1 p-6 md:p-8 mt-15 bg-transparent overflow-y-auto">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-xs font-semibold text-gray-400 select-none">
-          <Link href="/" className="hover:text-blue-600 transition-colors">
+        <nav className="flex items-center gap-2 text-xs font-semibold text-base-content/50 select-none">
+          <Link href="/" className="hover:text-primary transition-colors">
             Home
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="text-blue-700">{category.name}</span>
+          <span className="text-primary">{category.name}</span>
         </nav>
 
         {/* Category Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between border-b border-gray-100 pb-5 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between border-b border-base-200 pb-5 gap-6">
           <div className="space-y-3 flex-1">
-            <div className="inline-flex items-center justify-center p-3 bg-blue-50 text-blue-600 rounded-2xl shadow-sm">
+            <div className="inline-flex items-center justify-center p-3 bg-primary/10 text-primary rounded-2xl shadow-sm">
               {(() => {
                 const IconComponent = ICON_MAP[category.icon || "BookOpen"] || BookOpen;
                 return <IconComponent className="h-6 w-6" />;
               })()}
             </div>
-            <h1 className="text-2xl md:text-3xl font-serif font-black text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
               {category.name}
             </h1>
-            <p className="text-gray-500 max-w-2xl text-sm md:text-base leading-relaxed">
+            <p className="text-base-content/60 max-w-2xl text-sm md:text-base leading-relaxed">
               {category.description}
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
             {(user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={handleStartEdit}
-                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-250 text-gray-700 hover:bg-gray-50 rounded-xl text-xs md:text-sm font-bold shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-95"
+                className="btn btn-outline btn-sm font-bold rounded-xl shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
               >
                 <Pencil className="h-4.5 w-4.5" />
                 <span>Edit Category</span>
@@ -182,7 +182,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
             {(user?.role === "admin" || user?.role === "moderator") && (
               <Link
                 href={`/wiki/${categorySlug}/new`}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-white"
               >
                 <PlusCircle className="h-4.5 w-4.5" />
                 <span>New Article</span>
@@ -193,16 +193,16 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
 
         {/* Articles List / Grid (Horizontal Stack) */}
         <div>
-          <h2 className="text-lg font-serif font-bold text-gray-800 mb-4 tracking-tight">
+          <h2 className="text-lg font-serif font-bold text-base-content mb-4 tracking-tight">
             Articles in this Category
           </h2>
 
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
           ) : articles.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl text-gray-400 text-sm">
+            <div className="p-8 text-center border border-dashed border-base-300 rounded-2xl text-base-content/50 text-sm">
               No articles are currently listed under this category.
             </div>
           ) : (
@@ -211,14 +211,14 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                 {articles.map((article) => (
                   <div
                     key={article.slug}
-                    className="flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-white border border-gray-150 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 group"
+                    className="card card-compact card-bordered flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary transition-all duration-300 group"
                   >
                     <div className="space-y-2 md:space-y-3">
-                      <h3 className="text-sm md:text-base font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300">
+                      <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300">
                         {article.title}
                       </h3>
                       
-                      <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
+                      <p className="text-xs text-base-content/60 leading-relaxed line-clamp-3">
                         {article.snippet}
                       </p>
                     </div>
@@ -226,7 +226,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                     <div className="pt-6">
                       <Link
                         href={`/wiki/${categorySlug}/${article.slug}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors uppercase tracking-wider cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline transition-colors uppercase tracking-wider cursor-pointer"
                       >
                         <span>Read Article</span>
                         <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
@@ -241,7 +241,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                   <button
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 hover:border-gray-300 text-gray-700 bg-white hover:bg-gray-55 rounded-xl text-sm font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
+                    className="btn btn-outline btn-md font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
                   >
                     {loadingMore ? (
                       <>
@@ -265,10 +265,10 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
           <form
             onSubmit={onEditSubmit}
-            className="w-full h-full sm:h-auto sm:max-w-md bg-white border-0 sm:border border-gray-100 p-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl space-y-4 animate-in zoom-in-95 duration-200 overflow-y-auto"
+            className="w-full h-full sm:h-auto sm:max-w-md bg-base-100 border-0 sm:border border-base-200 p-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl space-y-4 animate-in zoom-in-95 duration-200 overflow-y-auto"
           >
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div className="flex items-center gap-2 text-blue-700 font-bold">
+            <div className="flex items-center justify-between border-b border-base-200 pb-3">
+              <div className="flex items-center gap-2 text-primary font-bold">
                 <Pencil className="h-5 w-5" />
                 <span>Edit Category</span>
               </div>
@@ -278,20 +278,20 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                   setIsEditing(false);
                   setEditError("");
                 }}
-                className="text-gray-400 hover:text-gray-650 cursor-pointer"
+                className="text-base-content/50 hover:text-base-content/85 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {editError && (
-              <div className="p-3 text-xs bg-rose-50 text-rose-600 border border-rose-100 rounded-lg">
+              <div className="p-3 text-xs bg-error/10 text-error border border-error/20 rounded-lg">
                 {editError}
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-770 uppercase">
+              <label className="text-xs font-bold text-base-content/70 uppercase">
                 Category Name
               </label>
               <input
@@ -299,29 +299,29 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Category Name"
-                className="w-full px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+                className="input input-bordered w-full text-base-content"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-500 uppercase">
+              <label className="text-xs font-bold text-base-content/70 uppercase">
                 Description
               </label>
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 placeholder="Description..."
-                className="w-full px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded-xl focus:outline-none focus:border-blue-500 transition-colors min-h-20 max-h-40"
+                className="textarea textarea-bordered w-full text-base-content min-h-20 max-h-40"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-750 uppercase block">
+              <label className="text-xs font-bold text-base-content/70 uppercase block">
                 Category Icon
               </label>
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 max-w-lg">
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-base-200 p-3.5 rounded-2xl border border-base-300 max-w-lg">
                 {Object.keys(ICON_MAP).map((iconKey) => {
                   const IconComponent = ICON_MAP[iconKey];
                   const isSelected = editIcon === iconKey;
@@ -332,8 +332,8 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                       onClick={() => setEditIcon(iconKey)}
                       className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer active:scale-95 group ${
                         isSelected
-                          ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-105"
-                          : "bg-white border-gray-200 text-gray-500 hover:text-gray-850 hover:border-gray-350"
+                          ? "bg-primary border-primary text-primary-content shadow-md shadow-primary/20 scale-105"
+                          : "bg-base-100 border-base-300 text-base-content/70 hover:text-base-content hover:bg-base-200"
                       }`}
                       title={iconKey}
                     >
@@ -351,14 +351,14 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                   setIsEditing(false);
                   setEditError("");
                 }}
-                className="px-3.5 py-1.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-55 transition-colors"
+                className="btn btn-ghost btn-sm text-base-content/60"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                className="btn btn-primary btn-sm text-primary-content"
               >
                 {submitting ? "Saving..." : "Save Changes"}
               </button>

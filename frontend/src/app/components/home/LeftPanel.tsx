@@ -81,7 +81,7 @@ export default function LeftPanel({
       { bg: "bg-emerald-50 text-emerald-600", icon: "text-emerald-600", textBg: "hover:bg-emerald-50/50" },
       { bg: "bg-indigo-50 text-indigo-600", icon: "text-indigo-600", textBg: "hover:bg-indigo-50/50" },
       { bg: "bg-sky-50 text-sky-500", icon: "text-sky-500", textBg: "hover:bg-sky-50/50" },
-      { bg: "bg-purple-50 text-purple-500", icon: "text-purple-500", textBg: "hover:bg-purple-50/50" },
+      { bg: "bg-secondary/10 text-secondary", icon: "text-purple-500", textBg: "hover:bg-purple-50/50" },
     ];
 
     return pinned.map((c, idx) => ({
@@ -134,25 +134,25 @@ export default function LeftPanel({
 
       {/* Left Panel: Fixed Dashboard on Desktop */}
       <div
-        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-150 flex flex-col justify-between p-4 bg-white z-20 h-auto lg:h-full mb-10 md:mb-0 overflow-y-visible lg:overflow-hidden select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"
+        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4 bg-base-100 z-20 h-auto lg:h-full mb-10 md:mb-0 overflow-y-visible lg:overflow-hidden select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"
           }`}
       >
         <div className="space-y-2">
           {/* Header with Hamburger Menu and Profile Dropdown inside Left Panel */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 w-full shrink-0">
+          <div className="flex items-center justify-between pb-3 border-b border-base-200 w-full shrink-0">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-slate-100 rounded-lg text-slate-650 transition-colors duration-200 cursor-pointer active:scale-95"
+              className="btn btn-ghost btn-square btn-sm transition-colors duration-200 cursor-pointer active:scale-95 text-base-content"
               aria-label="Toggle Sidebar"
             >
-              <Menu className="h-5.5 w-5.5 text-black" />
+              <Menu className="h-5.5 w-5.5 text-base-content" />
             </button>
             <button
               onClick={() => setSettingsTab("appearance")}
-              className="p-2 hover:bg-slate-100 rounded-lg text-slate-650 transition-colors duration-200 cursor-pointer active:scale-95"
+              className="btn btn-ghost btn-square btn-sm transition-colors duration-200 cursor-pointer active:scale-95 text-base-content"
               aria-label="Open Settings"
             >
-              <Settings className="w-5.5 h-5.5 text-black" />
+              <Settings className="w-5.5 h-5.5 text-base-content" />
             </button>
           </div>
 
@@ -160,15 +160,15 @@ export default function LeftPanel({
           <div className="flex flex-col items-center text-center mt-1">
             <Link
               href="/"
-              className="w-18 h-18 sm:w-20 sm:h-20 bg-blue-400 text-white rounded-full flex items-center justify-center font-serif font-black text-2xl sm:text-3xl shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
+              className="w-18 h-18 sm:w-20 sm:h-20 bg-primary text-primary-content rounded-full flex items-center justify-center font-serif font-black text-2xl sm:text-3xl shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
             >
               mI
             </Link>
             <div className="mt-4">
-              <span className="block text-2xl font-serif font-black text-slate-900 tracking-tight">
+              <span className="block text-2xl font-serif font-black text-base-content tracking-tight">
                 {pageCount !== null ? pageCount.toLocaleString() : "..."}
               </span>
-              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="block text-[9px] font-bold text-base-content/50 uppercase tracking-widest">
                 Articles & Campus Pages
               </span>
             </div>
@@ -187,13 +187,13 @@ export default function LeftPanel({
           <div className="space-y-2 mt-6 lg:mt-8">
             <div className="flex items-center justify-between mb-2">
               <div className="w-12" /> {/* Left balance spacer */}
-              <h2 className="text-xl font-serif font-bold text-gray-900 tracking-tight">
+              <h2 className="text-xl font-serif font-bold text-base-content tracking-tight">
                 Quick Portals
               </h2>
               {isGold ? (
                 <Link
                   href="/wiki/categories"
-                  className="text-[10px] font-extrabold text-blue-500 hover:text-blue-700 hover:underline tracking-wider uppercase shrink-0"
+                  className="text-[10px] font-extrabold text-primary hover:text-blue-700 hover:underline tracking-wider uppercase shrink-0"
                 >
                   Manage
                 </Link>
@@ -207,21 +207,21 @@ export default function LeftPanel({
                 <Link
                   key={portal.name}
                   href={portal.path}
-                  className={`flex items-center gap-2 p-3 rounded-xl border border-gray-150 bg-white shadow-xs hover:scale-105 transition-all duration-100 ease-in-out cursor-pointer group`}
+                  className={`card card-compact card-bordered flex flex-row items-center gap-2 p-3 border-base-200 bg-base-100 shadow-xs hover:scale-105 transition-all duration-100 ease-in-out cursor-pointer group`}
                 >
                   {renderPortalIcon(portal.iconName, portal.colorTheme)}
-                  <span className="text-xs font-semibold text-gray-700 group-hover:text-blue-700 transition-colors duration-200">
+                  <span className="text-xs font-semibold text-base-content group-hover:text-primary transition-colors duration-200">
                     {portal.name}
                   </span>
                 </Link>
               ))}
             </div>
             {portalsToDisplay.length === 0 && (
-              <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <p className="text-xs text-slate-400 font-semibold mb-2">No Quick Portals pinned</p>
+              <div className="text-center py-6 border border-dashed border-base-300 rounded-xl bg-base-200/50">
+                <p className="text-xs text-base-content/50 font-semibold mb-2">No Quick Portals pinned</p>
                 <Link
                   href="/wiki/categories"
-                  className="inline-flex text-[10px] font-extrabold text-blue-500 hover:text-blue-700 uppercase tracking-wider hover:underline"
+                  className="inline-flex text-[10px] font-extrabold text-primary hover:text-blue-700 uppercase tracking-wider hover:underline"
                 >
                   Pin Portals
                 </Link>
@@ -230,21 +230,21 @@ export default function LeftPanel({
           </div>
         </div>
         {/* Credits Footer */}
-        <div className="pt-5 border-t hidden lg:flex border-slate-100/60 flex-col items-center text-center gap-1.5 select-none mt-6 w-full">
-          <div className="text-[12px] text-slate-500 font-medium flex items-center justify-center gap-1.5 uppercase tracking-wider">
+        <div className="pt-5 border-t hidden lg:flex border-base-200 flex-col items-center text-center gap-1.5 select-none mt-6 w-full">
+          <div className="text-[12px] text-base-content/60 flex items-center justify-center gap-1.5 uppercase tracking-wider">
             <span>Made with</span>
             <Heart
               onClick={spawnHearts}
               className="w-6 h-6 text-red-500 fill-red-500 cursor-pointer hover:scale-130 transition-transform duration-200 filter drop-shadow-[0_0_4px_rgba(239,68,68,0.4)] animate-pulse shrink-0"
             />
           </div>
-          <div className="text-[12px] text-slate-500 font-semibold tracking-wide">
+          <div className="text-[12px] text-base-content/60 font-semibold tracking-wide">
             by{" "}
             <span className="font-extrabold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 transition-colors">
               Technical Council, IITGN
             </span>
           </div>
-          <div className="text-[9px] font-bold text-slate-400/60 tracking-widest uppercase mt-1">
+          <div className="text-[9px] font-bold text-base-content/50/60 tracking-widest uppercase mt-1">
             © {new Date().getFullYear()} IIT Gandhinagar
           </div>
         </div>

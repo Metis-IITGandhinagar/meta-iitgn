@@ -110,28 +110,28 @@ export default function CategoriesPage() {
   }, [categories, searchQuery]);
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-15 bg-[#FCFCFD] overflow-y-auto min-h-screen">
+    <main className="flex-1 p-6 md:p-8 mt-15 bg-transparent overflow-y-auto min-h-screen">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-xs font-semibold text-gray-400 select-none">
-          <Link href="/" className="hover:text-blue-600 transition-colors">
+        <nav className="flex items-center gap-2 text-xs font-semibold text-base-content/50 select-none">
+          <Link href="/" className="hover:text-primary transition-colors">
             Home
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="text-blue-700">All Categories</span>
+          <span className="text-primary">All Categories</span>
         </nav>
 
         {/* Categories Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between border-b border-gray-100 pb-5 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between border-b border-base-200 pb-5 gap-6">
           <div className="space-y-3 flex-1">
-            <div className="inline-flex items-center justify-center p-3 bg-blue-50 text-blue-600 rounded-2xl shadow-sm">
+            <div className="inline-flex items-center justify-center p-3 bg-primary/10 text-primary rounded-2xl shadow-sm">
               <BookOpen className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-serif font-black text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
               Wiki Categories
             </h1>
-            <p className="text-gray-500 max-w-2xl text-sm md:text-base leading-relaxed">
+            <p className="text-base-content/60 max-w-2xl text-sm md:text-base leading-relaxed">
               Browse page categories across META IITGN Wiki, explore matching articles, or create your own custom categories.
             </p>
           </div>
@@ -144,7 +144,7 @@ export default function CategoriesPage() {
                   reset();
                   setError("");
                 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                className="btn btn-primary btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer text-white"
               >
                 <PlusCircle className="h-4.5 w-4.5" />
                 <span>Create Category</span>
@@ -157,9 +157,9 @@ export default function CategoriesPage() {
         {showAddForm && (
           <form
             onSubmit={handleSubmit(onCreateSubmit)}
-            className="p-6 bg-white border border-blue-100 rounded-2xl shadow-md space-y-4 max-w-xl animate-in fade-in slide-in-from-top-4 duration-250"
+            className="p-6 bg-base-100 border border-primary/20 rounded-2xl shadow-md space-y-4 max-w-xl animate-in fade-in slide-in-from-top-4 duration-250"
           >
-            <div className="flex items-center gap-2 text-blue-700 font-bold text-sm">
+            <div className="flex items-center gap-2 text-primary font-bold text-sm">
               <FolderPlus className="h-5 w-5" />
               <span>Add Custom Category</span>
             </div>
@@ -171,7 +171,7 @@ export default function CategoriesPage() {
             )}
 
             <div className="space-y-1.5">
-              <label htmlFor="cat-name" className="text-xs font-bold text-gray-700 uppercase">
+              <label htmlFor="cat-name" className="text-xs font-bold text-base-content/80 uppercase">
                 Category Name
               </label>
               <input
@@ -187,7 +187,7 @@ export default function CategoriesPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="cat-desc" className="text-xs font-bold text-gray-500 uppercase">
+              <label htmlFor="cat-desc" className="text-xs font-bold text-base-content/60 uppercase">
                 Description
               </label>
               <textarea
@@ -206,7 +206,7 @@ export default function CategoriesPage() {
                 Category Icon
               </label>
               <input type="hidden" {...register("icon", { required: "Category icon is required" })} />
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 max-w-lg">
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-base-200 p-3.5 rounded-2xl border border-base-300/60 max-w-lg">
                 {Object.keys(ICON_MAP).map((iconKey) => {
                   const IconComponent = ICON_MAP[iconKey];
                   const isSelected = selectedIcon === iconKey;
@@ -218,7 +218,7 @@ export default function CategoriesPage() {
                       className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer active:scale-95 group ${
                         isSelected
                           ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-105"
-                          : "bg-white border-gray-200 text-gray-500 hover:text-gray-850 hover:border-gray-350"
+                          : "bg-base-100 border-gray-200 text-base-content/60 hover:text-gray-850 hover:border-gray-350"
                       }`}
                       title={iconKey}
                     >
@@ -239,7 +239,7 @@ export default function CategoriesPage() {
                   setShowAddForm(false);
                   setError("");
                 }}
-                className="px-3.5 py-1.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+                className="px-3.5 py-1.5 border border-gray-200 rounded-xl text-xs font-bold text-base-content/60 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
@@ -258,10 +258,10 @@ export default function CategoriesPage() {
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
             <form
               onSubmit={handleSubmitEdit(onEditSubmit)}
-              className="w-full h-full sm:h-auto sm:max-w-md bg-white border-0 sm:border border-gray-100 p-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl space-y-4 animate-in zoom-in-95 duration-200 overflow-y-auto"
+              className="w-full h-full sm:h-auto sm:max-w-md bg-base-100 border-0 sm:border border-base-200 p-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl space-y-4 animate-in zoom-in-95 duration-200 overflow-y-auto"
             >
-              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                <div className="flex items-center gap-2 text-blue-700 font-bold">
+              <div className="flex items-center justify-between border-b border-base-200 pb-3">
+                <div className="flex items-center gap-2 text-primary font-bold">
                   <Pencil className="h-5 w-5" />
                   <span>Edit Category</span>
                 </div>
@@ -271,7 +271,7 @@ export default function CategoriesPage() {
                     setEditingCategory(null);
                     setEditError("");
                   }}
-                  className="text-gray-400 hover:text-gray-650 cursor-pointer"
+                  className="text-base-content/50 hover:text-gray-650 cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -299,7 +299,7 @@ export default function CategoriesPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase">
+                <label className="text-xs font-bold text-base-content/60 uppercase">
                   Description
                 </label>
                 <textarea
@@ -317,7 +317,7 @@ export default function CategoriesPage() {
                   Category Icon
                 </label>
                 <input type="hidden" {...registerEdit("icon", { required: "Category icon is required" })} />
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 max-w-lg">
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-base-200 p-3.5 rounded-2xl border border-base-300/60 max-w-lg">
                   {Object.keys(ICON_MAP).map((iconKey) => {
                     const IconComponent = ICON_MAP[iconKey];
                     const isSelected = selectedIconEdit === iconKey;
@@ -329,7 +329,7 @@ export default function CategoriesPage() {
                         className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer active:scale-95 group ${
                           isSelected
                             ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-105"
-                            : "bg-white border-gray-200 text-gray-500 hover:text-gray-850 hover:border-gray-350"
+                            : "bg-base-100 border-gray-200 text-base-content/60 hover:text-gray-850 hover:border-gray-350"
                         }`}
                         title={iconKey}
                       >
@@ -350,7 +350,7 @@ export default function CategoriesPage() {
                     setEditingCategory(null);
                     setEditError("");
                   }}
-                  className="px-3.5 py-1.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-55 transition-colors"
+                  className="px-3.5 py-1.5 border border-gray-200 rounded-xl text-xs font-bold text-base-content/60 hover:bg-gray-55 transition-colors"
                 >
                   Cancel
                 </button>
@@ -373,7 +373,7 @@ export default function CategoriesPage() {
             placeholder="Search categories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border text-gray-800 border-gray-400 rounded-full text-sm bg-white placeholder-gray-450 focus:outline-none focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            className="w-full pl-10 pr-4 py-2 border text-base-content border-gray-400 rounded-full text-sm bg-base-100 placeholder-gray-450 focus:outline-none focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
           />
         </div>
 
@@ -385,10 +385,10 @@ export default function CategoriesPage() {
               onClick={() => {
                 router.push(`/wiki/${cat.slug}`);
               }}
-              className={`relative flex flex-col justify-between p-4 md:p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
+              className={`card card-compact card-bordered relative flex flex-col justify-between p-4 md:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
                 cat.is_pinned 
-                  ? "bg-blue-50/80 border-2 border-blue-400 hover:border-blue-500" 
-                  : "bg-white border border-gray-150 hover:border-blue-200"
+                  ? "bg-primary/10 border-2 border-primary hover:border-primary/80" 
+                  : "bg-base-100 border-base-200 hover:border-primary/40"
               }`}
             >
               {/* Overlay Link to make the whole card clickable */}
@@ -398,19 +398,19 @@ export default function CategoriesPage() {
                 {/* Header Row: Icon & Title on left, Buttons on right */}
                 <div className="flex items-center justify-between gap-3 pointer-events-auto">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50/80 border border-blue-100 flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:bg-blue-100/50">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50/80 border border-primary/20 flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:bg-blue-100/50">
                       {(() => {
                         const IconComponent = ICON_MAP[cat.icon || "BookOpen"] || Sparkles;
-                        return <IconComponent className="h-4 w-4 text-blue-600" />;
+                        return <IconComponent className="h-4 w-4 text-primary" />;
                       })()}
                     </div>
-                    <h3 className="text-sm md:text-base font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300 truncate">
+                    <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300 truncate">
                       {cat.name}
                     </h3>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {cat.total_articles > 0 && (
-                      <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full select-none">
+                      <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full select-none">
                         {cat.total_articles}<span className="hidden sm:inline"> articles</span>
                       </span>
                     )}
@@ -437,13 +437,13 @@ export default function CategoriesPage() {
                           }
                         }}
                         disabled={pinningCategoryId === cat.category_id}
-                        className={`p-1 rounded-lg hover:bg-slate-100 transition-all duration-150 cursor-pointer disabled:cursor-not-allowed ${
-                          cat.is_pinned ? "text-blue-600 hover:text-blue-700 bg-blue-50/50" : "text-gray-400 hover:text-blue-600"
+                        className={`p-1 rounded-lg hover:bg-base-200 transition-all duration-150 cursor-pointer disabled:cursor-not-allowed ${
+                          cat.is_pinned ? "text-primary hover:text-primary bg-blue-50/50" : "text-base-content/50 hover:text-primary"
                         }`}
                         title={cat.is_pinned ? "Unpin from Quick Portal" : "Pin to Quick Portal"}
                       >
                         {pinningCategoryId === cat.category_id ? (
-                          <Loader2 className="h-3.5 w-3.5 text-blue-600 animate-spin" />
+                          <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
                         ) : (
                           <Pin className={`h-3.5 w-3.5 ${cat.is_pinned ? 'fill-blue-600' : ''}`} style={{ transform: cat.is_pinned ? 'rotate(45deg)' : 'none' }} />
                         )}
@@ -455,7 +455,7 @@ export default function CategoriesPage() {
                           e.stopPropagation();
                           handleStartEdit(cat);
                         }}
-                        className="p-1 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-gray-55 transition-all duration-150 cursor-pointer"
+                        className="p-1 text-base-content/50 hover:text-primary rounded-lg hover:bg-gray-55 transition-all duration-150 cursor-pointer"
                         title="Edit Category"
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -465,7 +465,7 @@ export default function CategoriesPage() {
                 </div>
 
                 {/* Body: Description */}
-                <p className="text-xs text-gray-500 leading-relaxed line-clamp-4 md:pl-10.5">
+                <p className="text-xs text-base-content/60 leading-relaxed line-clamp-4 md:pl-10.5">
                   {cat.description || "No description provided."}
                 </p>
               </div>
