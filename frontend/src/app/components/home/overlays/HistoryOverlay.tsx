@@ -16,6 +16,8 @@ interface HistoryOverlayProps {
   setNewHistoryTitle: (title: string) => void;
   newHistoryContent: string;
   setNewHistoryContent: (content: string) => void;
+  newHistoryVideoUrl: string;
+  setNewHistoryVideoUrl: (url: string) => void;
   isSubmittingHistory: boolean;
   handleAddHistory: (e: React.FormEvent) => Promise<void>;
   getRelativeTime: (dateString: string) => string;
@@ -33,11 +35,20 @@ export default function HistoryOverlay({
   setNewHistoryTitle,
   newHistoryContent,
   setNewHistoryContent,
+  newHistoryVideoUrl,
+  setNewHistoryVideoUrl,
   isSubmittingHistory,
   handleAddHistory,
   getRelativeTime,
 }: HistoryOverlayProps) {
   const router = useRouter();
+
+  const getYouTubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
 
   if (!isOpen) return null;
 
@@ -59,7 +70,7 @@ export default function HistoryOverlay({
           >
             <ArrowLeft className="h-6 w-6 text-gray-900" />
           </button>
-          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider ml-2">
+          <span className="text-sm font-bold text-blue-400 uppercase tracking-wider ml-2">
             {showAddHistoryForm ? "Add History Event" : activeHistoryItem ? "Read History" : "Campus History"}
           </span>
         </div>
@@ -88,25 +99,35 @@ export default function HistoryOverlay({
         {showAddHistoryForm ? (
           <form onSubmit={handleAddHistory} className="max-w-xl mx-auto space-y-4 bg-white p-6 border border-gray-200 rounded-2xl shadow-xs text-left">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-500">Event Title</label>
+              <label className="text-xs font-extrabold uppercase text-black">Event Title</label>
               <input
                 type="text"
                 required
                 value={newHistoryTitle}
                 onChange={(e) => setNewHistoryTitle(e.target.value)}
                 placeholder="e.g. Inauguration of the Academic Blocks 2016"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-500">Content</label>
+              <label className="text-xs font-extrabold uppercase text-black">YouTube Video URL (Optional)</label>
+              <input
+                type="text"
+                value={newHistoryVideoUrl}
+                onChange={(e) => setNewHistoryVideoUrl(e.target.value)}
+                placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-extrabold uppercase text-black">Content</label>
               <textarea
                 required
                 rows={8}
                 value={newHistoryContent}
                 onChange={(e) => setNewHistoryContent(e.target.value)}
                 placeholder="Write the history details here..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <button
@@ -123,6 +144,23 @@ export default function HistoryOverlay({
             <span className="text-[10px] text-gray-400 font-semibold block">
               Posted: {getRelativeTime(activeHistoryItem.created_at)}
             </span>
+            {activeHistoryItem.video_url && (() => {
+              const videoId = getYouTubeId(activeHistoryItem.video_url);
+              if (videoId) {
+                return (
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md mt-4 border border-gray-150 relative z-10 pointer-events-auto">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title="YouTube video player"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
             <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pt-4 font-semibold border-t border-gray-100">
               {activeHistoryItem.content ? activeHistoryItem.content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : activeHistoryItem.description}
             </div>

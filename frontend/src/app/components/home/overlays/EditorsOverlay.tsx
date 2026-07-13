@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface EditorsOverlayProps {
   isOpen: boolean;
@@ -14,6 +15,9 @@ export default function EditorsOverlay({
   onClose,
   editors,
 }: EditorsOverlayProps) {
+  const { user } = useAuth();
+  const canSeeRoles = user?.role === "admin" || user?.role === "moderator";
+
   if (!isOpen) return null;
 
   return (
@@ -26,7 +30,7 @@ export default function EditorsOverlay({
           >
             <ArrowLeft className="h-6 w-6 text-gray-900" />
           </button>
-          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Active Wiki Editors</span>
+          <span className="text-sm font-bold text-blue-400 uppercase tracking-wider">Active Wiki Editors</span>
         </div>
       </header>
 
@@ -51,9 +55,11 @@ export default function EditorsOverlay({
                     <h4 className="text-base font-bold text-gray-800 truncate">{editor.name}</h4>
                     <p className="text-xs text-gray-400 font-medium truncate">{editor.email}</p>
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-150">
-                    {editor.role || "Bronze"}
-                  </span>
+                  {canSeeRoles && (
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-150">
+                      {editor.role || "Bronze"}
+                    </span>
+                  )}
                 </div>
               );
             })

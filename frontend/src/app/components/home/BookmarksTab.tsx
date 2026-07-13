@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bookmark as BookmarkIcon,
@@ -12,6 +12,7 @@ import {
   Compass,
 } from "lucide-react";
 import ParallaxBackground from "@/components/ParallaxBackground";
+import { db } from "@/lib/db";
 
 interface BookmarkItem {
   id: string;
@@ -82,23 +83,41 @@ export default function BookmarksTab({
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const [localBookmarks, setLocalBookmarks] = useState<BookmarkItem[]>([]);
+  const [limit, setLimit] = useState(5);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchLocalBookmarks = async (currentLimit: number) => {
+    try {
+      let allItems = await db.bookmarks.toArray();
+      
+      if (selectedCategory !== "All") {
+        allItems = allItems.filter(item => item.category === selectedCategory);
+      }
+      if (searchQuery.trim() !== "") {
+        const q = searchQuery.toLowerCase();
+        allItems = allItems.filter(item => 
+          item.title.toLowerCase().includes(q) || 
+          item.description.toLowerCase().includes(q)
+        );
+      }
+      
+      setTotalCount(allItems.length);
+      setLocalBookmarks(allItems.slice(0, currentLimit));
+    } catch (e) {
+      console.error("Failed to fetch bookmarks from Dexie:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchLocalBookmarks(limit);
+  }, [searchQuery, selectedCategory, limit, bookmarks]);
+
   // Categories list
   const categories = useMemo(() => {
     const set = new Set(bookmarks.map((b) => b.category));
     return Array.from(set);
   }, [bookmarks]);
-
-  // Filter bookmarks
-  const filteredBookmarks = useMemo(() => {
-    return bookmarks.filter((item) => {
-      const matchesCategory =
-        selectedCategory === "All" || item.category === selectedCategory;
-      const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [bookmarks, selectedCategory, searchQuery]);
 
   const handleCopyLink = (e: React.MouseEvent, item: BookmarkItem) => {
     e.preventDefault();
@@ -110,10 +129,10 @@ export default function BookmarksTab({
     });
   };
 
-  const handleDelete = (e: React.MouseEvent, itemId: string) => {
+  const handleDelete = async (e: React.MouseEvent, itemId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    removeBookmark(itemId);
+    await removeBookmark(itemId);
   };
 
   const handleCardClick = (pagePath: string) => {
@@ -194,57 +213,69 @@ export default function BookmarksTab({
 
             {/* Bookmark Grid Layout - Slim Row Cards */}
             <div className="flex-1 overflow-y-auto no-scrollbar pb-10 w-full">
-              {filteredBookmarks.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {filteredBookmarks.map((item) => {
-                    const pagePath = getPagePath(item);
-                    const isCopied = copiedId === item.id;
+              {localBookmarks.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {localBookmarks.map((item) => {
+                      const pagePath = getPagePath(item);
+                      const isCopied = copiedId === item.id;
 
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => handleCardClick(pagePath)}
-                        className="bg-white/90 border border-slate-200/60 hover:border-blue-400/80 rounded-xl p-4 flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] group cursor-pointer"
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => handleCardClick(pagePath)}
+                          className="bg-white/90 border border-slate-200/60 hover:border-blue-400/80 rounded-xl p-4 flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] group cursor-pointer"
+                        >
+                          <div className="min-w-0 flex-1 pr-3">
+                            {/* Card Content (Title & Category display) */}
+                            <h4 className="text-xs md:text-sm font-semibold text-slate-800 truncate leading-snug group-hover:text-blue-650 transition-colors">
+                              {item.title}
+                            </h4>
+                            <span className="text-[8px] font-bold uppercase tracking-wider block mt-1 text-blue-600">
+                              {getCategoryDisplayName(item.category)}
+                            </span>
+                          </div>
+
+                          {/* Actions aligned on the right, compact */}
+                          <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button
+                              onClick={(e) => handleCopyLink(e, item)}
+                              className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                                isCopied
+                                  ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                  : "bg-slate-100 hover:bg-slate-200 border-slate-150 text-slate-500"
+                              }`}
+                              title="Copy link"
+                            >
+                              {isCopied ? (
+                                <Check className="w-3.5 h-3.5" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                            <button
+                              onClick={(e) => handleDelete(e, item.id)}
+                              className="p-1.5 bg-slate-100 hover:bg-rose-50 border border-slate-150 hover:border-rose-100 text-slate-500 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
+                              title="Remove"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {localBookmarks.length < totalCount && (
+                    <div className="flex justify-center mt-6">
+                      <button
+                        onClick={() => setLimit(prev => prev + 5)}
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-all duration-150 active:scale-97 uppercase tracking-wider"
                       >
-                        <div className="min-w-0 flex-1 pr-3">
-                          {/* Card Content (Title & Category display) */}
-                          <h4 className="text-xs md:text-sm font-semibold text-slate-800 truncate leading-snug group-hover:text-blue-650 transition-colors">
-                            {item.title}
-                          </h4>
-                          <span className="text-[8px] font-bold uppercase tracking-wider block mt-1 text-blue-600">
-                            {getCategoryDisplayName(item.category)}
-                          </span>
-                        </div>
-
-                        {/* Actions aligned on the right, compact */}
-                        <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <button
-                            onClick={(e) => handleCopyLink(e, item)}
-                            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                              isCopied
-                                ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                : "bg-slate-100 hover:bg-slate-200 border-slate-150 text-slate-500"
-                            }`}
-                            title="Copy link"
-                          >
-                            {isCopied ? (
-                              <Check className="w-3.5 h-3.5" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                          <button
-                            onClick={(e) => handleDelete(e, item.id)}
-                            className="p-1.5 bg-slate-100 hover:bg-rose-50 border border-slate-150 hover:border-rose-100 text-slate-500 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
-                            title="Remove"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                        Load More
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-16 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl max-w-md mx-auto">
                   <Search className="h-8 w-8 text-white/50 mx-auto mb-2" />

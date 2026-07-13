@@ -18,5 +18,6 @@ export interface InfoboxRow {
 export interface InfoboxData {
   image: string;
   imageAlt: string;
+  description?: string;
   rows: InfoboxRow[];
 }

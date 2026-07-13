@@ -4,6 +4,7 @@ import React from "react";
 import { X, Trash2, Tag } from "lucide-react";
 import { EditableCell } from "@/components/article/editable-cell";
 import { InfoboxData } from "@/lib/types";
+import { apiService } from "@/api";
 
 interface WikiInfoBoxProps {
   rightSidebarOpen: boolean;
@@ -98,12 +99,21 @@ export default function WikiInfoBox({
             </div>
           </div>
 
+          {/* Description below image in read mode */}
+          {parsed.infobox.description && !isEditing && (
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+              <p className="text-xs text-gray-500 italic leading-relaxed whitespace-pre-wrap">
+                {parsed.infobox.description}
+              </p>
+            </div>
+          )}
+
           {/* Inline Image Editor Fields (In-place, only shown when editing) */}
           {isEditing && (
             <div className="p-6 border-b border-gray-100 flex flex-col gap-4 bg-gray-50 animate-in fade-in duration-300">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-bold text-gray-450 tracking-wider uppercase">
-                  Image Options
+                  Image & Description Options
                 </h4>
                 {parsed.infobox.image && (
                   <button
@@ -141,6 +151,46 @@ export default function WikiInfoBox({
                 />
               </div>
 
+              {/* Upload Image input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                  Or Upload Local Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    // Validate image size: 2MB limit in frontend
+                    if (file.size > 2 * 1024 * 1024) {
+                      alert("Image size cannot exceed 2MB");
+                      e.target.value = ""; // reset
+                      return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    try {
+                      const res = await apiService.uploadMedia(formData);
+                      if (res && res.url) {
+                        handleInfoboxChange({
+                          ...parsed.infobox,
+                          image: res.url,
+                        });
+                        alert("Image uploaded successfully!");
+                      }
+                    } catch (err: any) {
+                      console.error("Error uploading image:", err);
+                      alert(err.response?.data?.error || err.message || "Failed to upload image");
+                    }
+                  }}
+                  className="w-full border border-gray-200 hover:border-gray-300 focus:border-indigo-500 rounded-xl px-2 py-1 text-xs text-gray-800 bg-white focus:outline-none transition-all duration-150 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                />
+              </div>
+
               {/* Alt Text input */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
@@ -157,6 +207,25 @@ export default function WikiInfoBox({
                   }
                   placeholder="e.g. Campus View"
                   className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm"
+                />
+              </div>
+
+              {/* Description Input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
+                  Article Description
+                </label>
+                <textarea
+                  value={parsed.infobox.description || ""}
+                  onChange={(e) =>
+                    handleInfoboxChange({
+                      ...parsed.infobox,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Enter a short description..."
+                  rows={3}
+                  className="w-full border border-gray-200 hover:border-gray-350 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-gray-800 placeholder-gray-400 bg-white focus:outline-none transition-all duration-150 shadow-sm resize-none"
                 />
               </div>
             </div>

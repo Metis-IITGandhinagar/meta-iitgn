@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -13,6 +13,8 @@ import {
 import { apiService } from "@/api";
 import BottomNavbar from "@/components/BottomNavbar";
 import { useAuth } from "@/hooks/useAuth";
+import { db } from "@/lib/db";
+import { loadCachedCollection } from "@/lib/cache";
 
 // Subcomponents
 import LeftPanel from "./components/home/LeftPanel";
@@ -29,8 +31,17 @@ import TriviaOverlay from "./components/home/overlays/TriviaOverlay";
 import HistoryOverlay from "./components/home/overlays/HistoryOverlay";
 import EditorsOverlay from "./components/home/overlays/EditorsOverlay";
 
+let activeHomeDataPromise: Promise<void> | null = null;
+let activeHomeDataPromiseIsForce = false;
+
 export default function HomePage() {
-  const { user, auth, loading: authLoading } = useAuth();
+  const {
+    user,
+    auth,
+    loading: authLoading,
+    totalPagesCount,
+    setTotalPagesCount,
+  } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false); // Collapsed by default
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -69,96 +80,429 @@ export default function HomePage() {
   const [showAddHistoryForm, setShowAddHistoryForm] = useState(false);
   const [newHistoryTitle, setNewHistoryTitle] = useState("");
   const [newHistoryContent, setNewHistoryContent] = useState("");
+  const [newHistoryVideoUrl, setNewHistoryVideoUrl] = useState("");
   const [isSubmittingHistory, setIsSubmittingHistory] = useState(false);
 
   const [editors, setEditors] = useState<any[]>([]);
-  const [totalPagesCount, setTotalPagesCount] = useState<number | null>(null);
 
-  const loadHomeData = async () => {
+  // Pagination states for overlays
+  const [newPageNumber, setNewPageNumber] = useState(1);
+  const [newPagesHasMore, setNewPagesHasMore] = useState(true);
+
+  const [updatedPageNumber, setUpdatedPageNumber] = useState(1);
+  const [updatedPagesHasMore, setUpdatedPagesHasMore] = useState(true);
+
+  const [pendingPageNumber, setPendingPageNumber] = useState(1);
+  const [pendingPagesHasMore, setPendingPagesHasMore] = useState(true);
+
+  const loadHomeData = useCallback(async (options?: { forceRefresh?: boolean }) => {
+    const force = !!options?.forceRefresh;
+
+    if (activeHomeDataPromise) {
+      if (force && !activeHomeDataPromiseIsForce) {
+        await activeHomeDataPromise;
+      } else {
+        return activeHomeDataPromise;
+      }
+    }
+
+    activeHomeDataPromiseIsForce = force;
+    activeHomeDataPromise = (async () => {
+      try {
+        setNewPageNumber(1);
+        setUpdatedPageNumber(1);
+        setPendingPageNumber(1);
+
+        // 1. Load from Dexie immediately for Stale-While-Revalidate instant render
+        const [
+          cachedNews,
+          cachedEditors,
+          cachedPending,
+          cachedUpdated,
+          cachedBookmarks,
+        ] = await Promise.all([
+          db.news.toArray(),
+          db.contributors.toArray(),
+          db.pendingpages.toArray(),
+          db.updatedpages.toArray(),
+          db.bookmarks.toArray(),
+        ]);
+
+        setNewsPages(cachedNews.slice(0, 5));
+        setEditors(cachedEditors);
+        setPendingPages(cachedPending.slice(0, 4));
+        setPendingPagesHasMore(cachedPending.length > 4);
+
+        const cachedNewPages = cachedUpdated.filter((p: any) => p._type === "new");
+        const cachedUpdatedPages = cachedUpdated.filter((p: any) => p._type === "updated");
+        setNewPages(cachedNewPages.slice(0, 4));
+        setNewPagesHasMore(cachedNewPages.length > 4);
+        setUpdatedPages(cachedUpdatedPages.slice(0, 4));
+        setUpdatedPagesHasMore(cachedUpdatedPages.length > 4);
+
+        const cachedMerged = [...cachedNewPages, ...cachedUpdatedPages];
+        const cachedUniquePagesMap = new Map();
+        for (const page of cachedMerged) {
+          cachedUniquePagesMap.set(page.slug || page.page_id, page);
+        }
+        const cachedUniquePages = Array.from(cachedUniquePagesMap.values());
+
+        const cachedTrivia = cachedUniquePages
+          .filter((p: any) => {
+            return (
+              p.metadata &&
+              typeof p.metadata === "object" &&
+              (p.metadata as any).category?.toLowerCase() === "trivia"
+            );
+          })
+          .sort((a: any, b: any) => {
+            const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+            const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+            return dateB - dateA;
+          });
+        setTriviaPages(cachedTrivia);
+
+        const cachedHistory = cachedUniquePages
+          .filter((p: any) => {
+            return (
+              p.metadata &&
+              typeof p.metadata === "object" &&
+              (p.metadata as any).category?.toLowerCase() === "history"
+            );
+          })
+          .sort((a: any, b: any) => {
+            const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+            const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+            return dateB - dateA;
+          });
+        setHistoryPages(cachedHistory);
+
+        let finalBookmarks = cachedBookmarks;
+        if (finalBookmarks.length === 0 && !user) {
+          const defaultBookmarks = [
+            {
+              id: "1",
+              title: "Computer Science & Engineering",
+              category: "departments",
+              slug: "computer-science",
+              description:
+                "A leading department focused on AI, machine learning, systems, theory, and cryptography.",
+            },
+            {
+              id: "2",
+              title: "Amalthea",
+              category: "fests",
+              slug: "amalthea",
+              description:
+                "IITGN's annual technical summit showcasing innovations, technical contests, and guest lectures.",
+            },
+            {
+              id: "3",
+              title: "CS 101: Introduction to Computing",
+              category: "courses",
+              slug: "cs-101",
+              description:
+                "A foundational course introducing algorithms, Python programming, and computational thinking.",
+            },
+            {
+              id: "4",
+              title: "The Coding Club",
+              category: "clubs",
+              slug: "coding-club",
+              description:
+                "The premier student tech hub for developers, competitive programmers, and designers.",
+            },
+            {
+              id: "5",
+              title: "Cognitive Science Laboratory",
+              category: "research",
+              slug: "cognitive-science-lab",
+              description:
+                "Interdisciplinary research combining neuroscience, psychology, and artificial intelligence.",
+            },
+            {
+              id: "6",
+              title: "Grading Policy",
+              category: "policies",
+              slug: "grading-policy",
+              description:
+                "Details on letter grades, cumulative performance indices (CPI), and minimum passing scores.",
+            },
+          ];
+          await db.bookmarks.bulkAdd(defaultBookmarks);
+          finalBookmarks = defaultBookmarks;
+        }
+        setBookmarks(finalBookmarks);
+
+        const metaInfo = await db.meta.get("updatedpages");
+        if (metaInfo && typeof metaInfo.count === "number") {
+          setTotalPagesCount(metaInfo.count);
+        }
+
+        // 2. Fetch or reuse sync check
+        const FIVE_HOURS = 5 * 60 * 60 * 1000;
+        let syncInfo: any = null;
+        let cacheValid = false;
+        const cachedSyncStr = localStorage.getItem("syncCheck");
+
+        if (cachedSyncStr && !force) {
+          try {
+            const parsed = JSON.parse(cachedSyncStr);
+            const cachedUserId = parsed.user_id;
+            const currentUserId = user?.user_id || null;
+            if (
+              cachedUserId === currentUserId &&
+              Date.now() - parsed.timestamp < FIVE_HOURS
+            ) {
+              syncInfo = parsed.data;
+              cacheValid = true;
+            }
+          } catch (e) {
+            console.error("Failed to parse cached syncCheck:", e);
+          }
+        }
+
+        if (cacheValid) {
+          setLoading(false);
+          return;
+        }
+
+        try {
+          syncInfo = await apiService.getSyncCheck();
+          localStorage.setItem(
+            "syncCheck",
+            JSON.stringify({
+              timestamp: Date.now(),
+              user_id: user?.user_id || null,
+              data: syncInfo,
+            })
+          );
+        } catch (err) {
+          console.error("Sync check failed:", err);
+          if (cachedSyncStr) {
+            try {
+              syncInfo = JSON.parse(cachedSyncStr).data;
+            } catch (e) {
+              // ignore
+            }
+          }
+        }
+
+        if (!syncInfo) {
+          setLoading(false);
+          return;
+        }
+
+        // 3. Sync each collection using the reusable loadCachedCollection helper
+        const syncPromises: Promise<any>[] = [
+          loadCachedCollection({
+            key: "news",
+            table: db.news,
+            serverInfo: syncInfo.news,
+            fetcher: () => apiService.getNewsList({ page: 1, limit: 10 }),
+            mapper: (res: any) =>
+              res.news.map((item: any) => ({ ...item, id: String(item.page_id) })),
+            onDataLoaded: (data) => {
+              setNewsPages(data.slice(0, 5));
+            },
+            forceRefresh: force,
+          }),
+
+          loadCachedCollection({
+            key: "contributors",
+            table: db.contributors,
+            serverInfo: syncInfo.contributors,
+            fetcher: () => apiService.getUsers(),
+            mapper: (data: any[]) =>
+              data.map((item: any) => ({ ...item, id: String(item.user_id) })),
+            onDataLoaded: (data) => {
+              setEditors(data);
+            },
+            forceRefresh: force,
+          }),
+
+          loadCachedCollection({
+            key: "pendingpages",
+            table: db.pendingpages,
+            serverInfo: syncInfo.pendingpages,
+            fetcher: () => apiService.getPendingDrafts(undefined, 10, 1),
+            mapper: (drafts: any[]) =>
+              drafts
+                .filter((d: any) => d.status === "in_review")
+                .map((item: any) => ({ ...item, id: String(item.pending_id) })),
+            onDataLoaded: (data) => {
+              setPendingPages(data.slice(0, 4));
+              setPendingPagesHasMore(data.length > 4);
+            },
+            forceRefresh: force,
+          }),
+
+          loadCachedCollection({
+            key: "updatedpages",
+            table: db.updatedpages,
+            serverInfo: syncInfo.updatedpages,
+            fetcher: async () => {
+              const [recentNew, recentUpdated] = await Promise.all([
+                apiService.getRecentNewPages(5, 1),
+                apiService.getRecentUpdatedPages(5, 1),
+              ]);
+              return { recentNew, recentUpdated };
+            },
+            mapper: (data: { recentNew: any[]; recentUpdated: any[] }) => [
+              ...data.recentNew.map((p: any) => ({
+                ...p,
+                id: `new-${p.page_id}`,
+                _type: "new",
+              })),
+              ...data.recentUpdated.map((p: any) => ({
+                ...p,
+                id: `updated-${p.page_id}`,
+                _type: "updated",
+              })),
+            ],
+            onDataLoaded: (data) => {
+              const finalNewPages = data.filter((p: any) => p._type === "new");
+              const finalUpdatedPages = data.filter((p: any) => p._type === "updated");
+
+              setNewPages(finalNewPages.slice(0, 4));
+              setNewPagesHasMore(finalNewPages.length > 4);
+              setUpdatedPages(finalUpdatedPages.slice(0, 4));
+              setUpdatedPagesHasMore(finalUpdatedPages.length > 4);
+
+              const merged = [...finalNewPages, ...finalUpdatedPages];
+              const uniquePagesMap = new Map();
+              for (const page of merged) {
+                uniquePagesMap.set(page.slug || page.page_id, page);
+              }
+              const uniquePages = Array.from(uniquePagesMap.values());
+
+              const filteredTrivia = uniquePages
+                .filter((p: any) => {
+                  return (
+                    p.metadata &&
+                    typeof p.metadata === "object" &&
+                    (p.metadata as any).category?.toLowerCase() === "trivia"
+                  );
+                })
+                .sort((a: any, b: any) => {
+                  const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+                  const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+                  return dateB - dateA;
+                });
+              setTriviaPages(filteredTrivia);
+
+              const filteredHistory = uniquePages
+                .filter((p: any) => {
+                  return (
+                    p.metadata &&
+                    typeof p.metadata === "object" &&
+                    (p.metadata as any).category?.toLowerCase() === "history"
+                  );
+                })
+                .sort((a: any, b: any) => {
+                  const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+                  const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+                  return dateB - dateA;
+                });
+              setHistoryPages(filteredHistory);
+            },
+            forceRefresh: force,
+          }),
+        ];
+
+        if (user) {
+          syncPromises.push(
+            loadCachedCollection({
+              key: "bookmarks",
+              table: db.bookmarks,
+              serverInfo: syncInfo.bookmarks,
+              fetcher: () => apiService.getBookmarksList(),
+              onDataLoaded: (data) => {
+                setBookmarks(data);
+              },
+              forceRefresh: force,
+            })
+          );
+        }
+
+        await Promise.all(syncPromises);
+
+        if (syncInfo.updatedpages?.count !== undefined) {
+          setTotalPagesCount(syncInfo.updatedpages.count);
+        }
+      } catch (err) {
+        console.error("Error loading home page activity lists:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return activeHomeDataPromise;
+  }, [user, setTotalPagesCount]);
+
+  const loadMoreNewPages = async () => {
     try {
-      const [recentNew, recentUpdated, pending, users, stats] = await Promise.all([
-        apiService.getRecentNewPages(15),
-        apiService.getRecentUpdatedPages(15),
-        apiService.getPendingDrafts(),
-        apiService.getUsers(),
-        apiService.getPageStats(),
-      ]);
-      setNewPages(recentNew);
-      setUpdatedPages(recentUpdated);
-      setPendingPages(pending.filter((d: any) => d.status === "in_review"));
-      setEditors(users);
-      if (stats && typeof stats.totalPages === "number") {
-        setTotalPagesCount(stats.totalPages);
-      }
-
-      // Fetch 10 recent new and 10 recent updated pages, merge and filter
-      const [recentNewList, recentUpdatedList] = await Promise.all([
-        apiService.getRecentNewPages(10),
-        apiService.getRecentUpdatedPages(10)
-      ]);
-
-      const merged = [...recentNewList, ...recentUpdatedList];
-      const uniquePagesMap = new Map();
-      for (const page of merged) {
-        uniquePagesMap.set(page.slug || page.page_id, page);
-      }
-      const uniquePages = Array.from(uniquePagesMap.values());
-
-      const filteredNews = uniquePages.filter((p: any) => {
-        return p.metadata && typeof p.metadata === "object" && 
-          ((p.metadata as any).category?.toLowerCase() === "news");
-      });
-
-      // Sort by updated_at (or created_at fallback) desc
-      filteredNews.sort((a: any, b: any) => {
-        const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-        const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-        return dateB - dateA;
-      });
-
-      setNewsPages(filteredNews);
-
-      const filteredTrivia = uniquePages.filter((p: any) => {
-        return p.metadata && typeof p.metadata === "object" && 
-          ((p.metadata as any).category?.toLowerCase() === "trivia");
-      });
-      filteredTrivia.sort((a: any, b: any) => {
-        const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-        const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-        return dateB - dateA;
-      });
-      setTriviaPages(filteredTrivia);
-
-      const filteredHistory = uniquePages.filter((p: any) => {
-        return p.metadata && typeof p.metadata === "object" && 
-          ((p.metadata as any).category?.toLowerCase() === "history");
-      });
-      filteredHistory.sort((a: any, b: any) => {
-        const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-        const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-        return dateB - dateA;
-      });
-      setHistoryPages(filteredHistory);
+      const nextPage = newPageNumber + 1;
+      const recentNew = await apiService.getRecentNewPages(4, nextPage);
+      setNewPages((prev) => [...prev, ...recentNew]);
+      setNewPagesHasMore(recentNew.length === 4);
+      setNewPageNumber(nextPage);
     } catch (err) {
-      console.error("Error loading home page activity lists:", err);
-    } finally {
-      setLoading(false);
+      console.error("Error loading more new pages:", err);
     }
   };
 
-  useEffect(() => {
-    loadHomeData();
-  }, []);
+  const loadMoreUpdatedPages = async () => {
+    try {
+      const nextPage = updatedPageNumber + 1;
+      const recentUpdated = await apiService.getRecentUpdatedPages(4, nextPage);
+      setUpdatedPages((prev) => [...prev, ...recentUpdated]);
+      setUpdatedPagesHasMore(recentUpdated.length === 4);
+      setUpdatedPageNumber(nextPage);
+    } catch (err) {
+      console.error("Error loading more updated pages:", err);
+    }
+  };
 
-  const handleReview = async (pendingId: number, action: "approve" | "reject") => {
+  const loadMorePendingPages = async () => {
+    try {
+      const nextPage = pendingPageNumber + 1;
+      const pending = await apiService.getPendingDrafts(undefined, 4, nextPage);
+      const filtered = pending.filter((d: any) => d.status === "in_review");
+      setPendingPages((prev) => [...prev, ...filtered]);
+      setPendingPagesHasMore(filtered.length === 4);
+      setPendingPageNumber(nextPage);
+    } catch (err) {
+      console.error("Error loading more pending pages:", err);
+    }
+  };
+
+  const lastUserRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (authLoading || auth === null) return;
+
+    const currentUserId = user ? String(user.user_id) : "guest";
+    if (lastUserRef.current !== currentUserId) {
+      lastUserRef.current = currentUserId;
+      loadHomeData();
+    }
+  }, [user, auth, authLoading, loadHomeData]);
+
+  const handleReview = async (
+    pendingId: number,
+    action: "approve" | "reject"
+  ) => {
     try {
       await apiService.reviewDraft(pendingId, {
         reviewer_id: user?.user_id || 0,
         action: action,
-        rejection_reason: action === "reject" ? "Rejected by reviewer/moderator." : undefined,
+        rejection_reason:
+          action === "reject" ? "Rejected by reviewer/moderator." : undefined,
       });
-      alert(`Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`);
-      loadHomeData();
+      alert(
+        `Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`
+      );
+      loadHomeData({ forceRefresh: true });
     } catch (err: any) {
       console.error(err);
       alert(`Error: ${err.message || "Failed to process review"}`);
@@ -170,7 +514,12 @@ export default function HomePage() {
     if (!newNewsTitle || !newNewsContent) return;
     setIsSubmittingNews(true);
     try {
-      const slug = "news-" + newNewsTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const slug =
+        "news-" +
+        newNewsTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
       const payload = {
         page_id: null,
         title: newNewsTitle,
@@ -196,7 +545,7 @@ ${newNewsContent}`,
       setNewNewsTitle("");
       setNewNewsContent("");
       setShowAddNewsForm(false);
-      loadHomeData();
+      loadHomeData({ forceRefresh: true });
     } catch (err: any) {
       console.error(err);
       alert(`Error submitting news: ${err.message || "Failed to submit"}`);
@@ -210,7 +559,12 @@ ${newNewsContent}`,
     if (!newTriviaTitle || !newTriviaContent) return;
     setIsSubmittingTrivia(true);
     try {
-      const slug = "trivia-" + newTriviaTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const slug =
+        "trivia-" +
+        newTriviaTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
       const payload = {
         page_id: null,
         title: newTriviaTitle,
@@ -236,7 +590,7 @@ ${newTriviaContent}`,
       setNewTriviaTitle("");
       setNewTriviaContent("");
       setShowAddTriviaForm(false);
-      loadHomeData();
+      loadHomeData({ forceRefresh: true });
     } catch (err: any) {
       console.error(err);
       alert(`Error submitting trivia: ${err.message || "Failed to submit"}`);
@@ -250,7 +604,12 @@ ${newTriviaContent}`,
     if (!newHistoryTitle || !newHistoryContent) return;
     setIsSubmittingHistory(true);
     try {
-      const slug = "history-" + newHistoryTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const slug =
+        "history-" +
+        newHistoryTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
       const payload = {
         page_id: null,
         title: newHistoryTitle,
@@ -267,6 +626,7 @@ rows:
 
 ${newHistoryContent}`,
         metadata: { category: "history", slug },
+        video_url: newHistoryVideoUrl.trim() || null,
         editor_id: 0,
         base_version: null,
       };
@@ -275,8 +635,9 @@ ${newHistoryContent}`,
       alert("History page submitted for review!");
       setNewHistoryTitle("");
       setNewHistoryContent("");
+      setNewHistoryVideoUrl("");
       setShowAddHistoryForm(false);
-      loadHomeData();
+      loadHomeData({ forceRefresh: true });
     } catch (err: any) {
       console.error(err);
       alert(`Error submitting history: ${err.message || "Failed to submit"}`);
@@ -296,7 +657,8 @@ ${newHistoryContent}`,
 
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
     return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
   }
 
@@ -326,69 +688,14 @@ ${newHistoryContent}`,
 
   // Bookmarks states
   const [bookmarks, setBookmarks] = useState<
-    Array<{ id: string; title: string; category: string; description: string }>
+    Array<{
+      id: string;
+      title: string;
+      category: string;
+      description: string;
+      bookmark_id?: number;
+    }>
   >([]);
-
-  // Load bookmarks on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("wiki-bookmarks");
-    if (saved) {
-      try {
-        setBookmarks(JSON.parse(saved));
-      } catch (e) {
-        console.error(e);
-      }
-    } else {
-      const defaultBookmarks = [
-        {
-          id: "1",
-          title: "Computer Science & Engineering",
-          category: "departments",
-          slug: "computer-science",
-          description:
-            "A leading department focused on AI, machine learning, systems, theory, and cryptography.",
-        },
-        {
-          id: "2",
-          title: "Amalthea",
-          category: "fests",
-          slug: "amalthea",
-          description:
-            "IITGN's annual technical summit showcasing innovations, technical contests, and guest lectures.",
-        },
-        {
-          id: "3",
-          title: "CS 101: Introduction to Computing",
-          category: "courses",
-          slug: "cs-101",
-          description: "A foundational course introducing algorithms, Python programming, and computational thinking.",
-        },
-        {
-          id: "4",
-          title: "The Coding Club",
-          category: "clubs",
-          slug: "coding-club",
-          description: "The premier student tech hub for developers, competitive programmers, and designers.",
-        },
-        {
-          id: "5",
-          title: "Cognitive Science Laboratory",
-          category: "research",
-          slug: "cognitive-science-lab",
-          description: "Interdisciplinary research combining neuroscience, psychology, and artificial intelligence.",
-        },
-        {
-          id: "6",
-          title: "Grading Policy",
-          category: "policies",
-          slug: "grading-policy",
-          description: "Details on letter grades, cumulative performance indices (CPI), and minimum passing scores.",
-        },
-      ];
-      setBookmarks(defaultBookmarks);
-      localStorage.setItem("wiki-bookmarks", JSON.stringify(defaultBookmarks));
-    }
-  }, []);
 
   // Scroll to top and reset scroll state on tab change
   useEffect(() => {
@@ -399,10 +706,23 @@ ${newHistoryContent}`,
     setIsScrolled(false);
   }, [activeTab]);
 
-  const removeBookmark = (id: string) => {
-    const updated = bookmarks.filter((b) => b.id !== id);
-    setBookmarks(updated);
-    localStorage.setItem("wiki-bookmarks", JSON.stringify(updated));
+  const removeBookmark = async (id: string) => {
+    try {
+      const bObj = bookmarks.find((b) => b.id === id);
+      await db.bookmarks.delete(id);
+
+      const toDeleteId = bObj?.bookmark_id || Number(id);
+      if (toDeleteId && !isNaN(toDeleteId)) {
+        await apiService.removeBookmark(toDeleteId).catch((err) => {
+          console.error("Failed to delete bookmark from server:", err);
+        });
+      }
+
+      const updated = bookmarks.filter((b) => b.id !== id);
+      setBookmarks(updated);
+    } catch (e) {
+      console.error("Error removing bookmark:", e);
+    }
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -411,9 +731,7 @@ ${newHistoryContent}`,
     if (!q) {
       return;
     }
-    router.push(
-      `/search-results?query=${encodeURIComponent(q)}`
-    );
+    router.push(`/search-results?query=${encodeURIComponent(q)}`);
   };
 
   const spawnHearts = (e: React.MouseEvent) => {
@@ -501,15 +819,14 @@ ${newHistoryContent}`,
         />
 
         {/* Split Screen Layout */}
-        <div
-          className="flex-1 flex flex-col lg:flex-row h-auto lg:h-full w-full bg-white relative min-w-full shrink-0 lg:min-w-0 lg:shrink transition-transform duration-300 ease-in-out"
-        >
+        <div className="flex-1 flex flex-col lg:flex-row h-auto lg:h-full w-full bg-white relative min-w-full shrink-0 lg:min-w-0 lg:shrink transition-transform duration-300 ease-in-out">
           {/* Right Panel: Scrollable Hero + Highlights Feed */}
           <div
             className="flex-1 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto scroll-smooth relative"
             id="right-scroll-panel"
             onScroll={(e) => {
-              const threshold = activeTab === "home" ? (window?.innerHeight || 700) - 80 : 50;
+              const threshold =
+                activeTab === "home" ? (window?.innerHeight || 700) - 80 : 50;
               const scrolled = e.currentTarget.scrollTop > threshold;
               if (scrolled !== isScrolled) {
                 setIsScrolled(scrolled);
@@ -517,11 +834,13 @@ ${newHistoryContent}`,
             }}
           >
             {/* Slim navigation bar for desktop only */}
-            <div className={`hidden lg:flex sticky mx-auto w-fit top-3 z-30 items-center gap-1 transition-all duration-300 px-4 py-1.5 rounded-full select-none -mb-11 ${
-              activeTab === "home" && !isScrolled
-                ? "bg-white/10 backdrop-blur-md border border-white/10 shadow-none"
-                : "bg-white/25 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.06)]"
-            }`}>
+            <div
+              className={`hidden lg:flex sticky mx-auto w-fit top-3 z-30 items-center gap-1 transition-all duration-300 px-4 py-1.5 rounded-full select-none -mb-11 ${
+                activeTab === "home" && !isScrolled
+                  ? "bg-white/10 backdrop-blur-md border border-white/10 shadow-none"
+                  : "bg-white/25 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.06)]"
+              }`}
+            >
               {[
                 { id: "home", label: "Home", icon: Home },
                 { id: "search", label: "Search", icon: Search },
@@ -529,14 +848,14 @@ ${newHistoryContent}`,
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
-                
+
                 const buttonStyle = !isScrolled
-                  ? (isActive
-                      ? "bg-white/20 text-white border border-white/25 shadow-xs"
-                      : "text-white/70 hover:bg-white/10 hover:text-white")
-                  : (isActive
-                      ? "bg-slate-900/15 text-slate-950 border border-slate-900/20 shadow-xs"
-                      : "text-slate-700 hover:bg-slate-900/5 hover:text-slate-950");
+                  ? isActive
+                    ? "bg-white/20 text-white border border-white/25 shadow-xs"
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                  : isActive
+                    ? "bg-slate-900/15 text-slate-950 border border-slate-900/20 shadow-xs"
+                    : "text-slate-700 hover:bg-slate-900/5 hover:text-slate-950";
 
                 return (
                   <button
@@ -613,6 +932,8 @@ ${newHistoryContent}`,
         onClose={() => setShowAllNew(false)}
         newPages={newPages}
         getRelativeTime={getRelativeTime}
+        hasMore={newPagesHasMore}
+        onLoadMore={loadMoreNewPages}
       />
 
       <UpdatedPagesOverlay
@@ -620,6 +941,8 @@ ${newHistoryContent}`,
         onClose={() => setShowAllUpdated(false)}
         updatedPages={updatedPages}
         getRelativeTime={getRelativeTime}
+        hasMore={updatedPagesHasMore}
+        onLoadMore={loadMoreUpdatedPages}
       />
 
       <PendingPagesOverlay
@@ -628,22 +951,13 @@ ${newHistoryContent}`,
         pendingPages={pendingPages}
         getRelativeTime={getRelativeTime}
         handleReview={handleReview}
+        hasMore={pendingPagesHasMore}
+        onLoadMore={loadMorePendingPages}
       />
 
       <NewsOverlay
         isOpen={showAllNews}
         onClose={() => setShowAllNews(false)}
-        newsPages={newsPages}
-        activeNewsItem={activeNewsItem}
-        setActiveNewsItem={setActiveNewsItem}
-        showAddNewsForm={showAddNewsForm}
-        setShowAddNewsForm={setShowAddNewsForm}
-        newNewsTitle={newNewsTitle}
-        setNewNewsTitle={setNewNewsTitle}
-        newNewsContent={newNewsContent}
-        setNewNewsContent={setNewNewsContent}
-        isSubmittingNews={isSubmittingNews}
-        handleAddNews={handleAddNews}
         getRelativeTime={getRelativeTime}
       />
 
@@ -676,6 +990,8 @@ ${newHistoryContent}`,
         setNewHistoryTitle={setNewHistoryTitle}
         newHistoryContent={newHistoryContent}
         setNewHistoryContent={setNewHistoryContent}
+        newHistoryVideoUrl={newHistoryVideoUrl}
+        setNewHistoryVideoUrl={setNewHistoryVideoUrl}
         isSubmittingHistory={isSubmittingHistory}
         handleAddHistory={handleAddHistory}
         getRelativeTime={getRelativeTime}

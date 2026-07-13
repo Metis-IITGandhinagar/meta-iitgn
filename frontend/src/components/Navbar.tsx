@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { apiService } from "@/api";
+import { db } from "@/lib/db";
 import Link from "next/link";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
 import {
@@ -419,34 +421,48 @@ export default function Navbar({
                   </button>
                   <button
                     onClick={() => {
-                      const title = document.title || pathname.split("/").pop() || "Wiki Page";
-                      const slug = pathname.split("/").pop() || "";
-                      const category = pathname.split("/")[2] || "general";
-                      
-                      const saved = localStorage.getItem("wiki-bookmarks");
-                      let currentBookmarks = [];
-                      if (saved) {
+                      const cleanPath = pathname.replace(/\/$/, "");
+                      const title = document.title || cleanPath.split("/").pop() || "Wiki Page";
+                      const slug = cleanPath.split("/").pop() || "";
+                      const category = cleanPath.split("/")[2] || "general";
+                      const titleClean = title.replace(" - META IITGN", "").trim();
+                      const bookmarkSlug = slug;
+
+                      if (!window.confirm(`Are you sure you want to bookmark "${titleClean}"?`)) {
+                        setMoreMenuOpen(false);
+                        return;
+                      }
+
+                      db.bookmarks.where("slug").equals(bookmarkSlug).toArray().then(async (exists) => {
+                        if (exists.length > 0) {
+                          alert("Page is already bookmarked!");
+                          setMoreMenuOpen(false);
+                          return;
+                        }
+
                         try {
-                          currentBookmarks = JSON.parse(saved);
-                        } catch (e) {}
-                      }
-                      
-                      const alreadyExists = currentBookmarks.some((b: any) => b.slug === slug);
-                      if (!alreadyExists) {
-                        const newBookmark = {
-                          id: Date.now().toString(),
-                          title: title.replace(" - META IITGN", "").trim(),
-                          category: category,
-                          slug: slug,
-                          description: `Bookmarked article: ${title.replace(" - META IITGN", "").trim()}`
-                        };
-                        currentBookmarks.push(newBookmark);
-                        localStorage.setItem("wiki-bookmarks", JSON.stringify(currentBookmarks));
-                        alert("Page bookmarked successfully!");
-                      } else {
-                        alert("Page is already bookmarked!");
-                      }
-                      setMoreMenuOpen(false);
+                          let bookmarkObj: any;
+                          if (user) {
+                            bookmarkObj = await apiService.addBookmark({ slug: bookmarkSlug });
+                          } else {
+                            bookmarkObj = {
+                              bookmark_id: Date.now(),
+                              id: `guest-${Date.now()}`,
+                              title: titleClean,
+                              category: category,
+                              slug: bookmarkSlug,
+                              description: `Bookmarked article: ${titleClean}`
+                            };
+                          }
+
+                          await db.bookmarks.put(bookmarkObj);
+                          alert("Page bookmarked successfully!");
+                        } catch (err: any) {
+                          console.error("Failed to add bookmark:", err);
+                          alert(err.response?.data?.error || err.message || "Failed to bookmark page");
+                        }
+                        setMoreMenuOpen(false);
+                      });
                     }}
                     className="w-full text-left px-4 py-2.5 text-xs text-slate-800 hover:text-slate-950 hover:bg-slate-100 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >

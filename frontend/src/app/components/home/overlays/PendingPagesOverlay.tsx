@@ -9,6 +9,8 @@ interface PendingPagesOverlayProps {
   pendingPages: any[];
   getRelativeTime: (dateString: string) => string;
   handleReview: (pending_id: number, action: "approve" | "reject") => Promise<void>;
+  hasMore: boolean;
+  onLoadMore: () => void;
 }
 
 export default function PendingPagesOverlay({
@@ -17,6 +19,8 @@ export default function PendingPagesOverlay({
   pendingPages,
   getRelativeTime,
   handleReview,
+  hasMore,
+  onLoadMore,
 }: PendingPagesOverlayProps) {
   if (!isOpen) return null;
 
@@ -29,7 +33,7 @@ export default function PendingPagesOverlay({
         >
           <ArrowLeft className="h-6 w-6 text-gray-900" />
         </button>
-        <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">Pending Changes Review</span>
+        <span className="text-sm font-bold text-blue-400 uppercase tracking-wider">Pending Changes Review</span>
       </header>
       <div className="flex-1 overflow-y-auto overscroll-contain bg-gray-55 p-6">
         <div className="max-w-3xl mx-auto space-y-6">
@@ -101,6 +105,17 @@ export default function PendingPagesOverlay({
                   </div>
                 );
               })}
+
+              {hasMore && (
+                <div className="flex justify-center pt-4">
+                  <button
+                    onClick={onLoadMore}
+                    className="inline-flex items-center gap-2 px-6 py-2 border border-gray-200 hover:border-gray-300 text-gray-700 bg-white hover:bg-gray-55 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
+                  >
+                    Load More Revisions
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

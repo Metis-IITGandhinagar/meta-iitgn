@@ -52,6 +52,7 @@ model live_pages {
   slug               String           @unique
   content            String?
   metadata           Json             @default("{}")
+  video_url          String?
   original_author_id Int
   contributors       Json?
   created_at         DateTime         @default(now())
@@ -79,6 +80,7 @@ model pending_pages {
   title       String?
   content     String?
   metadata    Json                    @default("{}")
+  video_url   String?
   status      pending_status?
   editor_id   Int
   created_at  DateTime?               @default(now())
@@ -140,6 +142,7 @@ model media_assets {
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
   deleted_at DateTime?
+  hash       String?
 
   // Relations
   user       users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction)

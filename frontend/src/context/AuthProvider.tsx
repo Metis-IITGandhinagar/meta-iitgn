@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { AuthContext, type User, type Category } from "./AuthContext";
 import { api } from "../lib/api";
 
+import { db } from "../lib/db";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -9,6 +11,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTier, setActiveTier] = useState<"bronze" | "silver" | "gold">("bronze");
   const [settingsTab, setSettingsTab] = useState<"appearance" | "layout" | "search" | "alerts" | null>(null);
+  const [totalPagesCount, setTotalPagesCountState] = useState<number | null>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("wiki-total-pages-count");
+      return saved ? parseInt(saved, 10) : null;
+    }
+    return null;
+  });
+
+  const setTotalPagesCount = useCallback((val: any) => {
+    setTotalPagesCountState((prev: any) => {
+      const nextVal = typeof val === "function" ? val(prev) : val;
+      if (nextVal !== null) {
+        localStorage.setItem("wiki-total-pages-count", String(nextVal));
+      } else {
+        localStorage.removeItem("wiki-total-pages-count");
+      }
+      return nextVal;
+    });
+  }, []);
 
   useEffect(() => {
     if (user?.role) {
@@ -18,6 +39,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       else setActiveTier("bronze");
     }
   }, [user?.role]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    // Detect user change to clear Dexie DB and localStorage caches for privacy and protection
+    const storedUserKey = "wiki-current-user-id";
+    const currentUserId = user ? String(user.user_id) : "guest";
+    const previousUserId = localStorage.getItem(storedUserKey);
+
+    if (previousUserId !== null && previousUserId !== currentUserId) {
+      localStorage.removeItem("syncCheck");
+      const clearDb = async () => {
+        try {
+          await Promise.all([
+            db.bookmarks.clear(),
+            db.news.clear(),
+            db.contributors.clear(),
+            db.pendingpages.clear(),
+            db.updatedpages.clear(),
+            db.meta.clear(),
+          ]);
+        } catch (e) {
+          console.error("Failed to clear Dexie DB on user change:", e);
+        }
+      };
+      clearDb();
+    }
+    localStorage.setItem(storedUserKey, currentUserId);
+  }, [user, loading]);
 
   const logout = async () => {
     try {
@@ -34,6 +84,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setAuth(false);
       setLoading(false);
+      setTotalPagesCount(null);
+      localStorage.removeItem("syncCheck");
+      try {
+        await db.bookmarks.clear();
+        await db.news.clear();
+        await db.contributors.clear();
+        await db.pendingpages.clear();
+        await db.updatedpages.clear();
+        await db.meta.clear();
+      } catch (e) {
+        console.error("Failed to clear Dexie DB on logout:", e);
+      }
     }
   };
 
@@ -115,6 +177,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setActiveTier,
         settingsTab,
         setSettingsTab,
+        totalPagesCount,
+        setTotalPagesCount,
       }}>
       {children}
     </AuthContext.Provider>

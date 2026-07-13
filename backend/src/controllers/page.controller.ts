@@ -3,14 +3,18 @@ import { prisma } from '../lib/prisma.js';
 
 /**
  * GET /pages/recent/new
- * Fetch most recently created pages (default limit: 5)
+ * Fetch most recently created pages (default limit: 4)
  */
 export const getRecentNewPages = async (req: Request, res: Response) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 4;
+    const skip = (page - 1) * limit;
+
     const pages = await prisma.live_pages.findMany({
       where: { deleted_at: null },
       orderBy: { created_at: 'desc' },
+      skip,
       take: limit,
       select: {
         page_id: true,
@@ -30,14 +34,18 @@ export const getRecentNewPages = async (req: Request, res: Response) => {
 
 /**
  * GET /pages/recent/updated
- * Fetch most recently updated pages (default limit: 5)
+ * Fetch most recently updated pages (default limit: 4)
  */
 export const getRecentUpdatedPages = async (req: Request, res: Response) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 4;
+    const skip = (page - 1) * limit;
+
     const pages = await prisma.live_pages.findMany({
       where: { deleted_at: null },
       orderBy: { updated_at: 'desc' },
+      skip,
       take: limit,
       select: {
         page_id: true,
@@ -319,6 +327,225 @@ export const getPageStats = async (req: Request, res: Response) => {
     return res.json({ totalPages });
   } catch (error: any) {
     console.error('Error in getPageStats:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * GET /pages/count
+ * Retrieve total number of live pages
+ */
+export const getPageCount = async (req: Request, res: Response) => {
+  try {
+    const count = await prisma.live_pages.count({
+      where: { deleted_at: null }
+    });
+    return res.json({ count });
+  } catch (error: any) {
+    console.error('Error in getPageCount:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * POST /pages
+ * Direct creation of page/article (moderator and admin)
+ */
+export const createPage = async (req: Request, res: Response) => {
+  try {
+    const { title, content, metadata, video_url } = req.body;
+    if (!title) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    const creatorId = Number(req.user.user_id);
+
+    let baseSlug = (title || 'untitled')
+      .replace(/[^a-zA-Z0-9\s-]/g, '')
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, '-');
+    if (!baseSlug) baseSlug = 'untitled';
+
+    let slug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existing = await prisma.live_pages.findFirst({
+        where: { slug, deleted_at: null },
+      });
+      if (!existing) break;
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const newPage = await prisma.live_pages.create({
+      data: {
+        title,
+        slug,
+        content: content || null,
+        metadata: metadata || {},
+        video_url: video_url || null,
+        original_author_id: creatorId,
+        contributors: [creatorId],
+        version: 1,
+      },
+    });
+
+    return res.status(201).json(newPage);
+  } catch (error: any) {
+    console.error('Error in createPage:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * PATCH /pages/:slug
+ * Direct edit of page/article (authenticated user)
+ */
+export const updatePage = async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.slug as string;
+    const { title, content, metadata, video_url } = req.body;
+
+    const editorId = Number(req.user.user_id);
+
+    const livePage = await prisma.live_pages.findFirst({
+      where: { slug, deleted_at: null },
+    });
+
+    if (!livePage) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    let contributors: number[] = [];
+    if (Array.isArray(livePage.contributors)) {
+      contributors = [...livePage.contributors] as number[];
+    } else if (livePage.contributors && typeof livePage.contributors === 'object') {
+      contributors = Object.values(livePage.contributors) as number[];
+    }
+
+    if (!contributors.includes(editorId)) {
+      contributors.push(editorId);
+    }
+
+    const currentVersion = livePage.version !== null ? livePage.version : 1;
+
+    const updatedPage = await prisma.live_pages.update({
+      where: { page_id: livePage.page_id },
+      data: {
+        title: title !== undefined ? title : livePage.title,
+        content: content !== undefined ? content : livePage.content,
+        metadata: metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata,
+        video_url: video_url !== undefined ? video_url : livePage.video_url,
+        contributors,
+        version: currentVersion + 1,
+        updated_by: editorId,
+        updated_at: new Date(),
+      },
+    });
+
+    return res.json(updatedPage);
+  } catch (error: any) {
+    console.error('Error in updatePage:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * DELETE /pages/:slug
+ * Direct delete of page/article (admin only)
+ */
+export const deletePage = async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.slug as string;
+
+    const livePage = await prisma.live_pages.findFirst({
+      where: { slug, deleted_at: null },
+    });
+
+    if (!livePage) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    await prisma.live_pages.update({
+      where: { page_id: livePage.page_id },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+
+    return res.json({ success: true, message: 'Page soft-deleted successfully' });
+  } catch (error: any) {
+    console.error('Error in deletePage:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * GET /pages/sync-check
+ * Lightweight check of last modification timestamps/counts
+ */
+export const getSyncCheck = async (req: Request, res: Response) => {
+  try {
+    // 1. news last updated (filter metadata category: news)
+    const pages = await prisma.live_pages.findMany({
+      where: { deleted_at: null },
+      select: { updated_at: true, metadata: true }
+    });
+    
+    const newsItems = pages.filter((p: any) => p.metadata?.category?.toLowerCase() === 'news');
+    const news_last_updated = newsItems.length > 0 ? Math.max(...newsItems.map((p: any) => p.updated_at.getTime())) : 0;
+
+    // 2. contributors
+    const userStats = await prisma.users.aggregate({
+      _max: { created_at: true },
+      _count: { user_id: true },
+      where: { deleted_at: null }
+    });
+    const contributors_last_updated = userStats._max.created_at ? userStats._max.created_at.getTime() : 0;
+    const contributors_count = userStats._count.user_id;
+
+    // 3. pendingpages
+    const pendingStats = await prisma.pending_pages.aggregate({
+      _max: { created_at: true },
+      _count: { pending_id: true },
+    });
+    const pending_last_updated = pendingStats._max.created_at ? pendingStats._max.created_at.getTime() : 0;
+    const pending_count = pendingStats._count.pending_id;
+
+    // 4. updatedpages
+    const liveStats = await prisma.live_pages.aggregate({
+      _max: { updated_at: true },
+      _count: { page_id: true },
+      where: { deleted_at: null }
+    });
+    const updated_last_updated = liveStats._max.updated_at ? liveStats._max.updated_at.getTime() : 0;
+    const updated_count = liveStats._count.page_id;
+
+    // 5. bookmarks count & max created_at for this user (if logged in)
+    let bookmarks_last_updated = 0;
+    let bookmarks_count = 0;
+    
+    if (req.user && req.user.user_id) {
+      const userId = Number(req.user.user_id);
+      const bookmarkStats = await prisma.bookmarks.aggregate({
+        _max: { created_at: true },
+        _count: { bookmark_id: true },
+        where: { user_id: userId }
+      });
+      bookmarks_last_updated = bookmarkStats._max.created_at ? bookmarkStats._max.created_at.getTime() : 0;
+      bookmarks_count = bookmarkStats._count.bookmark_id;
+    }
+
+    return res.json({
+      news: { last_updated: news_last_updated, count: newsItems.length },
+      contributors: { last_updated: contributors_last_updated, count: contributors_count },
+      pendingpages: { last_updated: pending_last_updated, count: pending_count },
+      updatedpages: { last_updated: updated_last_updated, count: updated_count },
+      bookmarks: { last_updated: bookmarks_last_updated, count: bookmarks_count }
+    });
+  } catch (error: any) {
+    console.error('Error in getSyncCheck:', error);
     return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };

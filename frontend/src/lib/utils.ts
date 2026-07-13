@@ -13,6 +13,7 @@ export function parseMarkdown(markdown: string) {
   let title = "My Wiki";
   let image = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600";
   let imageAlt = "IIT Gandhinagar";
+  let description = "";
   let rows: InfoboxRow[] = [
     { label: "Status", value: "Draft", type: "text" },
     { label: "Type", value: "Wiki Page", type: "text" },
@@ -53,6 +54,9 @@ export function parseMarkdown(markdown: string) {
           inRows = false;
         } else if (line.startsWith("imageAlt:")) {
           imageAlt = line.replace("imageAlt:", "").trim();
+          inRows = false;
+        } else if (line.startsWith("description:")) {
+          description = line.replace("description:", "").trim();
           inRows = false;
         } else if (line.startsWith("rows:")) {
           inRows = true;
@@ -145,16 +149,20 @@ export function parseMarkdown(markdown: string) {
 
   return {
     title,
-    infobox: { image, imageAlt, rows },
+    infobox: { image, imageAlt, description, rows },
     toc,
     contentMarkdown: contentLines.join("\n").trim()
   };
 }
 
-export function stringifyMarkdown(contentMarkdown: string, infobox: InfoboxData, title?: string): string {
+export function stringifyMarkdown(contentMarkdown: string, infobox: InfoboxData, title?: string, description?: string): string {
   let frontmatter = "---\n";
   frontmatter += `image: ${infobox.image}\n`;
   frontmatter += `imageAlt: ${infobox.imageAlt}\n`;
+  const desc = description !== undefined ? description : infobox.description;
+  if (desc) {
+    frontmatter += `description: ${desc}\n`;
+  }
   frontmatter += `rows:\n`;
   for (const row of infobox.rows) {
     frontmatter += `  - label: ${row.label}\n`;

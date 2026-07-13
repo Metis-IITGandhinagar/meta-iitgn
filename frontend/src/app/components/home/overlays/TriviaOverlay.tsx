@@ -59,7 +59,7 @@ export default function TriviaOverlay({
           >
             <ArrowLeft className="h-6 w-6 text-gray-900" />
           </button>
-          <span className="text-sm font-bold text-gray-800 uppercase tracking-wider ml-2">
+          <span className="text-sm font-bold text-blue-400 uppercase tracking-wider ml-2">
             {showAddTriviaForm ? "Add Trivia" : activeTriviaItem ? "Read Trivia" : "Campus Trivia"}
           </span>
         </div>
@@ -88,25 +88,25 @@ export default function TriviaOverlay({
         {showAddTriviaForm ? (
           <form onSubmit={handleAddTrivia} className="max-w-xl mx-auto space-y-4 bg-white p-6 border border-gray-200 rounded-2xl shadow-xs text-left">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-500">Trivia Title</label>
+              <label className="text-xs font-extrabold uppercase text-black">Trivia Title</label>
               <input
                 type="text"
                 required
                 value={newTriviaTitle}
                 onChange={(e) => setNewTriviaTitle(e.target.value)}
                 placeholder="e.g. Sabarmati Hostel Architecture Secret"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-500">Content</label>
+              <label className="text-xs font-extrabold uppercase text-black">Content</label>
               <textarea
                 required
                 rows={8}
                 value={newTriviaContent}
                 onChange={(e) => setNewTriviaContent(e.target.value)}
                 placeholder="Write the trivia details here..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <button

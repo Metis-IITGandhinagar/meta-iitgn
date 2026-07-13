@@ -10,7 +10,7 @@ import { prisma } from '../lib/prisma.js';
 export const submitDraft = async (req: Request, res: Response) => {
   try {
     console.log('Received submitDraft request body:', req.body);
-    const { page_id, title, content, metadata, editor_id, base_version } = req.body;
+    const { page_id, title, content, metadata, editor_id, base_version, video_url } = req.body;
 
     if (!title || editor_id === undefined || editor_id === null) {
       return res.status(400).json({ error: 'Title and editor_id are required' });
@@ -23,6 +23,7 @@ export const submitDraft = async (req: Request, res: Response) => {
         title,
         content: content || null,
         metadata: metadata || {},
+        video_url: video_url || null,
         status: 'in_review',
         editor_id,
         version: base_version !== undefined ? base_version : null,
@@ -44,6 +45,9 @@ export const submitDraft = async (req: Request, res: Response) => {
 export const listPendingDrafts = async (req: Request, res: Response) => {
   try {
     const page_id = req.query.page_id ? parseInt(req.query.page_id as string, 10) : undefined;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 4;
+    const skip = (page - 1) * limit;
 
     const drafts = await prisma.pending_pages.findMany({
       where: {
@@ -57,6 +61,8 @@ export const listPendingDrafts = async (req: Request, res: Response) => {
       orderBy: {
         created_at: 'desc',
       },
+      skip,
+      take: limit,
     });
 
     const formattedDrafts = drafts.map((d) => ({
@@ -146,6 +152,7 @@ export const reviewDraft = async (req: Request, res: Response) => {
             slug,
             content: draft.content,
             metadata: draft.metadata || {},
+            video_url: draft.video_url,
             original_author_id: draft.editor_id,
             contributors: [draft.editor_id],
             version: 1,
@@ -226,6 +233,7 @@ export const reviewDraft = async (req: Request, res: Response) => {
             title: draft.title,
             content: draft.content,
             metadata: draft.metadata || {},
+            video_url: draft.video_url,
             contributors,
             version: currentVersion + 1,
             updated_by: draft.editor_id,

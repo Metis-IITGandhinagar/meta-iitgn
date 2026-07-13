@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { BookOpen, ChevronRight, FolderPlus, PlusCircle, Search, Sparkles, Pencil, X, Pin, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, Loader2, GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,6 +31,7 @@ interface CategoryFormInput {
 }
 
 export default function CategoriesPage() {
+  const router = useRouter();
   const { user, categories, addCategoryState, updateCategoryState, activeTier } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -380,6 +382,9 @@ export default function CategoriesPage() {
           {filteredCategories.map((cat) => (
             <div
               key={cat.slug}
+              onClick={() => {
+                router.push(`/wiki/${cat.slug}`);
+              }}
               className={`relative flex flex-col justify-between p-4 md:p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
                 cat.is_pinned 
                   ? "bg-blue-50/80 border-2 border-blue-400 hover:border-blue-500" 

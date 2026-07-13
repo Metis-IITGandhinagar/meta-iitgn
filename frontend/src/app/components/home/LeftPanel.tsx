@@ -27,6 +27,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import { QUICK_PORTALS } from "@/lib/constants";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
+import { stringify } from "querystring";
 
 interface LeftPanelProps {
   sidebarOpen: boolean;
@@ -97,6 +98,7 @@ export default function LeftPanel({
         const stats = await apiService.getPageStats();
         if (stats && typeof stats.totalPages === "number") {
           setPageCount(stats.totalPages);
+           localStorage.setItem("wiki-total-pages-count", JSON.stringify(pageCount));
         }
       } catch (err) {
         console.error("Failed to load page stats count:", err);

@@ -192,3 +192,211 @@ export const updateCategory = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message || "Internal server error" });
   }
 };
+
+function parsePageContent(content: string | null) {
+  if (!content) return { category: "", description: "" };
+  let category = "";
+  let description = "";
+
+  if (content.startsWith("---")) {
+    const parts = content.split("---");
+    if (parts.length >= 3) {
+      const frontmatter = parts[1];
+      const lines = frontmatter.split("\n");
+      for (let line of lines) {
+        line = line.trim();
+        if (line.startsWith("description:")) {
+          description = line.replace("description:", "").trim();
+        } else if (line.startsWith("category:")) {
+          category = line.replace("category:", "").trim();
+        }
+      }
+    }
+  }
+  return { category, description };
+}
+
+const normalizeCategoryToSlug = (value: string): string => {
+  const normalized = value.toLowerCase().trim();
+  if (normalized === "campus facilities" || normalized === "facilities") return "facilities";
+  if (normalized === "faculty profiles" || normalized === "faculty") return "faculty";
+  if (normalized === "courses info" || normalized === "courses") return "courses";
+  if (normalized === "research labs" || normalized === "research") return "research";
+  if (normalized === "hostels guide" || normalized === "hostels") return "hostels";
+  if (normalized === "student clubs" || normalized === "clubs") return "clubs";
+  if (normalized === "institute fests" || normalized === "fests") return "fests";
+  if (normalized === "placement stats" || normalized === "placements") return "placements";
+  if (normalized === "institute policies" || normalized === "policies") return "policies";
+  if (normalized === "academic calendar" || normalized === "calendar") return "calendar";
+  return normalized;
+};
+
+export const getCategoryArticles = async (req: Request, res: Response) => {
+  try {
+    const categorySlug = (req.params.slug as string).toLowerCase().trim();
+    const pageNum = parseInt(req.query.page as string, 10) || 1;
+    const limitNum = parseInt(req.query.limit as string, 10) || 6;
+    const skip = (pageNum - 1) * limitNum;
+
+    // Fetch pages containing potential category tags
+    const pages = await prisma.live_pages.findMany({
+      where: { deleted_at: null },
+      select: {
+        page_id: true,
+        title: true,
+        slug: true,
+        metadata: true,
+        content: true,
+        created_at: true,
+        updated_at: true
+      }
+    });
+
+    const matchedPages = pages.filter((page: any) => {
+      const meta = (page.metadata as any) || {};
+      let pageCategory = meta.category ? normalizeCategoryToSlug(meta.category) : "";
+
+      if (!pageCategory) {
+        const parsed = parsePageContent(page.content);
+        if (parsed.category) {
+          pageCategory = normalizeCategoryToSlug(parsed.category);
+        }
+      }
+
+      if (pageCategory === categorySlug) return true;
+
+      const title = (page.title || "").toLowerCase();
+      const slug = (page.slug || "").toLowerCase();
+
+      if (pageCategory === "academics") {
+        if (categorySlug === "faculty") {
+          return title.startsWith("prof.") || slug.includes("prof") || slug.includes("faculty");
+        }
+        if (categorySlug === "courses") {
+          return (
+            /^[a-z]{2,3}\s*\d{3}/i.test(title) ||
+            /^[a-z]{2,3}-\d{3}/i.test(slug) ||
+            title.includes(":")
+          );
+        }
+        if (categorySlug === "departments") {
+          return (
+            !title.startsWith("prof.") &&
+            !slug.includes("prof") &&
+            !slug.includes("faculty") &&
+            !/^[a-z]{2,3}\s*\d{3}/i.test(title) &&
+            !/^[a-z]{2,3}-\d{3}/i.test(slug) &&
+            !title.includes(":")
+          );
+        }
+      }
+
+      if (pageCategory === "campus") {
+        if (categorySlug === "hostels") {
+          return title.includes("hostel") || slug.includes("hostel");
+        }
+        if (categorySlug === "facilities") {
+          return !title.includes("hostel") && !slug.includes("hostel");
+        }
+      }
+
+      if (pageCategory === "policies") {
+        if (categorySlug === "calendar") {
+          return title.includes("calendar") || title.includes("date") || slug.includes("calendar") || slug.includes("date");
+        }
+        if (categorySlug === "placements") {
+          return title.includes("placement") || slug.includes("placement");
+        }
+        if (categorySlug === "policies") {
+          return (
+            !title.includes("calendar") && !title.includes("date") && !slug.includes("calendar") && !slug.includes("date") &&
+            !title.includes("placement") && !slug.includes("placement")
+          );
+        }
+      }
+
+      if (!pageCategory) {
+        if (categorySlug === "faculty") {
+          return title.startsWith("prof.") || slug.includes("prof") || slug.includes("faculty");
+        }
+        if (categorySlug === "courses") {
+          return (
+            /^[a-z]{2,3}\s*\d{3}/i.test(title) ||
+            /^[a-z]{2,3}-\d{3}/i.test(slug) ||
+            title.includes(":")
+          );
+        }
+        if (categorySlug === "hostels") {
+          return title.includes("hostel") || slug.includes("hostel");
+        }
+        if (categorySlug === "facilities") {
+          return slug.includes("sports") || slug.includes("complex") || slug.includes("shop") || slug.includes("canteen") || slug.includes("center") || slug.includes("facility");
+        }
+        if (categorySlug === "clubs") {
+          return slug.includes("club") || title.includes("club");
+        }
+        if (categorySlug === "fests") {
+          return slug.includes("fest") || title.includes("fest") || slug.includes("amalthea") || slug.includes("blith");
+        }
+        if (categorySlug === "research") {
+          return slug.includes("research") || slug.includes("lab") || title.includes("laboratory");
+        }
+        if (categorySlug === "calendar") {
+          return title.includes("calendar") || title.includes("date") || slug.includes("calendar") || slug.includes("date");
+        }
+        if (categorySlug === "placements") {
+          return title.includes("placement") || slug.includes("placement");
+        }
+        if (categorySlug === "departments") {
+          return (
+            !title.startsWith("prof.") &&
+            !slug.includes("prof") &&
+            !slug.includes("faculty") &&
+            !/^[a-z]{2,3}\s*\d{3}/i.test(title) &&
+            !/^[a-z]{2,3}-\d{3}/i.test(slug) &&
+            !title.includes(":") &&
+            (slug.includes("department") || slug.includes("engineering") || title.includes("engineering"))
+          );
+        }
+      }
+
+      return false;
+    });
+
+    matchedPages.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+
+    const totalMatched = matchedPages.length;
+    const paginatedPages = matchedPages.slice(skip, skip + limitNum);
+
+    const results = paginatedPages.map((page: any) => {
+      const meta = (page.metadata as any) || {};
+      let description = meta.description || "";
+      if (!description) {
+        const parsed = parsePageContent(page.content);
+        description = parsed.description;
+      }
+      if (!description && page.content) {
+        const clean = page.content.replace(/^---[\s\S]*?---/, "").trim();
+        description = clean.length > 150 ? clean.substring(0, 150) + "..." : clean;
+      }
+
+      return {
+        page_id: page.page_id,
+        slug: page.slug,
+        title: page.title || "Untitled",
+        description: description || ""
+      };
+    });
+
+    return res.json({
+      articles: results,
+      total: totalMatched,
+      page: pageNum,
+      limit: limitNum,
+      hasMore: skip + limitNum < totalMatched
+    });
+  } catch (error: any) {
+    console.error("Error in getCategoryArticles:", error);
+    return res.status(500).json({ error: error.message || "Internal server error" });
+  }
+};

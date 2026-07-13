@@ -161,9 +161,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   className="p-1 text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer -ml-2"
                   aria-label="Exit settings"
                 >
-                  <ChevronLeft className="w-6 h-6 shrink-0 text-slate-800 dark:text-slate-200" />
+                  <ChevronLeft className="w-6 h-6 shrink-0 text-black" />
                 </button>
-                <h2 className="text-[10px] font-bold tracking-wider text-gray-450 uppercase">
+                <h2 className="text-[10px] font-bold tracking-wider text-black uppercase">
                   Settings
                 </h2>
               </div>
@@ -198,10 +198,10 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <IconComponent className={`h-4.5 w-4.5 mt-0.5 transition-colors duration-200 ${isAct ? "text-blue-600" : "text-gray-400"}`} />
+                      <IconComponent className={`h-4.5 w-4.5 mt-0.5 transition-colors duration-200 ${isAct ? "text-blue-600" : "text-gray-700"}`} />
                       <div>
-                        <span className="block truncate text-[12.5px] leading-tight">{tab.label}</span>
-                        <span className={`block text-[9.5px] font-normal leading-normal mt-0.5 ${isAct ? "text-blue-600/70" : "text-gray-450"}`}>
+                        <span className="block truncate text-[12.5px] text-gray-700 leading-tight">{tab.label}</span>
+                        <span className={`block text-[9.5px] font-normal leading-normal mt-0.5 ${isAct ? "text-blue-600/70" : "text-gray-500"}`}>
                           {tab.desc}
                         </span>
                       </div>
@@ -291,7 +291,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                             className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${
                               isSel 
                                 ? "bg-blue-50 border-blue-500 text-blue-700 font-bold" 
-                                : "bg-white text-gray-650 border-gray-200 hover:bg-gray-50"
+                                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                             }`}
                           >
                             {f.label}
@@ -323,7 +323,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                             className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${
                               isSel 
                                 ? "bg-blue-50 border-blue-500 text-blue-700 font-bold" 
-                                : "bg-white text-gray-650 border-gray-200 hover:bg-gray-50"
+                                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                             }`}
                           >
                             {fontItem.label}
@@ -383,7 +383,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Compact lists view</span>
-                      <span className="text-[10px] text-gray-450 block">Removes card gaps to display more content items.</span>
+                      <span className="text-[10px] text-gray-400 block">Removes card gaps to display more content items.</span>
                     </div>
                     <Switch checked={compactLayout} onChange={handleSaveCompact} />
                   </div>
@@ -393,7 +393,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Show article reading progress bar</span>
-                      <span className="text-[10px] text-gray-450 block">Render a thin visual scrolling progress bar on top.</span>
+                      <span className="text-[10px] text-gray-400 block">Render a thin visual scrolling progress bar on top.</span>
                     </div>
                     <Switch checked={readingProgress} onChange={handleSaveProgress} />
                   </div>
@@ -403,7 +403,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Enable micro sound effects</span>
-                      <span className="text-[10px] text-gray-450 block">Play subtle mechanical sounds on clicks.</span>
+                      <span className="text-[10px] text-gray-400 block">Play subtle mechanical sounds on clicks.</span>
                     </div>
                     <Switch checked={enableSound} onChange={handleSaveSound} />
                   </div>
@@ -423,7 +423,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Auto-focus search box</span>
-                      <span className="text-[10px] text-gray-450 block">Focus search queries automatically on page load.</span>
+                      <span className="text-[10px] text-gray-400 block">Focus search queries automatically on page load.</span>
                     </div>
                     <Switch checked={autoFocusSearch} onChange={handleSaveAutoFocus} />
                   </div>
@@ -433,7 +433,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Open links in new tab</span>
-                      <span className="text-[10px] text-gray-450 block">Default click redirection target will use _blank tab.</span>
+                      <span className="text-[10px] text-gray-400 block">Default click redirection target will use _blank tab.</span>
                     </div>
                     <Switch checked={openInNewTab} onChange={handleSaveNewTab} />
                   </div>
@@ -443,7 +443,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Search history limit</span>
-                      <span className="text-[10px] text-gray-450 block">Select local query caching length.</span>
+                      <span className="text-[10px] text-gray-400 block">Select local query caching length.</span>
                     </div>
                     <select
                       value={historyLimit}
@@ -472,7 +472,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Weekly highlights email</span>
-                      <span className="text-[10px] text-gray-450 block">Weekly edits summary and ranking updates.</span>
+                      <span className="text-[10px] text-gray-400 block">Weekly edits summary and ranking updates.</span>
                     </div>
                     <Switch checked={emailDigest} onChange={handleSaveDigest} />
                   </div>
@@ -482,7 +482,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Bookmarked page edit alerts</span>
-                      <span className="text-[10px] text-gray-450 block">Get instant alerts when bookmarked articles are updated.</span>
+                      <span className="text-[10px] text-gray-400 block">Get instant alerts when bookmarked articles are updated.</span>
                     </div>
                     <Switch checked={articleEditsAlert} onChange={handleSaveEditsAlert} />
                   </div>
@@ -502,7 +502,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Remember active session</span>
-                      <span className="text-[10px] text-gray-450 block">Keep you signed in on this browser for 30 days.</span>
+                      <span className="text-[10px] text-gray-400 block">Keep you signed in on this browser for 30 days.</span>
                     </div>
                     <Switch checked={true} onChange={() => {}} />
                   </div>
@@ -510,7 +510,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Two-Factor authentication</span>
-                      <span className="text-[10px] text-gray-450 block">Request verification codes when logging in.</span>
+                      <span className="text-[10px] text-gray-400 block">Request verification codes when logging in.</span>
                     </div>
                     <Switch checked={false} onChange={() => {}} />
                   </div>
@@ -530,7 +530,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Default language</span>
-                      <span className="text-[10px] text-gray-450 block">Pick language for general interface buttons.</span>
+                      <span className="text-[10px] text-gray-400 block">Pick language for general interface buttons.</span>
                     </div>
                     <select className="h-8 px-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none cursor-pointer">
                       <option value="en">English (US)</option>
@@ -542,7 +542,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Auto-translate articles</span>
-                      <span className="text-[10px] text-gray-450 block">Translate external resources dynamically.</span>
+                      <span className="text-[10px] text-gray-400 block">Translate external resources dynamically.</span>
                     </div>
                     <Switch checked={false} onChange={() => {}} />
                   </div>
@@ -562,7 +562,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Save bookmarked pages offline</span>
-                      <span className="text-[10px] text-gray-450 block">Downloads bookmarks for reading without internet.</span>
+                      <span className="text-[10px] text-gray-400 block">Downloads bookmarks for reading without internet.</span>
                     </div>
                     <Switch checked={true} onChange={() => {}} />
                   </div>
@@ -570,7 +570,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Clear browser settings cache</span>
-                      <span className="text-[10px] text-gray-450 block">Wipe out configuration settings history.</span>
+                      <span className="text-[10px] text-gray-400 block">Wipe out configuration settings history.</span>
                     </div>
                     <button className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded text-xs font-semibold hover:bg-red-100 cursor-pointer">Clear Cache</button>
                   </div>
@@ -590,7 +590,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Enable interface animations</span>
-                      <span className="text-[10px] text-gray-450 block">Disable transitions to boost rendering speed.</span>
+                      <span className="text-[10px] text-gray-400 block">Disable transitions to boost rendering speed.</span>
                     </div>
                     <Switch checked={true} onChange={() => {}} />
                   </div>
@@ -598,7 +598,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Hardware acceleration</span>
-                      <span className="text-[10px] text-gray-450 block">Leverage GPU computing for loading articles.</span>
+                      <span className="text-[10px] text-gray-400 block">Leverage GPU computing for loading articles.</span>
                     </div>
                     <Switch checked={true} onChange={() => {}} />
                   </div>
@@ -626,21 +626,21 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between pb-2 border-b border-gray-200/50">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Software Build</span>
-                      <span className="text-[10px] text-gray-450 block">v1.12.4-stable</span>
+                      <span className="text-[10px] text-gray-400 block">v1.12.4-stable</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between py-1.5 border-b border-gray-200/50">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Application Engine</span>
-                      <span className="text-[10px] text-gray-450 block">Powered by Next.js 15 & Turbopack</span>
+                      <span className="text-[10px] text-gray-400 block">Powered by Next.js 15 & Turbopack</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between py-1.5">
                     <div>
                       <span className="font-semibold text-gray-700 block text-[12px]">Resources & Licenses</span>
-                      <span className="text-[10px] text-gray-450 block">Read system instructions and project code rules.</span>
+                      <span className="text-[10px] text-gray-400 block">Read system instructions and project code rules.</span>
                     </div>
                     <div className="flex gap-2">
                       <a href="https://github.com" target="_blank" rel="noreferrer" className="px-2.5 py-1 bg-white border border-gray-200 rounded text-[10px] font-semibold text-blue-600 hover:bg-gray-50">Docs</a>

@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   PlusCircle,
   HelpCircle,
+  Trash2,
 } from "lucide-react";
 import BottomNavbar from "@/components/BottomNavbar";
 
@@ -199,6 +200,28 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
     return normalized;
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this article? This action cannot be undone.")) {
+      return;
+    }
+    try {
+      let currentSlug = initialMetadata?.slug;
+      if (!currentSlug && typeof window !== "undefined") {
+        currentSlug = window.location.pathname.split("/").pop();
+      }
+      if (!currentSlug) {
+        alert("Could not identify article slug.");
+        return;
+      }
+      await apiService.deletePage(currentSlug);
+      alert("Article deleted successfully.");
+      router.push(`/wiki/${categorySlug || "campus"}`);
+    } catch (err: any) {
+      console.error("Error deleting article:", err);
+      alert(err.response?.data?.error || err.message || "Failed to delete article");
+    }
+  };
+
   const handleSave = async () => {
     try {
       let category = categorySlug || initialMetadata?.category || "campus";
@@ -211,27 +234,55 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
         category = normalizeCategoryToSlug(category);
       }
 
-      const payload = {
-        page_id: dbPageId ? Number(dbPageId) : null,
-        title: parsed.title || "Untitled Page",
-        content: markdownRef.current,
-        metadata: { category: category },
-        editor_id: user?.user_id || 0,
-        base_version: version !== undefined ? Number(version) : null,
+      const isNew = !dbPageId;
+      if (isNew && user?.role !== "admin" && user?.role !== "moderator") {
+        alert("Only admins and moderators can create new articles.");
+        return;
+      }
+
+      const description = parsed.infobox.description || "";
+      const metadata = {
+        category,
+        description
       };
 
-      const response = await apiService.submitDraft(payload);
+      if (isNew) {
+        const response = await apiService.createPage({
+          title: parsed.title || "Untitled Page",
+          content: markdownRef.current,
+          metadata
+        });
 
-      if (response) {
-        alert("Draft successfully submitted for review!");
-        // Keep the local editor state updated with the unsaved changes for immediate feedback
-        setMarkdown(markdownRef.current);
-        fetchPendingCount();
+        if (response && response.slug) {
+          alert("Article created successfully!");
+          router.push(`/wiki/${category}/${response.slug}`);
+        }
+      } else {
+        let currentSlug = initialMetadata?.slug;
+        if (!currentSlug && typeof window !== "undefined") {
+          currentSlug = window.location.pathname.split("/").pop();
+        }
+        if (!currentSlug) {
+          alert("Could not identify article slug.");
+          return;
+        }
+
+        const response = await apiService.updatePage(currentSlug, {
+          title: parsed.title || "Untitled Page",
+          content: markdownRef.current,
+          metadata
+        });
+
+        if (response) {
+          alert("Article updated successfully!");
+          setMarkdown(markdownRef.current);
+          router.refresh();
+        }
       }
     } catch (error: any) {
-      console.error("Error submitting draft to backend:", error);
+      console.error("Error saving article:", error);
       const detail = error.response?.data?.detail || error.response?.data?.error || error.response?.data?.message || error.message || "Unknown error";
-      alert(`Failed to submit draft: ${detail}`);
+      alert(`Failed to save article: ${detail}`);
     }
     setIsEditing(false);
   };
@@ -414,45 +465,52 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
                     },
                   ]
                 : [
-                    {
-                      id: "new",
-                      label: "New Page",
-                      icon: PlusCircle,
-                      onClick: () => {
-                        router.push("/wiki/campus/new");
+                      (user?.role === "admin" || user?.role === "moderator") && {
+                        id: "new",
+                        label: "New Page",
+                        icon: PlusCircle,
+                        onClick: () => {
+                          router.push(`/wiki/${categorySlug || "campus"}/new`);
+                        },
                       },
-                    },
-                    {
-                      id: "changes",
-                      label: "Changes",
-                      icon: History,
-                      onClick: () => {
-                        setShowPendingChanges(true);
-                        setShowRevisions(false);
-                        window.dispatchEvent(new CustomEvent("show-wiki-pending"));
+                      {
+                        id: "changes",
+                        label: "Changes",
+                        icon: History,
+                        onClick: () => {
+                          setShowPendingChanges(true);
+                          setShowRevisions(false);
+                          window.dispatchEvent(new CustomEvent("show-wiki-pending"));
+                        },
+                        badgeCount: pendingCount,
                       },
-                      badgeCount: pendingCount,
-                    },
-                    {
-                      id: "edit",
-                      label: "Edit Page",
-                      icon: Edit3,
-                      onClick: () => {
-                        if (!user) {
-                          router.push("/login");
-                        } else {
-                          setIsEditing(true);
-                        }
+                      {
+                        id: "edit",
+                        label: "Edit Page",
+                        icon: Edit3,
+                        onClick: () => {
+                          if (!user) {
+                            router.push("/login");
+                          } else {
+                            setIsEditing(true);
+                          }
+                        },
                       },
-                    },
-                    {
-                      id: "sidebar",
-                      label: "Sidebar",
-                      icon: PanelRight,
-                      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
-                    },
-                  ]
-              ).filter(tab => tab.id !== "sidebar" || !hideSidebar)
+                      user?.role === "admin" && dbPageId && {
+                        id: "delete",
+                        label: "Delete Page",
+                        icon: Trash2,
+                        onClick: handleDelete,
+                        colorClass: "bg-rose-50 text-rose-600 border border-rose-200/60 hover:bg-rose-100/80 hover:text-rose-700",
+                      },
+                      {
+                        id: "sidebar",
+                        label: "Sidebar",
+                        icon: PanelRight,
+                        onClick: () => setRightSidebarOpen(!rightSidebarOpen),
+                      },
+                    ].filter(Boolean) as any
+              ).filter((tab: any) => tab.id !== "sidebar" || !hideSidebar)
             }
             activeTab={actualSidebarOpen ? "sidebar" : (isEditing ? "edit" : undefined)}
             style={{

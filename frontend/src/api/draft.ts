@@ -5,6 +5,7 @@ export interface DraftSubmitInput {
   title: string;
   content: string;
   metadata?: any;
+  video_url?: string | null;
   editor_id: number;
   base_version?: number | null;
 }
@@ -20,8 +21,8 @@ export const submitDraft = async (data: DraftSubmitInput) => {
   return response.data;
 };
 
-export const getPendingDrafts = async (pageId?: number) => {
-  const response = await api.get('/drafts/pending', { params: { page_id: pageId } });
+export const getPendingDrafts = async (pageId?: number, limit = 4, page = 1) => {
+  const response = await api.get('/drafts/pending', { params: { page_id: pageId, limit, page } });
   return response.data;
 };
 

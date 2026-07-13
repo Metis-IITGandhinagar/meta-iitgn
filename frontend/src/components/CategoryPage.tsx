@@ -30,10 +30,13 @@ interface CategoryPageProps {
 
 export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   const router = useRouter();
-  const { categories, activeTier, updateCategoryState } = useAuth();
+  const { user, categories, activeTier, updateCategoryState } = useAuth();
   const category = categories?.find(c => c.slug === categorySlug);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Edit Category states
   const [isEditing, setIsEditing] = useState(false);
@@ -82,203 +85,42 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
     }
   };
 
-  useEffect(() => {
-    async function loadCategoryArticles() {
-      try {
-        // Fetch recent pages to categorize dynamically
-        const [recentNewList, recentUpdatedList] = await Promise.all([
-          apiService.getRecentNewPages(200),
-          apiService.getRecentUpdatedPages(200),
-        ]);
-
-        const merged = [...recentNewList, ...recentUpdatedList];
-        const uniquePagesMap = new Map();
-        for (const page of merged) {
-          uniquePagesMap.set(page.slug || page.page_id, page);
-        }
-        const uniquePages = Array.from(uniquePagesMap.values());
-
-        // Map and filter pages matching this categorySlug
-        const filtered = uniquePages.filter((page: any) => {
-          const meta = page.metadata || {};
-          const metaCategory = (meta.category || "").toLowerCase();
-          
-          let parsedCategory = "";
-          if (page.content) {
-            try {
-              const parsed = parseMarkdown(page.content);
-              const categoryRow = parsed.infobox?.rows?.find((row: any) => 
-                row.label?.toLowerCase() === "category"
-              );
-              if (categoryRow && categoryRow.value && typeof categoryRow.value === "string") {
-                parsedCategory = categoryRow.value.toLowerCase();
-              }
-            } catch (e) {
-              // ignore
-            }
-          }
-
-          let categoryName = (metaCategory || parsedCategory).trim().toLowerCase();
-          
-          if (categoryName === "campus facilities") categoryName = "facilities";
-          if (categoryName === "faculty profiles") categoryName = "faculty";
-          if (categoryName === "courses info") categoryName = "courses";
-          if (categoryName === "research labs") categoryName = "research";
-          if (categoryName === "hostels guide") categoryName = "hostels";
-          if (categoryName === "student clubs") categoryName = "clubs";
-          if (categoryName === "institute fests") categoryName = "fests";
-          if (categoryName === "placement stats") categoryName = "placements";
-          if (categoryName === "institute policies") categoryName = "policies";
-          if (categoryName === "academic calendar") categoryName = "calendar";
-
-          // 1-1 mapping: check if the pageCategory matches the categorySlug directly
-          if (categoryName === categorySlug) {
-            return true;
-          }
-
-          // Implement routing logic mapping DB categories back to frontend categories
-          if (categoryName === "academics") {
-            const title = (page.title || "").toLowerCase();
-            const slug = (page.slug || "").toLowerCase();
-            if (categorySlug === "faculty") {
-              return title.startsWith("prof.") || slug.includes("prof") || slug.includes("faculty");
-            }
-            if (categorySlug === "courses") {
-              return (
-                /^[a-z]{2,3}\s*\d{3}/i.test(title) ||
-                /^[a-z]{2,3}-\d{3}/i.test(slug) ||
-                title.includes(":")
-              );
-            }
-            if (categorySlug === "departments") {
-              return (
-                !title.startsWith("prof.") &&
-                !slug.includes("prof") &&
-                !slug.includes("faculty") &&
-                !/^[a-z]{2,3}\s*\d{3}/i.test(title) &&
-                !/^[a-z]{2,3}-\d{3}/i.test(slug) &&
-                !title.includes(":")
-              );
-            }
-          }
-
-          if (categoryName === "research") {
-            return categorySlug === "research";
-          }
-
-          if (categoryName === "campus") {
-            const title = (page.title || "").toLowerCase();
-            const slug = (page.slug || "").toLowerCase();
-            if (categorySlug === "hostels") {
-              return title.includes("hostel") || slug.includes("hostel");
-            }
-            if (categorySlug === "facilities") {
-              return !title.includes("hostel") && !slug.includes("hostel");
-            }
-          }
-
-          if (categoryName === "clubs") {
-            return categorySlug === "clubs";
-          }
-
-          if (categoryName === "fests") {
-            return categorySlug === "fests";
-          }
-
-          if (categoryName === "policies") {
-            const title = (page.title || "").toLowerCase();
-            const slug = (page.slug || "").toLowerCase();
-            if (categorySlug === "calendar") {
-              return title.includes("calendar") || title.includes("date") || slug.includes("calendar") || slug.includes("date");
-            }
-            if (categorySlug === "placements") {
-              return title.includes("placement") || slug.includes("placement");
-            }
-            if (categorySlug === "policies") {
-              return (
-                !title.includes("calendar") && !title.includes("date") && !slug.includes("calendar") && !slug.includes("date") &&
-                !title.includes("placement") && !slug.includes("placement")
-              );
-            }
-          }
-
-          // Fallback heuristic if categoryName is empty: guess from title or slug
-          if (!categoryName) {
-            const title = (page.title || "").toLowerCase();
-            const slug = (page.slug || "").toLowerCase();
-            
-            if (categorySlug === "faculty") {
-              return title.startsWith("prof.") || slug.includes("prof") || slug.includes("faculty");
-            }
-            if (categorySlug === "courses") {
-              return (
-                /^[a-z]{2,3}\s*\d{3}/i.test(title) ||
-                /^[a-z]{2,3}-\d{3}/i.test(slug) ||
-                title.includes(":")
-              );
-            }
-            if (categorySlug === "hostels") {
-              return title.includes("hostel") || slug.includes("hostel");
-            }
-            if (categorySlug === "facilities") {
-              return slug.includes("sports") || slug.includes("complex") || slug.includes("shop") || slug.includes("canteen") || slug.includes("center") || slug.includes("facility");
-            }
-            if (categorySlug === "clubs") {
-              return slug.includes("club") || title.includes("club");
-            }
-            if (categorySlug === "fests") {
-              return slug.includes("fest") || title.includes("fest") || slug.includes("amalthea") || slug.includes("blith");
-            }
-            if (categorySlug === "research") {
-              return slug.includes("research") || slug.includes("lab") || title.includes("laboratory");
-            }
-            if (categorySlug === "calendar") {
-              return title.includes("calendar") || title.includes("date") || slug.includes("calendar") || slug.includes("date");
-            }
-            if (categorySlug === "placements") {
-              return title.includes("placement") || slug.includes("placement");
-            }
-            if (categorySlug === "departments") {
-              return (
-                !title.startsWith("prof.") &&
-                !slug.includes("prof") &&
-                !slug.includes("faculty") &&
-                !/^[a-z]{2,3}\s*\d{3}/i.test(title) &&
-                !/^[a-z]{2,3}-\d{3}/i.test(slug) &&
-                !title.includes(":") &&
-                (slug.includes("department") || slug.includes("engineering") || title.includes("engineering"))
-              );
-            }
-          }
-
-          return false;
-        });
-
-        // Map to Article format
-        const mappedArticles: Article[] = filtered.map((page: any) => {
-          let snippet = "";
-          if (page.content) {
-            const clean = page.content.replace(/^---[\s\S]*?---/, "").trim();
-            snippet = clean.length > 150 ? clean.substring(0, 150) + "..." : clean;
-          }
-          return {
-            slug: page.slug,
-            title: page.title || "Untitled",
-            snippet,
-            content: page.content || "",
-          };
-        });
-
-        setArticles(mappedArticles);
-      } catch (err) {
-        console.error("Error loading category articles:", err);
-      } finally {
-        setLoading(false);
+  const loadCategoryArticles = async (pageNum = 1, append = false) => {
+    try {
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
       }
-    }
+      const res = await apiService.getCategoryArticles(categorySlug, { page: pageNum, limit: 6 });
+      
+      const mapped: Article[] = res.articles.map((art: any) => ({
+        slug: art.slug,
+        title: art.title,
+        snippet: art.description,
+        content: ""
+      }));
 
-    loadCategoryArticles();
+      setArticles(prev => append ? [...prev, ...mapped] : mapped);
+      setHasMore(res.hasMore);
+      setPage(pageNum);
+    } catch (err) {
+      console.error("Error loading category articles:", err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCategoryArticles(1, false);
   }, [categorySlug]);
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadCategoryArticles(page + 1, true);
+    }
+  };
 
   if (!category) {
     return (
@@ -328,7 +170,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
           </div>
           
           <div className="flex items-center gap-3 shrink-0 mb-1">
-            {isGold && (
+            {(user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={handleStartEdit}
                 className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-250 text-gray-700 hover:bg-gray-50 rounded-xl text-xs md:text-sm font-bold shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-95"
@@ -337,13 +179,15 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                 <span>Edit Category</span>
               </button>
             )}
-            <Link
-              href={`/wiki/${categorySlug}/new`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-            >
-              <PlusCircle className="h-4.5 w-4.5" />
-              <span>New Article</span>
-            </Link>
+            {(user?.role === "admin" || user?.role === "moderator") && (
+              <Link
+                href={`/wiki/${categorySlug}/new`}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+              >
+                <PlusCircle className="h-4.5 w-4.5" />
+                <span>New Article</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -362,33 +206,54 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
               No articles are currently listed under this category.
             </div>
           ) : (
-            <div className="flex flex-col md:flex-row gap-6 flex-wrap">
-              {articles.map((article) => (
-                <div
-                  key={article.slug}
-                  className="flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-white border border-gray-150 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 group"
-                >
-                  <div className="space-y-2 md:space-y-3">
-                    <h3 className="text-sm md:text-base font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300">
-                      {article.title}
-                    </h3>
-                    
-                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
-                      {article.snippet}
-                    </p>
-                  </div>
+            <div className="w-full flex flex-col gap-8">
+              <div className="flex flex-col md:flex-row gap-6 flex-wrap">
+                {articles.map((article) => (
+                  <div
+                    key={article.slug}
+                    className="flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-white border border-gray-150 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 group"
+                  >
+                    <div className="space-y-2 md:space-y-3">
+                      <h3 className="text-sm md:text-base font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300">
+                        {article.title}
+                      </h3>
+                      
+                      <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
+                        {article.snippet}
+                      </p>
+                    </div>
 
-                  <div className="pt-6">
-                    <Link
-                      href={`/wiki/${categorySlug}/${article.slug}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors uppercase tracking-wider cursor-pointer"
-                    >
-                      <span>Read Article</span>
-                      <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                    <div className="pt-6">
+                      <Link
+                        href={`/wiki/${categorySlug}/${article.slug}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors uppercase tracking-wider cursor-pointer"
+                      >
+                        <span>Read Article</span>
+                        <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
+                ))}
+              </div>
+
+              {hasMore && (
+                <div className="w-full flex justify-center pt-4">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 hover:border-gray-300 text-gray-700 bg-white hover:bg-gray-55 rounded-xl text-sm font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <span>Load More Articles</span>
+                    )}
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
