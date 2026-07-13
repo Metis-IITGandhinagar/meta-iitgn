@@ -224,7 +224,7 @@ export default function BookmarksTab({
                         <div
                           key={item.id}
                           onClick={() => handleCardClick(pagePath)}
-                          className="bg-white/90 border border-slate-200/60 hover:border-blue-400/80 rounded-xl p-4 flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] group cursor-pointer"
+                          className="card card-compact card-bordered bg-white/95 border-slate-200/60 hover:border-blue-400/80 p-4 flex flex-row items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] group cursor-pointer"
                         >
                           <div className="min-w-0 flex-1 pr-3">
                             {/* Card Content (Title & Category display) */}
@@ -240,10 +240,10 @@ export default function BookmarksTab({
                           <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button
                               onClick={(e) => handleCopyLink(e, item)}
-                              className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                              className={`btn btn-square btn-xs border transition-all cursor-pointer ${
                                 isCopied
-                                  ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                  : "bg-slate-100 hover:bg-slate-200 border-slate-150 text-slate-500"
+                                  ? "btn-success bg-emerald-50 text-emerald-600 border-emerald-100"
+                                  : "btn-ghost bg-slate-100 hover:bg-slate-200 border-slate-150 text-slate-500"
                               }`}
                               title="Copy link"
                             >
@@ -255,7 +255,7 @@ export default function BookmarksTab({
                             </button>
                             <button
                               onClick={(e) => handleDelete(e, item.id)}
-                              className="p-1.5 bg-slate-100 hover:bg-rose-50 border border-slate-150 hover:border-rose-100 text-slate-500 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
+                              className="btn btn-square btn-xs btn-ghost bg-slate-100 hover:bg-rose-50 border-slate-150 hover:border-rose-100 text-slate-500 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
                               title="Remove"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -269,7 +269,7 @@ export default function BookmarksTab({
                     <div className="flex justify-center mt-6">
                       <button
                         onClick={() => setLimit(prev => prev + 5)}
-                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-all duration-150 active:scale-97 uppercase tracking-wider"
+                        className="btn btn-primary btn-sm px-6 font-bold text-xs rounded-xl shadow-md cursor-pointer transition-all duration-150 active:scale-97 uppercase tracking-wider"
                       >
                         Load More
                       </button>
@@ -309,7 +309,7 @@ export default function BookmarksTab({
             {setActiveTab && (
               <button
                 onClick={() => setActiveTab("home")}
-                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:shadow-blue-500/20 active:scale-95"
+                className="btn btn-primary btn-sm mt-6 px-6 font-bold rounded-full text-xs uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:shadow-blue-500/20 active:scale-95"
               >
                 <Compass className="w-4 h-4" />
                 Explore Wiki

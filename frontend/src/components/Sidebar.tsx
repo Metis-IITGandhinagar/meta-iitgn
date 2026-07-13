@@ -141,7 +141,7 @@ export default function Sidebar({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+            className="btn btn-ghost btn-square btn-sm text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -177,8 +177,8 @@ export default function Sidebar({
                       }}
                       className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
                         isActive
-                          ? "bg-blue-50 text-blue-700 font-bold"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          ? "bg-primary/10 text-primary font-bold"
+                          : "text-base-content/75 hover:text-base-content hover:bg-base-200"
                       }`}
                     >
                       {renderIcon(item.iconName, isActive)}
@@ -193,59 +193,59 @@ export default function Sidebar({
           {/* Account/Profile Section */}
           {user ? (
             <div className="space-y-1.5 border-t border-gray-100 pt-4">
-              <h3 className="px-3 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+              <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/40 uppercase">
                 Account
               </h3>
               <div className="space-y-0.5">
-                <Link
+                 <Link
                   href="/user/profile"
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
                     pathname === "/user/profile"
-                      ? "bg-blue-50 text-blue-700 font-bold"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      ? "bg-primary/10 text-primary font-bold"
+                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
                   }`}
                 >
                   <User
                     className={`h-5 w-5 transition-colors duration-200 ${
                       pathname === "/user/profile"
-                        ? "text-blue-600"
-                        : "text-gray-400 group-hover:text-gray-650"
+                        ? "text-primary"
+                        : "text-base-content/50 group-hover:text-base-content/80"
                     }`}
                   />
                   <span className="truncate">My Profile</span>
                 </Link>
-                <Link
+                 <Link
                   href="/user/contributions"
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
                     pathname === "/user/contributions"
-                      ? "bg-blue-50 text-blue-700 font-bold"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      ? "bg-primary/10 text-primary font-bold"
+                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
                   }`}
                 >
                   <History
                     className={`h-5 w-5 transition-colors duration-200 ${
                       pathname === "/user/contributions"
-                        ? "text-blue-600"
-                        : "text-gray-400 group-hover:text-gray-650"
+                        ? "text-primary"
+                        : "text-base-content/50 group-hover:text-base-content/80"
                     }`}
                   />
                   <span className="truncate">My Contributions</span>
                 </Link>
-                <button
+                 <button
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                     setSettingsTab("appearance");
                   }}
-                  className="w-full text-left group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 text-gray-600 hover:text-gray-900 hover:bg-gray-55 cursor-pointer"
+                  className="w-full text-left group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 text-base-content/80 hover:text-base-content hover:bg-base-200 cursor-pointer"
                 >
                   <Settings
-                    className="h-5 w-5 transition-colors duration-200 text-gray-400 group-hover:text-gray-655"
+                    className="h-5 w-5 transition-colors duration-200 text-base-content/50 group-hover:text-base-content/80"
                   />
                   <span className="truncate">Settings</span>
                 </button>
@@ -263,12 +263,12 @@ export default function Sidebar({
               {/* Tier Banner at Bottom */}
               {user ? (
                 <div className="mb-3 shrink-0">
-                  <div className="py-3 px-1 rounded-xl border border-gray-150 bg-gray-50/30">
+                   <div className="card card-bordered py-3 px-1.5 bg-base-100 border-base-200 shadow-inner">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[9px] font-bold text-gray-400 tracking-wider uppercase">
+                      <span className="text-[9px] font-bold text-base-content/50 tracking-wider uppercase">
                         Contributor Tier
                       </span>
-                      <span className="text-[10px] font-bold text-gray-400">
+                      <span className="text-[10px] font-bold text-base-content/50">
                         Rank {activeTierData.rank}
                       </span>
                     </div>
@@ -278,17 +278,17 @@ export default function Sidebar({
                         <span className="text-base leading-none">
                           {activeTierData.icon}
                         </span>
-                        <span className="text-xs font-extrabold text-gray-800">
+                        <span className="text-xs font-extrabold text-base-content">
                           {activeTierData.name}
                         </span>
                       </div>
-                      <span className="text-[10px] font-extrabold text-gray-500">
+                      <span className="text-[10px] font-extrabold text-base-content/75">
                         {activeTierData.xp} XP
                       </span>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-2">
+                    <div className="w-full h-1.5 bg-base-300 rounded-full overflow-hidden mb-2">
                       <div
                         className={`h-full rounded-full transition-all duration-350 ${activeTierData.progressBar}`}
                         style={{ width: `${activeTierData.percent}%` }}
@@ -297,7 +297,7 @@ export default function Sidebar({
 
                     {/* Next Tier Unlock */}
                     {activeTierData.nextTier && (
-                      <p className="text-[9px] font-semibold text-gray-400 leading-normal line-clamp-1">
+                      <p className="text-[9px] font-semibold text-base-content/50 leading-normal line-clamp-1">
                         Next: {activeTierData.nextTier} •{" "}
                         {activeTierData.nextUnlock}
                       </p>
@@ -315,7 +315,7 @@ export default function Sidebar({
                 onClick={() => {
                   if (window.innerWidth < 1024) onClose();
                 }}
-                className="w-full py-2 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-100 ease-in-out hover:scale-105"
+                className="btn btn-primary btn-sm w-full font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-100 ease-in-out hover:scale-105"
               >
                 <User className="w-4 h-4" />
                 <span>Login</span>

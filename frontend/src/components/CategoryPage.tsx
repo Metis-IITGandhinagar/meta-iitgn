@@ -124,7 +124,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
 
   if (!category) {
     return (
-      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-[#FCFCFD]">
+      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-transparent">
         <div className="max-w-4xl mx-auto text-center py-20">
           <h1 className="text-3xl font-bold text-gray-800">Category Not Found</h1>
           <p className="text-gray-500 mt-2">The requested wiki category does not exist.</p>
@@ -140,7 +140,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   }
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-15 bg-[#FCFCFD] overflow-y-auto">
+    <main className="flex-1 p-6 md:p-8 mt-15 bg-transparent overflow-y-auto">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Breadcrumbs */}
@@ -173,7 +173,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
             {(user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={handleStartEdit}
-                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-250 text-gray-700 hover:bg-gray-50 rounded-xl text-xs md:text-sm font-bold shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-95"
+                className="btn btn-outline btn-sm font-bold rounded-xl shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
               >
                 <Pencil className="h-4.5 w-4.5" />
                 <span>Edit Category</span>
@@ -182,7 +182,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
             {(user?.role === "admin" || user?.role === "moderator") && (
               <Link
                 href={`/wiki/${categorySlug}/new`}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-white"
               >
                 <PlusCircle className="h-4.5 w-4.5" />
                 <span>New Article</span>
@@ -211,7 +211,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                 {articles.map((article) => (
                   <div
                     key={article.slug}
-                    className="flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-white border border-gray-150 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 group"
+                    className="card card-compact card-bordered flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary transition-all duration-300 group"
                   >
                     <div className="space-y-2 md:space-y-3">
                       <h3 className="text-sm md:text-base font-bold text-gray-800 font-serif group-hover:text-blue-600 transition-colors duration-300">
@@ -241,7 +241,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                   <button
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 hover:border-gray-300 text-gray-700 bg-white hover:bg-gray-55 rounded-xl text-sm font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
+                    className="btn btn-outline btn-md font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
                   >
                     {loadingMore ? (
                       <>

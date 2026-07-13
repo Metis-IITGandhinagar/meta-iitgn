@@ -110,7 +110,7 @@ export default function CategoriesPage() {
   }, [categories, searchQuery]);
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-15 bg-[#FCFCFD] overflow-y-auto min-h-screen">
+    <main className="flex-1 p-6 md:p-8 mt-15 bg-transparent overflow-y-auto min-h-screen">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Breadcrumbs */}
@@ -144,7 +144,7 @@ export default function CategoriesPage() {
                   reset();
                   setError("");
                 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs md:text-sm font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                className="btn btn-primary btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer text-white"
               >
                 <PlusCircle className="h-4.5 w-4.5" />
                 <span>Create Category</span>
@@ -385,10 +385,10 @@ export default function CategoriesPage() {
               onClick={() => {
                 router.push(`/wiki/${cat.slug}`);
               }}
-              className={`relative flex flex-col justify-between p-4 md:p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
+              className={`card card-compact card-bordered relative flex flex-col justify-between p-4 md:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
                 cat.is_pinned 
-                  ? "bg-blue-50/80 border-2 border-blue-400 hover:border-blue-500" 
-                  : "bg-white border border-gray-150 hover:border-blue-200"
+                  ? "bg-primary/10 border-2 border-primary hover:border-primary/80" 
+                  : "bg-base-100 border-base-200 hover:border-primary/40"
               }`}
             >
               {/* Overlay Link to make the whole card clickable */}

@@ -148,14 +148,14 @@ export default function HomeTab({
       {/* Scrollable Highlights Feed Container */}
       <div
         id="right-highlights-feed"
-        className="p-6 pb-28 md:p-8 lg:p-10 bg-[#FCFCFD] space-y-10"
+        className="p-6 pb-28 md:p-8 lg:p-10 bg-transparent space-y-10"
       >
         {/* Double Column: Featured Article & In the News split side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Featured Article */}
           <div className="lg:col-span-7 flex flex-col h-full space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <h2 className="text-xl sm:text-2xl font-serif font-black text-gray-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-serif font-black text-base-content tracking-tight">
                 Featured Article
               </h2>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 border border-amber-250 text-amber-700 font-sans font-bold text-[9px] rounded-full uppercase tracking-wider shrink-0 select-none">
@@ -163,7 +163,7 @@ export default function HomeTab({
                 Special Feature
               </span>
             </div>
-            <div className="rounded-2xl border border-slate-150 bg-white overflow-hidden shadow-depth shadow-depth-hover flex flex-col flex-1 h-full">
+            <div className="card card-bordered bg-base-100 border-slate-150 overflow-hidden shadow-depth shadow-depth-hover flex flex-col flex-1 h-full">
               <img
                 src="/iitgn_campus.png"
                 alt="IIT Gandhinagar Campus"
@@ -171,10 +171,10 @@ export default function HomeTab({
               />
               <div className="p-6 space-y-3 text-left flex flex-col flex-1 justify-between">
                 <div>
-                  <h3 className="text-lg font-black text-gray-800 font-serif">
+                  <h3 className="text-lg font-black text-base-content font-serif">
                     IIT Gandhinagar Campus Design & Architecture
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-semibold mt-1">
+                  <p className="text-xs sm:text-sm text-base-content/80 leading-relaxed font-semibold mt-1">
                     An overview of the unique climate-resilient architecture, passive cooling design, and ecological corridors that make up the greenest campus in India. Known for its 5-star GRIHA LD rating, the campus blends cutting-edge civil engineering with natural contours.
                   </p>
                 </div>
@@ -191,17 +191,17 @@ export default function HomeTab({
           {/* In the News */}
           <div className="lg:col-span-5 flex flex-col h-full space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h2 className="text-xl sm:text-2xl font-serif font-black text-gray-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-serif font-black text-base-content tracking-tight">
                 In the News
               </h2>
               <button
                 onClick={() => setShowAllNews(true)}
-                className="text-xs font-bold text-blue-500 hover:text-blue-800 hover:underline cursor-pointer"
+                className="btn btn-ghost btn-xs text-blue-500 font-bold hover:underline cursor-pointer"
               >
                 View all
               </button>
             </div>
-            <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover space-y-4 text-left flex flex-col flex-1 h-full justify-between">
+            <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover space-y-4 text-left flex flex-col flex-1 h-full justify-between">
               <div className="space-y-4">
                 {newsPages.slice(0, 5).map((item, index) => {
                   const Icons = [Sparkles, FlaskConical, Trophy];
@@ -240,7 +240,7 @@ export default function HomeTab({
 
               <button
                 onClick={() => setShowAllNews(true)}
-                className="inline-flex items-center gap-1 text-[11px] font-extrabold text-blue-500 hover:text-blue-800 uppercase tracking-wider pt-2 self-start cursor-pointer"
+                className="btn btn-ghost btn-xs text-blue-500 font-extrabold uppercase tracking-wider gap-1 pt-2 self-start cursor-pointer"
               >
                 More campus news <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -251,7 +251,7 @@ export default function HomeTab({
         {/* Three Column Highlights Section with Balanced Heights */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pt-2 items-stretch select-none">
           {/* Card 1: Did You Know? */}
-          <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
                 Did You Know?
@@ -264,33 +264,33 @@ export default function HomeTab({
                   }}
                   className="cursor-pointer group"
                 >
-                  <h4 className="text-xs font-bold text-slate-800 group-hover:text-blue-500 transition-colors mb-1">
+                  <h4 className="text-xs font-bold text-base-content group-hover:text-blue-500 transition-colors mb-1">
                     {triviaPages[0].title}
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed font-semibold line-clamp-3">
+                  <p className="text-xs text-base-content/60 leading-relaxed font-semibold line-clamp-3">
                     {triviaPages[0].content ? triviaPages[0].content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : triviaPages[0].description}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <p className="text-xs text-base-content/60 leading-relaxed font-semibold">
                   Hostels at IIT Gandhinagar are named after famous rivers in India, such as Sabarmati, Narmada, Shipra, and others.
                 </p>
               )}
             </div>
             <button
               onClick={() => setShowAllTrivia(true)}
-              className="text-[11px] font-extrabold text-blue-500 hover:text-blue-800 uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
+              className="btn btn-ghost btn-xs text-blue-500 font-extrabold uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
             >
               More trivia
             </button>
           </div>
 
           {/* Card 2: On This Day */}
-          <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="h-4 w-4 text-blue-500" />
-                <h3 className="text-sm font-black text-slate-900 font-serif">
+                <h3 className="text-sm font-black text-base-content font-serif">
                   On This Day
                 </h3>
               </div>
@@ -308,31 +308,31 @@ export default function HomeTab({
                   }}
                   className="cursor-pointer group"
                 >
-                  <h4 className="text-xs font-bold text-slate-800 group-hover:text-blue-500 transition-colors mb-1">
+                  <h4 className="text-xs font-bold text-base-content group-hover:text-blue-500 transition-colors mb-1">
                     {historyPages[0].title}
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed font-semibold line-clamp-3">
+                  <p className="text-xs text-base-content/60 leading-relaxed font-semibold line-clamp-3">
                     {historyPages[0].content ? historyPages[0].content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : historyPages[0].description}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <p className="text-xs text-base-content/60 leading-relaxed font-semibold">
                   In 2015, IIT Gandhinagar officially completed the transition and began classes at its permanent campus in Palaj.
                 </p>
               )}
             </div>
             <button
               onClick={() => setShowAllHistory(true)}
-              className="text-[11px] font-extrabold text-blue-500 hover:text-blue-800 uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
+              className="btn btn-ghost btn-xs text-blue-500 font-extrabold uppercase tracking-wider mt-4 self-start cursor-pointer hover:underline"
             >
               History timeline
             </button>
           </div>
 
           {/* Card 3: Active Contributors */}
-          <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
-              <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
+              <h3 className="text-sm font-black text-base-content font-serif mb-2.5">
                 Wiki Contributors
               </h3>
               {editors.length > 0 ? (
@@ -341,23 +341,23 @@ export default function HomeTab({
                     const initials = editor.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "U";
                     return (
                       <div key={`editor-${editor.user_id || index}-${index}`} className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[9px] text-gray-700">
+                        <div className="w-6 h-6 rounded-full bg-base-200 border border-base-300 flex items-center justify-center font-bold text-[9px] text-base-content">
                           {initials}
                         </div>
-                        <span className="text-xs text-slate-600 font-semibold truncate">{editor.name}</span>
+                        <span className="text-xs text-base-content/80 font-semibold truncate">{editor.name}</span>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <p className="text-xs text-base-content/60 leading-relaxed font-semibold">
                   META IITGN is built and maintained by members of the student body. Share your survival tips, course feedback, and project work.
                 </p>
               )}
             </div>
             <button
               onClick={() => setShowAllEditors(true)}
-              className="inline-flex items-center justify-center w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97 mt-4"
+              className="btn btn-primary btn-sm w-full font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97 mt-4"
             >
               View Active Editors
             </button>
@@ -367,7 +367,7 @@ export default function HomeTab({
         {/* Three Column Recent Activity Section with Balanced Heights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-stretch select-none">
           {/* Card 4: New Pages */}
-          <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
                 New Pages
@@ -399,14 +399,14 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllNew(true)}
-              className="text-[11px] font-bold text-blue-500 hover:text-blue-800 uppercase tracking-wider mt-4 text-left cursor-pointer"
+              className="btn btn-ghost btn-xs text-blue-500 font-bold uppercase tracking-wider mt-4 text-left cursor-pointer"
             >
               View all new pages
             </button>
           </div>
 
           {/* Card 5: Updated Pages */}
-          <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
                 Updated Pages
@@ -438,14 +438,14 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllUpdated(true)}
-              className="text-[11px] font-bold text-blue-500 hover:text-blue-800 uppercase tracking-wider mt-4 text-left cursor-pointer"
+              className="btn btn-ghost btn-xs text-blue-500 font-bold uppercase tracking-wider mt-4 text-left cursor-pointer"
             >
               View all edits
             </button>
           </div>
 
           {/* Card 6: Pending Pages */}
-          <div className="p-5 rounded-2xl border border-slate-150 bg-white shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
+          <div className="card card-bordered bg-base-100 border-slate-150 p-5 shadow-depth shadow-depth-hover flex flex-col justify-between h-full text-left">
             <div>
               <h3 className="text-sm font-black text-slate-900 font-serif mb-2.5">
                 Pending Pages
@@ -477,7 +477,7 @@ export default function HomeTab({
             </div>
             <button
               onClick={() => setShowAllPending(true)}
-              className="inline-flex items-center justify-center w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97 mt-4"
+              className="btn btn-primary btn-sm w-full font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97 mt-4"
             >
               Review Pending Changes
             </button>
@@ -485,7 +485,7 @@ export default function HomeTab({
         </div>
 
         {/* Statistics Footer Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border border-slate-150 bg-slate-50/50 rounded-2xl text-center pt-5 pb-5">
+        <div className="card card-bordered grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border-slate-150 bg-slate-50/50 text-center pt-5 pb-5">
           <div className="flex flex-col items-center gap-1 select-none">
             <BookOpen className="h-5 w-5 text-blue-600" />
             <span className="text-[14px] font-extrabold text-slate-800 mt-1">

@@ -245,7 +245,7 @@ ${editNewsContent.trim()}`;
         {!activeNewsItem && !showAddNewsForm && !isEditing && canManageNews && (
           <button
             onClick={() => setShowAddNewsForm(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97"
+            className="btn btn-primary btn-sm px-4 font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97"
           >
             Add News
           </button>
@@ -290,7 +290,7 @@ ${editNewsContent.trim()}`;
             <button
               type="submit"
               disabled={isSubmittingNews}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
+              className="btn btn-primary btn-md w-full font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
             >
               {isSubmittingNews ? "Publishing..." : "Publish News"}
             </button>
@@ -333,14 +333,14 @@ ${editNewsContent.trim()}`;
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="w-1/2 py-3 border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
+                className="btn btn-outline btn-md w-1/2 text-gray-700 hover:bg-gray-50 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmittingEdit}
-                className="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
+                className="btn btn-primary btn-md w-1/2 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
               >
                 {isSubmittingEdit ? "Saving..." : "Save Changes"}
               </button>
@@ -389,7 +389,7 @@ ${editNewsContent.trim()}`;
                   <div
                     key={item.slug || idx}
                     onClick={() => setActiveNewsItem(item)}
-                    className="p-5 border border-gray-250/60 bg-white rounded-2xl shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer text-left animate-in fade-in"
+                    className="card card-bordered p-5 border-gray-250/60 bg-base-100 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer text-left animate-in fade-in"
                   >
                     <h4 className="text-base font-bold text-blue-400">{item.title}</h4>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">
@@ -406,7 +406,7 @@ ${editNewsContent.trim()}`;
                     <button
                       onClick={handleLoadMore}
                       disabled={loadingMore}
-                      className="inline-flex items-center gap-2 px-6 py-2 border border-gray-200 hover:border-gray-300 text-gray-700 bg-white hover:bg-gray-55 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
+                      className="btn btn-outline btn-sm gap-2 px-6 shadow-sm transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50"
                     >
                       {loadingMore ? (
                         <>
