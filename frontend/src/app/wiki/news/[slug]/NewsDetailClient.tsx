@@ -94,8 +94,13 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
       <div className="max-w-3xl mx-auto space-y-6">
         
         {/* Breadcrumb Navigation */}
-        <div className="flex items-center justify-end gap-4">
-          
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-base-content/60 hover:text-primary transition-colors font-medium"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back to Home
+          </Link>
 
           {/* Edit/Delete controls for Admins/Moderators */}
           {canManageNews && !isEditing && (
