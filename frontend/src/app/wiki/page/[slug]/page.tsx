@@ -1,7 +1,5 @@
 import WikiClient from "../../../wiki-client";
 import Link from "next/link";
-import { apiService } from "@/api";
-
 interface WikiArticlePageProps {
   params: Promise<{
     category: string;

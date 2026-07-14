@@ -192,8 +192,8 @@ ${editNewsContent.trim()}`;
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white z-[99999] flex flex-col h-dvh w-screen overflow-hidden select-none animate-in fade-in duration-200">
-      <header className="h-16 border-b border-gray-200 flex items-center justify-between px-6 shrink-0 bg-white shadow-sm select-none">
+    <div className="fixed inset-0 bg-base-100 text-base-content z-[99999] flex flex-col h-dvh w-screen overflow-hidden select-none animate-in fade-in duration-200">
+      <header className="h-16 border-b border-base-200 flex items-center justify-between px-6 shrink-0 bg-base-100 shadow-sm select-none">
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -207,7 +207,7 @@ ${editNewsContent.trim()}`;
                 onClose();
               }
             }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+            className="p-2 hover:bg-base-200 rounded-lg text-base-content/80 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
           >
             <ChevronLeft className="h-6 w-6 text-base-content" />
           </button>
@@ -227,14 +227,14 @@ ${editNewsContent.trim()}`;
           <div className="flex items-center gap-2">
             <button
               onClick={handleStartEdit}
-              className="p-2.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+              className="p-2.5 hover:bg-base-200 rounded-lg text-base-content/80 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
               title="Edit News Article"
             >
               <Pencil className="h-5 w-5 text-base-content" />
             </button>
             <button
               onClick={handleDeleteNews}
-              className="p-2.5 hover:bg-rose-50 rounded-lg text-rose-600 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
+              className="p-2.5 hover:bg-rose-500/10 rounded-lg text-rose-500 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
               title="Delete News Article"
             >
               <Trash2 className="h-5 w-5" />
@@ -252,39 +252,39 @@ ${editNewsContent.trim()}`;
         )}
       </header>
 
-      <div className={`flex-1 ${(activeNewsItem && !isEditing) ? "bg-white overflow-hidden" : "bg-gray-55 overflow-y-auto overscroll-contain"} p-6 flex flex-col`}>
+      <div className={`flex-1 ${(activeNewsItem && !isEditing) ? "bg-base-100 overflow-hidden" : "bg-base-200 overflow-y-auto overscroll-contain"} p-6 flex flex-col`}>
         {showAddNewsForm ? (
-          <form onSubmit={handleAddNews} className="max-w-xl mx-auto space-y-4 bg-white p-6 border border-gray-200 rounded-2xl shadow-xs text-left w-full">
+          <form onSubmit={handleAddNews} className="max-w-xl mx-auto space-y-4 bg-base-100 p-6 border border-base-300 rounded-2xl shadow-xs text-left w-full">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-black">News Title</label>
+              <label className="text-xs font-extrabold uppercase text-base-content/90">News Title</label>
               <input
                 type="text"
                 required
                 value={newNewsTitle}
                 onChange={(e) => setNewNewsTitle(e.target.value)}
                 placeholder="e.g. Annual Sports Fest Hallabol 2026 Announced"
-                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-base-300 bg-base-100 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-black">YouTube Video URL (Optional)</label>
+              <label className="text-xs font-extrabold uppercase text-base-content/90">YouTube Video URL (Optional)</label>
               <input
                 type="text"
                 value={newNewsVideoUrl}
                 onChange={(e) => setNewNewsVideoUrl(e.target.value)}
                 placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-base-300 bg-base-100 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-black">Content</label>
+              <label className="text-xs font-extrabold uppercase text-base-content/90">Content</label>
               <textarea
                 required
                 rows={8}
                 value={newNewsContent}
                 onChange={(e) => setNewNewsContent(e.target.value)}
                 placeholder="Write the news details here..."
-                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-base-300 bg-base-100 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <button
@@ -296,44 +296,44 @@ ${editNewsContent.trim()}`;
             </button>
           </form>
         ) : isEditing ? (
-          <form onSubmit={handleEditNews} className="max-w-xl mx-auto space-y-4 bg-white p-6 border border-gray-200 rounded-2xl shadow-xs text-left w-full">
+          <form onSubmit={handleEditNews} className="max-w-xl mx-auto space-y-4 bg-base-100 p-6 border border-base-300 rounded-2xl shadow-xs text-left w-full">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-black">News Title</label>
+              <label className="text-xs font-extrabold uppercase text-base-content/90">News Title</label>
               <input
                 type="text"
                 required
                 value={editNewsTitle}
                 onChange={(e) => setEditNewsTitle(e.target.value)}
                 placeholder="e.g. News Title"
-                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-base-300 bg-base-100 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-black">YouTube Video URL (Optional)</label>
+              <label className="text-xs font-extrabold uppercase text-base-content/90">YouTube Video URL (Optional)</label>
               <input
                 type="text"
                 value={editNewsVideoUrl}
                 onChange={(e) => setEditNewsVideoUrl(e.target.value)}
                 placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                className="w-full border border-gray-200 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full border border-base-300 bg-base-100 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-black">Content</label>
+              <label className="text-xs font-extrabold uppercase text-base-content/90">Content</label>
               <textarea
                 required
                 rows={8}
                 value={editNewsContent}
                 onChange={(e) => setEditNewsContent(e.target.value)}
                 placeholder="Write the news details here..."
-                className="w-full border border-gray-200 rounded-xl px-4 text-base-content/80 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
+                className="w-full border border-base-300 bg-base-100 rounded-xl px-4 text-base-content/80 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="btn btn-outline btn-md w-1/2 text-base-content/80 hover:bg-gray-50 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
+                className="btn btn-outline btn-md w-1/2 text-base-content/80 hover:bg-base-200 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
               >
                 Cancel
               </button>
@@ -380,7 +380,7 @@ ${editNewsContent.trim()}`;
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
               </div>
             ) : newsList.length === 0 ? (
-              <div className="text-center py-20 border border-dashed border-gray-300 bg-white rounded-2xl">
+              <div className="text-center py-20 border border-dashed border-base-300 bg-base-100 rounded-2xl">
                 <p className="text-base-content/60 font-medium">No campus news found.</p>
               </div>
             ) : (
@@ -389,9 +389,9 @@ ${editNewsContent.trim()}`;
                   <div
                     key={item.slug || idx}
                     onClick={() => setActiveNewsItem(item)}
-                    className="card card-bordered p-5 border-gray-250/60 bg-base-100 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer text-left animate-in fade-in"
+                    className="card card-bordered p-5 border-base-300 bg-base-100 shadow-xs hover:shadow-md hover:border-primary transition-all duration-150 cursor-pointer text-left animate-in fade-in"
                   >
-                    <h4 className="text-base font-bold text-blue-400">{item.title}</h4>
+                    <h4 className="text-base font-bold text-primary">{item.title}</h4>
                     <p className="text-xs text-base-content/60 mt-1 line-clamp-2">
                       {item.content ? item.content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : item.description}
                     </p>

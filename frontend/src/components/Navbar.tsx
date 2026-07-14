@@ -9,15 +9,10 @@ import Link from "next/link";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
 import {
   Menu,
-  Search,
   ChevronDown,
   Sparkles,
   Award,
   Users2,
-  Trash2,
-  Calendar,
-  BookOpen,
-  Languages,
   ChevronLeft,
   MoreVertical,
   Share2,
@@ -94,7 +89,7 @@ export default function Navbar({
   hideSearch = false,
 }: NavbarProps) {
   const router = useRouter();
-  const { user, logout, activeTier, setActiveTier, setSettingsTab } = useAuth();
+  const { user, activeTier, setSettingsTab } = useAuth();
   const pathname = usePathname();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
   const isWiki = (segments[0] === "wiki" && segments.length >= 2) || segments[0] === "search-results";
@@ -106,13 +101,6 @@ export default function Navbar({
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-  };
-
-  const roleToTier = (role: string): "bronze" | "silver" | "gold" => {
-    const r = role?.toLowerCase();
-    if (r === "admin") return "gold";
-    if (r === "moderator") return "silver";
-    return "bronze";
   };
 
   const dropdownRef = useRef<HTMLDivElement>(null);

@@ -320,3 +320,40 @@ html[data-font-style="mono"] p,
 html[data-font-style="mono"] article {
   font-family: var(--font-geist-mono), monospace !important;
 }
+
+/* Make Milkdown editor theme-aware using daisyUI CSS variables */
+.milkdown-container,
+.milkdown-container .crepe,
+.milkdown-container .milkdown,
+.milkdown-container .editor {
+  background-color: transparent !important;
+  color: var(--color-base-content) !important;
+}
+
+/* Override editor text content colors */
+.milkdown-container .crepe .ProseMirror,
+.milkdown-container [contenteditable] {
+  color: var(--color-base-content) !important;
+  background-color: transparent !important;
+}
+
+/* Toolbar styling */
+.milkdown-container .milkdown-top-bar {
+  background-color: var(--color-base-200) !important;
+  border-bottom: 1px solid var(--color-base-300) !important;
+}
+
+/* Override Milkdown top bar inputs/buttons */
+.milkdown-top-bar .top-bar-heading-button,
+.milkdown-top-bar .top-bar-heading-button .top-bar-heading-label {
+  color: var(--color-base-content) !important;
+}
+
+.milkdown-top-bar .top-bar-item svg {
+  color: var(--color-base-content) !important;
+  fill: var(--color-base-content) !important;
+}
+
+.milkdown-top-bar .top-bar-item:hover {
+  background-color: var(--color-base-300) !important;
+}

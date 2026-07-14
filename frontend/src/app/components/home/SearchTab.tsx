@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
 

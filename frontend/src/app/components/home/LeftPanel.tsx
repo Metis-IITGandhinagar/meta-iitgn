@@ -15,7 +15,6 @@ import {
   MapPin,
   FlaskConical,
   Sparkles,
-  Search,
   Building2,
   Calendar,
   Shield,
@@ -25,9 +24,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
-import { QUICK_PORTALS } from "@/lib/constants";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
-import { stringify } from "querystring";
 
 interface LeftPanelProps {
   sidebarOpen: boolean;
@@ -66,7 +63,6 @@ export default function LeftPanel({
   setSearchQuery,
   handleSearchSubmit,
   activeTab,
-  setActiveTab,
   spawnHearts,
 }: LeftPanelProps) {
   const { categories, activeTier: globalActiveTier, setSettingsTab } = useAuth();

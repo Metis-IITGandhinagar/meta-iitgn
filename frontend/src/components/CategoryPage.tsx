@@ -4,10 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Article } from "@/lib/placeholder-articles";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowRight, BookOpen, ChevronRight, PlusCircle, Loader2, Pencil, X, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap } from "lucide-react";
+import { ArrowRight, BookOpen, PlusCircle, Loader2, Pencil, X, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
-import { parseMarkdown } from "@/lib/utils";
 
 const ICON_MAP: Record<string, any> = {
   BookOpen,
@@ -30,7 +29,7 @@ interface CategoryPageProps {
 
 export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   const router = useRouter();
-  const { user, categories, activeTier, updateCategoryState } = useAuth();
+  const { user, categories, updateCategoryState } = useAuth();
   const category = categories?.find(c => c.slug === categorySlug);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,8 +44,6 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   const [editIcon, setEditIcon] = useState("BookOpen");
   const [editError, setEditError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const isGold = activeTier === "gold";
 
   const handleStartEdit = () => {
     if (!category) return;

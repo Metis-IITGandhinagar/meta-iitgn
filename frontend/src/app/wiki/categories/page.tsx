@@ -51,7 +51,6 @@ export default function CategoriesPage() {
     defaultValues: { icon: "BookOpen" }
   });
 
-  const canManage = user?.role === "admin" || user?.role === "moderator";
   const isGold = activeTier === "gold";
   const selectedIcon = watch("icon") || "BookOpen";
   const selectedIconEdit = watchEdit("icon") || "BookOpen";

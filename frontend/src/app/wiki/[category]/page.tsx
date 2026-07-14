@@ -1,5 +1,3 @@
-import { CATEGORIES_DATA } from "@/lib/placeholder-articles";
-import Link from "next/link";
 import CategoryPage from "@/components/CategoryPage";
 interface ArticlePageProps {
   params: Promise<{

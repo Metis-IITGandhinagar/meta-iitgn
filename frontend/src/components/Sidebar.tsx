@@ -28,19 +28,6 @@ import {
 } from "lucide-react";
 import { SIDEBAR_SECTIONS, TIERS } from "@/lib/constants";
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentTier?: string;
-  onChangeTier?: (tier: string) => void;
-}
-type userType = {
-  name: string;
-  email: string;
-  image: string;
-  currentTier: string;
-};
-
 // Local map for statically imported icons to avoid wildcard imports
 const ICON_MAP: Record<string, LucideIcon> = {
   Home,
@@ -58,10 +45,15 @@ const ICON_MAP: Record<string, LucideIcon> = {
   TrendingUp,
 };
 
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentTier?: string;
+  onChangeTier?: (tier: string) => void;
+}
 export default function Sidebar({
   isOpen,
   onClose,
-  currentTier,
 }: SidebarProps) {
   const pathname = usePathname();
   const [maxItems, setMaxItems] = useState(5);

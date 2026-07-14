@@ -6,8 +6,6 @@ import Link from "next/link";
 import { apiService } from "@/api";
 import {
   Search,
-  HelpCircle,
-  X,
   Building2,
   BookOpen,
   Users2,
@@ -178,12 +176,16 @@ function SearchResultsContent() {
                 </h3>
               </div>
 
-              {filteredItems.length > 0 ? (
+              {loading ? (
+                <div className="flex justify-center py-16">
+                  <span className="loading loading-spinner loading-md text-primary"></span>
+                </div>
+              ) : filteredItems.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredItems.map((item) => {
                     const colors = CATEGORY_COLOR_MAP[item.category] || {
                       bg: "bg-base-200",
-                      text: "text-slate-605",
+                      text: "text-slate-650",
                     };
                     return (
                       <Link
@@ -198,10 +200,10 @@ function SearchResultsContent() {
                             </span>
                           </div>
                           <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug">
-                            {item.title}
+                            {highlightText(item.title, queryParam)}
                           </h4>
                           <p className="text-xs text-base-content/50 leading-relaxed mt-2 line-clamp-3">
-                            {item.description}
+                            {highlightText(item.description, queryParam)}
                           </p>
                         </div>
                       </Link>

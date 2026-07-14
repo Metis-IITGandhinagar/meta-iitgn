@@ -446,7 +446,7 @@ export default function HomePage() {
                 mousePos={mousePos}
               />
             ) : activeTab === "profile" ? (
-              <ProfileTab mousePos={mousePos} />
+              <ProfileTab />
             ) : null}
           </div>
         </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, Eye, Layout, Bell, Settings, ChevronLeft, Search, User, Shield, HelpCircle, HardDrive, Cpu, ChevronDown, ChevronUp } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { X, Eye, Layout, Bell, ChevronLeft, Search, User, Shield, HelpCircle, HardDrive, Cpu } from "lucide-react";
 import { WIKI_THEMES, DARK_THEMES } from "@/lib/constants";
 
 interface SettingsModalProps {
@@ -13,7 +12,6 @@ interface SettingsModalProps {
 type TabType = "appearance" | "layout" | "search" | "alerts" | "account" | "language" | "storage" | "performance" | "help";
 
 export default function SettingsModal({ onClose, initialTab = "appearance" }: SettingsModalProps) {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
   // Mobile view navigation layer state: "list" shows settings categories, "details" shows the setting controls

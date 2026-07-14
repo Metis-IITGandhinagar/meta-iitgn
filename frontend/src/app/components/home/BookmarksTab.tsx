@@ -72,7 +72,6 @@ const getPagePath = (item: BookmarkItem) => {
 
 export default function BookmarksTab({
   bookmarks,
-  setBookmarks,
   removeBookmark,
   setActiveTab,
 }: BookmarksTabProps) {

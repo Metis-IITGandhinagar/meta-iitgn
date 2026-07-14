@@ -41,7 +41,7 @@ interface WikiClientProps {
   initialMetadata?: any;
 }
 
-export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, version, categorySlug, initialMetadata }: WikiClientProps) {
+export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, categorySlug, initialMetadata }: WikiClientProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
@@ -469,7 +469,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
                         }
                       }
                     },
-                    colorClass: "bg-rose-50 text-rose-600 border border-rose-200/60 hover:bg-rose-100/80 hover:text-rose-700",
+                    colorClass: "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
                   },
                   {
                     id: "sidebar",
@@ -486,6 +486,13 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
                     onClick: () => {
                       router.push(`/wiki/${categorySlug || "campus"}/new`);
                     },
+                  },
+                  (user?.role === "admin" || user?.role === "moderator") && {
+                    id: "delete",
+                    label: "Delete Page",
+                    icon: Trash2,
+                    onClick: handleDelete,
+                    colorClass: "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
                   },
                   {
                     id: "changes",
