@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -8,13 +8,11 @@ import {
   Home,
   User,
   Loader2,
-  Pencil,
 } from "lucide-react";
-import { apiService } from "@/api";
-import BottomNavbar from "@/components/BottomNavbar";
 import { useAuth } from "@/hooks/useAuth";
-import { db } from "@/lib/db";
-import { loadCachedCollection } from "@/lib/cache";
+import { useHomeStore } from "@/store/useHomeStore";
+import dynamic from "next/dynamic";
+import BottomNavbar from "@/components/BottomNavbar";
 
 // Subcomponents
 import LeftPanel from "./components/home/LeftPanel";
@@ -23,17 +21,14 @@ import SearchTab from "./components/home/SearchTab";
 import BookmarksTab from "./components/home/BookmarksTab";
 import ProfileTab from "./components/home/ProfileTab";
 
-// Overlays
-import NewPagesOverlay from "./components/home/overlays/NewPagesOverlay";
-import UpdatedPagesOverlay from "./components/home/overlays/UpdatedPagesOverlay";
-import PendingPagesOverlay from "./components/home/overlays/PendingPagesOverlay";
-import NewsOverlay from "./components/home/overlays/NewsOverlay";
-import TriviaOverlay from "./components/home/overlays/TriviaOverlay";
-import HistoryOverlay from "./components/home/overlays/HistoryOverlay";
-import EditorsOverlay from "./components/home/overlays/EditorsOverlay";
-
-let activeHomeDataPromise: Promise<void> | null = null;
-let activeHomeDataPromiseIsForce = false;
+// Dynamic Overlays
+const NewPagesOverlay = dynamic(() => import("./components/home/overlays/NewPagesOverlay"));
+const UpdatedPagesOverlay = dynamic(() => import("./components/home/overlays/UpdatedPagesOverlay"));
+const PendingPagesOverlay = dynamic(() => import("./components/home/overlays/PendingPagesOverlay"));
+const NewsOverlay = dynamic(() => import("./components/home/overlays/NewsOverlay"));
+const TriviaOverlay = dynamic(() => import("./components/home/overlays/TriviaOverlay"));
+const HistoryOverlay = dynamic(() => import("./components/home/overlays/HistoryOverlay"));
+const EditorsOverlay = dynamic(() => import("./components/home/overlays/EditorsOverlay"));
 
 export default function HomePage() {
   const {
@@ -43,437 +38,77 @@ export default function HomePage() {
     totalPagesCount,
     setTotalPagesCount,
   } = useAuth();
+
+  const {
+    // Data collections
+    newsPages,
+    editors,
+    pendingPages,
+    newPages,
+    updatedPages,
+    triviaPages,
+    historyPages,
+    bookmarks,
+    loading,
+
+    // Overlays
+    activeOverlay,
+    setActiveOverlay,
+
+    // Pagination states
+    newPagesHasMore,
+    updatedPagesHasMore,
+    pendingPagesHasMore,
+
+    // Active overlay items/form states
+    setActiveNewsItem,
+    activeTriviaItem,
+    setActiveTriviaItem,
+    showAddTriviaForm,
+    setShowAddTriviaForm,
+    newTriviaTitle,
+    setNewTriviaTitle,
+    newTriviaContent,
+    setNewTriviaContent,
+    isSubmittingTrivia,
+
+    activeHistoryItem,
+    setActiveHistoryItem,
+    showAddHistoryForm,
+    setShowAddHistoryForm,
+    newHistoryTitle,
+    setNewHistoryTitle,
+    newHistoryContent,
+    setNewHistoryContent,
+    newHistoryVideoUrl,
+    setNewHistoryVideoUrl,
+    isSubmittingHistory,
+
+    // Tab/UI state
+    activeTab,
+    setActiveTab,
+    isScrolled,
+    setIsScrolled,
+    searchTabQuery,
+    setSearchTabQuery,
+
+    // Actions
+    loadHomeData,
+    loadMoreNewPages,
+    loadMoreUpdatedPages,
+    loadMorePendingPages,
+    handleReview,
+    handleAddTrivia,
+    handleAddHistory,
+    removeBookmark,
+    setBookmarks,
+  } = useHomeStore();
+
   const [sidebarOpen, setSidebarOpen] = useState(false); // Collapsed by default
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  const [newPages, setNewPages] = useState<any[]>([]);
-  const [updatedPages, setUpdatedPages] = useState<any[]>([]);
-  const [pendingPages, setPendingPages] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [showAllNew, setShowAllNew] = useState(false);
-  const [showAllUpdated, setShowAllUpdated] = useState(false);
-  const [showAllPending, setShowAllPending] = useState(false);
-  const [showAllNews, setShowAllNews] = useState(false);
-  const [showAllTrivia, setShowAllTrivia] = useState(false);
-  const [showAllHistory, setShowAllHistory] = useState(false);
-  const [showAllEditors, setShowAllEditors] = useState(false);
-
-  const [newsPages, setNewsPages] = useState<any[]>([]);
-  const [activeNewsItem, setActiveNewsItem] = useState<any | null>(null);
-  const [showAddNewsForm, setShowAddNewsForm] = useState(false);
-  const [newNewsTitle, setNewNewsTitle] = useState("");
-  const [newNewsContent, setNewNewsContent] = useState("");
-  const [isSubmittingNews, setIsSubmittingNews] = useState(false);
-
-  const [triviaPages, setTriviaPages] = useState<any[]>([]);
-  const [activeTriviaItem, setActiveTriviaItem] = useState<any | null>(null);
-  const [showAddTriviaForm, setShowAddTriviaForm] = useState(false);
-  const [newTriviaTitle, setNewTriviaTitle] = useState("");
-  const [newTriviaContent, setNewTriviaContent] = useState("");
-  const [isSubmittingTrivia, setIsSubmittingTrivia] = useState(false);
-
-  const [historyPages, setHistoryPages] = useState<any[]>([]);
-  const [activeHistoryItem, setActiveHistoryItem] = useState<any | null>(null);
-  const [showAddHistoryForm, setShowAddHistoryForm] = useState(false);
-  const [newHistoryTitle, setNewHistoryTitle] = useState("");
-  const [newHistoryContent, setNewHistoryContent] = useState("");
-  const [newHistoryVideoUrl, setNewHistoryVideoUrl] = useState("");
-  const [isSubmittingHistory, setIsSubmittingHistory] = useState(false);
-
-  const [editors, setEditors] = useState<any[]>([]);
-
-  // Pagination states for overlays
-  const [newPageNumber, setNewPageNumber] = useState(1);
-  const [newPagesHasMore, setNewPagesHasMore] = useState(true);
-
-  const [updatedPageNumber, setUpdatedPageNumber] = useState(1);
-  const [updatedPagesHasMore, setUpdatedPagesHasMore] = useState(true);
-
-  const [pendingPageNumber, setPendingPageNumber] = useState(1);
-  const [pendingPagesHasMore, setPendingPagesHasMore] = useState(true);
-
-  const loadHomeData = useCallback(async (options?: { forceRefresh?: boolean }) => {
-    const force = !!options?.forceRefresh;
-
-    if (activeHomeDataPromise) {
-      if (force && !activeHomeDataPromiseIsForce) {
-        await activeHomeDataPromise;
-      } else {
-        return activeHomeDataPromise;
-      }
-    }
-
-    activeHomeDataPromiseIsForce = force;
-    activeHomeDataPromise = (async () => {
-      try {
-        setNewPageNumber(1);
-        setUpdatedPageNumber(1);
-        setPendingPageNumber(1);
-
-        // 1. Load from Dexie immediately for Stale-While-Revalidate instant render
-        const [
-          cachedNews,
-          cachedEditors,
-          cachedPending,
-          cachedUpdated,
-          cachedBookmarks,
-        ] = await Promise.all([
-          db.news.toArray(),
-          db.contributors.toArray(),
-          db.pendingpages.toArray(),
-          db.updatedpages.toArray(),
-          db.bookmarks.toArray(),
-        ]);
-
-        setNewsPages(cachedNews.slice(0, 5));
-        setEditors(cachedEditors);
-        setPendingPages(cachedPending.slice(0, 4));
-        setPendingPagesHasMore(cachedPending.length > 4);
-
-        const cachedNewPages = cachedUpdated.filter((p: any) => p._type === "new");
-        const cachedUpdatedPages = cachedUpdated.filter((p: any) => p._type === "updated");
-        setNewPages(cachedNewPages.slice(0, 4));
-        setNewPagesHasMore(cachedNewPages.length > 4);
-        setUpdatedPages(cachedUpdatedPages.slice(0, 4));
-        setUpdatedPagesHasMore(cachedUpdatedPages.length > 4);
-
-        const cachedMerged = [...cachedNewPages, ...cachedUpdatedPages];
-        const cachedUniquePagesMap = new Map();
-        for (const page of cachedMerged) {
-          cachedUniquePagesMap.set(page.slug || page.page_id, page);
-        }
-        const cachedUniquePages = Array.from(cachedUniquePagesMap.values());
-
-        const cachedTrivia = cachedUniquePages
-          .filter((p: any) => {
-            return (
-              p.metadata &&
-              typeof p.metadata === "object" &&
-              (p.metadata as any).category?.toLowerCase() === "trivia"
-            );
-          })
-          .sort((a: any, b: any) => {
-            const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-            const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-            return dateB - dateA;
-          });
-        setTriviaPages(cachedTrivia);
-
-        const cachedHistory = cachedUniquePages
-          .filter((p: any) => {
-            return (
-              p.metadata &&
-              typeof p.metadata === "object" &&
-              (p.metadata as any).category?.toLowerCase() === "history"
-            );
-          })
-          .sort((a: any, b: any) => {
-            const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-            const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-            return dateB - dateA;
-          });
-        setHistoryPages(cachedHistory);
-
-        let finalBookmarks = cachedBookmarks;
-        if (finalBookmarks.length === 0 && !user) {
-          const defaultBookmarks = [
-            {
-              id: "1",
-              title: "Computer Science & Engineering",
-              category: "departments",
-              slug: "computer-science",
-              description:
-                "A leading department focused on AI, machine learning, systems, theory, and cryptography.",
-            },
-            {
-              id: "2",
-              title: "Amalthea",
-              category: "fests",
-              slug: "amalthea",
-              description:
-                "IITGN's annual technical summit showcasing innovations, technical contests, and guest lectures.",
-            },
-            {
-              id: "3",
-              title: "CS 101: Introduction to Computing",
-              category: "courses",
-              slug: "cs-101",
-              description:
-                "A foundational course introducing algorithms, Python programming, and computational thinking.",
-            },
-            {
-              id: "4",
-              title: "The Coding Club",
-              category: "clubs",
-              slug: "coding-club",
-              description:
-                "The premier student tech hub for developers, competitive programmers, and designers.",
-            },
-            {
-              id: "5",
-              title: "Cognitive Science Laboratory",
-              category: "research",
-              slug: "cognitive-science-lab",
-              description:
-                "Interdisciplinary research combining neuroscience, psychology, and artificial intelligence.",
-            },
-            {
-              id: "6",
-              title: "Grading Policy",
-              category: "policies",
-              slug: "grading-policy",
-              description:
-                "Details on letter grades, cumulative performance indices (CPI), and minimum passing scores.",
-            },
-          ];
-          await db.bookmarks.bulkAdd(defaultBookmarks);
-          finalBookmarks = defaultBookmarks;
-        }
-        setBookmarks(finalBookmarks);
-
-        const metaInfo = await db.meta.get("updatedpages");
-        if (metaInfo && typeof metaInfo.count === "number") {
-          setTotalPagesCount(metaInfo.count);
-        }
-
-        // 2. Fetch or reuse sync check
-        const FIVE_HOURS = 5 * 60 * 60 * 1000;
-        let syncInfo: any = null;
-        let cacheValid = false;
-        const cachedSyncStr = localStorage.getItem("syncCheck");
-
-        if (cachedSyncStr && !force) {
-          try {
-            const parsed = JSON.parse(cachedSyncStr);
-            const cachedUserId = parsed.user_id;
-            const currentUserId = user?.user_id || null;
-            if (
-              cachedUserId === currentUserId &&
-              Date.now() - parsed.timestamp < FIVE_HOURS
-            ) {
-              syncInfo = parsed.data;
-              cacheValid = true;
-            }
-          } catch (e) {
-            console.error("Failed to parse cached syncCheck:", e);
-          }
-        }
-
-
-
-        try {
-          syncInfo = await apiService.getSyncCheck();
-          localStorage.setItem(
-            "syncCheck",
-            JSON.stringify({
-              timestamp: Date.now(),
-              user_id: user?.user_id || null,
-              data: syncInfo,
-            })
-          );
-        } catch (err) {
-          console.error("Sync check failed:", err);
-          if (cachedSyncStr) {
-            try {
-              syncInfo = JSON.parse(cachedSyncStr).data;
-            } catch (e) {
-              // ignore
-            }
-          }
-        }
-
-        if (!syncInfo) {
-          setLoading(false);
-          return;
-        }
-
-        // 3. Sync each collection using the reusable loadCachedCollection helper
-        const syncPromises: Promise<any>[] = [
-          loadCachedCollection({
-            key: "news",
-            table: db.news,
-            serverInfo: syncInfo.news,
-            fetcher: () => apiService.getNewsList({ page: 1, limit: 10 }),
-            mapper: (res: any) =>
-              res.news.map((item: any) => ({ ...item, id: String(item.page_id) })),
-            onDataLoaded: (data) => {
-              setNewsPages(data.slice(0, 5));
-            },
-            forceRefresh: force,
-          }),
-
-          loadCachedCollection({
-            key: "contributors",
-            table: db.contributors,
-            serverInfo: syncInfo.contributors,
-            fetcher: () => apiService.getUsers(),
-            mapper: (data: any[]) =>
-              data.map((item: any) => ({ ...item, id: String(item.user_id) })),
-            onDataLoaded: (data) => {
-              setEditors(data);
-            },
-            forceRefresh: force,
-          }),
-
-          loadCachedCollection({
-            key: "pendingpages",
-            table: db.pendingpages,
-            serverInfo: syncInfo.pendingpages,
-            fetcher: () => apiService.getPendingDrafts(undefined, 10, 1),
-            mapper: (drafts: any[]) =>
-              drafts
-                .filter((d: any) => d.status === "in_review")
-                .map((item: any) => ({ ...item, id: String(item.pending_id) })),
-            onDataLoaded: (data) => {
-              setPendingPages(data.slice(0, 4));
-              setPendingPagesHasMore(data.length > 4);
-            },
-            forceRefresh: force,
-          }),
-
-          loadCachedCollection({
-            key: "updatedpages",
-            table: db.updatedpages,
-            serverInfo: syncInfo.updatedpages,
-            fetcher: async () => {
-              const [recentNew, recentUpdated] = await Promise.all([
-                apiService.getRecentNewPages(5, 1),
-                apiService.getRecentUpdatedPages(5, 1),
-              ]);
-              return { recentNew, recentUpdated };
-            },
-            mapper: (data: { recentNew: any[]; recentUpdated: any[] }) => [
-              ...data.recentNew.map((p: any) => ({
-                ...p,
-                id: `new-${p.page_id}`,
-                _type: "new",
-              })),
-              ...data.recentUpdated.map((p: any) => ({
-                ...p,
-                id: `updated-${p.page_id}`,
-                _type: "updated",
-              })),
-            ],
-            onDataLoaded: (data) => {
-              const finalNewPages = data.filter((p: any) => p._type === "new");
-              const finalUpdatedPages = data.filter((p: any) => p._type === "updated");
-
-              setNewPages(finalNewPages.slice(0, 4));
-              setNewPagesHasMore(finalNewPages.length > 4);
-              setUpdatedPages(finalUpdatedPages.slice(0, 4));
-              setUpdatedPagesHasMore(finalUpdatedPages.length > 4);
-
-              const merged = [...finalNewPages, ...finalUpdatedPages];
-              const uniquePagesMap = new Map();
-              for (const page of merged) {
-                uniquePagesMap.set(page.slug || page.page_id, page);
-              }
-              const uniquePages = Array.from(uniquePagesMap.values());
-
-              const filteredTrivia = uniquePages
-                .filter((p: any) => {
-                  return (
-                    p.metadata &&
-                    typeof p.metadata === "object" &&
-                    (p.metadata as any).category?.toLowerCase() === "trivia"
-                  );
-                })
-                .sort((a: any, b: any) => {
-                  const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-                  const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-                  return dateB - dateA;
-                });
-              setTriviaPages(filteredTrivia);
-
-              const filteredHistory = uniquePages
-                .filter((p: any) => {
-                  return (
-                    p.metadata &&
-                    typeof p.metadata === "object" &&
-                    (p.metadata as any).category?.toLowerCase() === "history"
-                  );
-                })
-                .sort((a: any, b: any) => {
-                  const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
-                  const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
-                  return dateB - dateA;
-                });
-              setHistoryPages(filteredHistory);
-            },
-            forceRefresh: force,
-          }),
-        ];
-
-        if (user) {
-          syncPromises.push(
-            loadCachedCollection({
-              key: "bookmarks",
-              table: db.bookmarks,
-              serverInfo: syncInfo.bookmarks,
-              fetcher: () => apiService.getBookmarksList(),
-              onDataLoaded: (data) => {
-                setBookmarks(data);
-              },
-              forceRefresh: force,
-            })
-          );
-        }
-
-        await Promise.all(syncPromises);
-
-        if (syncInfo.updatedpages?.count !== undefined) {
-          setTotalPagesCount(syncInfo.updatedpages.count);
-        }
-      } catch (err) {
-        console.error("Error loading home page activity lists:", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-
-    return activeHomeDataPromise;
-  }, [user, setTotalPagesCount]);
-
-  const loadMoreNewPages = async () => {
-    try {
-      const nextPage = newPageNumber + 1;
-      const recentNew = await apiService.getRecentNewPages(4, nextPage);
-      setNewPages((prev) => [...prev, ...recentNew]);
-      setNewPagesHasMore(recentNew.length === 4);
-      setNewPageNumber(nextPage);
-    } catch (err) {
-      console.error("Error loading more new pages:", err);
-    }
-  };
-
-  const loadMoreUpdatedPages = async () => {
-    try {
-      const nextPage = updatedPageNumber + 1;
-      const recentUpdated = await apiService.getRecentUpdatedPages(4, nextPage);
-      setUpdatedPages((prev) => [...prev, ...recentUpdated]);
-      setUpdatedPagesHasMore(recentUpdated.length === 4);
-      setUpdatedPageNumber(nextPage);
-    } catch (err) {
-      console.error("Error loading more updated pages:", err);
-    }
-  };
-
-  const loadMorePendingPages = async () => {
-    try {
-      const nextPage = pendingPageNumber + 1;
-      const pending = await apiService.getPendingDrafts(undefined, 4, nextPage);
-      const filtered = pending.filter((d: any) => d.status === "in_review");
-      setPendingPages((prev) => [...prev, ...filtered]);
-      setPendingPagesHasMore(filtered.length === 4);
-      setPendingPageNumber(nextPage);
-    } catch (err) {
-      console.error("Error loading more pending pages:", err);
-    }
-  };
 
   const lastUserRef = useRef<string | null>(null);
   useEffect(() => {
@@ -482,246 +117,9 @@ export default function HomePage() {
     const currentUserId = user ? String(user.user_id) : "guest";
     if (lastUserRef.current !== currentUserId) {
       lastUserRef.current = currentUserId;
-      loadHomeData();
+      loadHomeData({ user, setTotalPagesCount });
     }
-  }, [user, auth, authLoading, loadHomeData]);
-
-  const handleReview = async (
-    pendingId: number,
-    action: "approve" | "reject"
-  ) => {
-    try {
-      await apiService.reviewDraft(pendingId, {
-        reviewer_id: user?.user_id || 0,
-        action: action,
-        rejection_reason:
-          action === "reject" ? "Rejected by reviewer/moderator." : undefined,
-      });
-      alert(
-        `Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`
-      );
-      loadHomeData({ forceRefresh: true });
-    } catch (err: any) {
-      console.error(err);
-      alert(`Error: ${err.message || "Failed to process review"}`);
-    }
-  };
-
-  const handleAddNews = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newNewsTitle || !newNewsContent) return;
-    setIsSubmittingNews(true);
-    try {
-      const slug =
-        "news-" +
-        newNewsTitle
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      const payload = {
-        page_id: null,
-        title: newNewsTitle,
-        content: `---
-image: https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600
-imageAlt: News Article
-rows:
-  - label: Category
-    value: News
-    type: text
----
-
-# ${newNewsTitle}
-
-${newNewsContent}`,
-        metadata: { category: "news", slug },
-        editor_id: 0,
-        base_version: null,
-      };
-
-      await apiService.submitDraft(payload);
-      alert("News page submitted for review!");
-      setNewNewsTitle("");
-      setNewNewsContent("");
-      setShowAddNewsForm(false);
-      loadHomeData({ forceRefresh: true });
-    } catch (err: any) {
-      console.error(err);
-      alert(`Error submitting news: ${err.message || "Failed to submit"}`);
-    } finally {
-      setIsSubmittingNews(false);
-    }
-  };
-
-  const handleAddTrivia = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTriviaTitle || !newTriviaContent) return;
-    setIsSubmittingTrivia(true);
-    try {
-      const slug =
-        "trivia-" +
-        newTriviaTitle
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      const payload = {
-        page_id: null,
-        title: newTriviaTitle,
-        content: `---
-image: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600
-imageAlt: Trivia Article
-rows:
-  - label: Category
-    value: Trivia
-    type: text
----
-
-# ${newTriviaTitle}
-
-${newTriviaContent}`,
-        metadata: { category: "trivia", slug },
-        editor_id: 0,
-        base_version: null,
-      };
-
-      await apiService.submitDraft(payload);
-      alert("Trivia page submitted for review!");
-      setNewTriviaTitle("");
-      setNewTriviaContent("");
-      setShowAddTriviaForm(false);
-      loadHomeData({ forceRefresh: true });
-    } catch (err: any) {
-      console.error(err);
-      alert(`Error submitting trivia: ${err.message || "Failed to submit"}`);
-    } finally {
-      setIsSubmittingTrivia(false);
-    }
-  };
-
-  const handleAddHistory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newHistoryTitle || !newHistoryContent) return;
-    setIsSubmittingHistory(true);
-    try {
-      const slug =
-        "history-" +
-        newHistoryTitle
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      const payload = {
-        page_id: null,
-        title: newHistoryTitle,
-        content: `---
-image: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600
-imageAlt: History Article
-rows:
-  - label: Category
-    value: History
-    type: text
----
-
-# ${newHistoryTitle}
-
-${newHistoryContent}`,
-        metadata: { category: "history", slug },
-        video_url: newHistoryVideoUrl.trim() || null,
-        editor_id: 0,
-        base_version: null,
-      };
-
-      await apiService.submitDraft(payload);
-      alert("History page submitted for review!");
-      setNewHistoryTitle("");
-      setNewHistoryContent("");
-      setNewHistoryVideoUrl("");
-      setShowAddHistoryForm(false);
-      loadHomeData({ forceRefresh: true });
-    } catch (err: any) {
-      console.error(err);
-      alert(`Error submitting history: ${err.message || "Failed to submit"}`);
-    } finally {
-      setIsSubmittingHistory(false);
-    }
-  };
-
-  function getRelativeTime(dateString: string) {
-    if (!dateString) return "some time ago";
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
-    if (diffHours < 24)
-      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
-    return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
-  }
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = "/homepage_bg.png";
-    img.onload = () => setImageLoaded(true);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 45,
-        y: (e.clientY / window.innerHeight - 0.5) * 45,
-      });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  const [activeTier, setActiveTier] = useState("gold");
-  const [activeTab, setActiveTab] = useState<
-    "home" | "search" | "bookmarks" | "profile"
-  >("home");
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Search tab states
-  const [searchTabQuery, setSearchTabQuery] = useState("");
-
-  // Bookmarks states
-  const [bookmarks, setBookmarks] = useState<
-    Array<{
-      id: string;
-      title: string;
-      category: string;
-      description: string;
-      bookmark_id?: number;
-    }>
-  >([]);
-
-  // Scroll to top and reset scroll state on tab change
-  useEffect(() => {
-    const panel = document.getElementById("right-scroll-panel");
-    if (panel) {
-      panel.scrollTop = 0;
-    }
-    setIsScrolled(false);
-  }, [activeTab]);
-
-  const removeBookmark = async (id: string) => {
-    try {
-      const bObj = bookmarks.find((b) => b.id === id);
-      await db.bookmarks.delete(id);
-
-      const toDeleteId = bObj?.bookmark_id || Number(id);
-      if (toDeleteId && !isNaN(toDeleteId)) {
-        await apiService.removeBookmark(toDeleteId).catch((err) => {
-          console.error("Failed to delete bookmark from server:", err);
-        });
-      }
-
-      const updated = bookmarks.filter((b) => b.id !== id);
-      setBookmarks(updated);
-    } catch (e) {
-      console.error("Error removing bookmark:", e);
-    }
-  };
+  }, [user, auth, authLoading, loadHomeData, setTotalPagesCount]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -790,11 +188,155 @@ ${newHistoryContent}`,
     },
     {
       id: "profile",
-      label: "Profile",
+      label: "User",
       icon: User,
       onClick: () => setActiveTab("profile"),
     },
   ];
+
+  function getRelativeTime(dateString: string) {
+    if (!dateString) return "some time ago";
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+  }
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/homepage_bg.png";
+    img.onload = () => setImageLoaded(true);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 45,
+        y: (e.clientY / window.innerHeight - 0.5) * 45,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  const [activeTier, setActiveTier] = useState("gold");
+
+  // Overlay configuration mapping
+  const OVERLAYS = {
+    new: {
+      Component: NewPagesOverlay,
+      props: {
+        isOpen: activeOverlay === "new",
+        onClose: () => setActiveOverlay(null),
+        newPages,
+        getRelativeTime,
+        hasMore: newPagesHasMore,
+        onLoadMore: loadMoreNewPages,
+      },
+    },
+    updated: {
+      Component: UpdatedPagesOverlay,
+      props: {
+        isOpen: activeOverlay === "updated",
+        onClose: () => setActiveOverlay(null),
+        updatedPages,
+        getRelativeTime,
+        hasMore: updatedPagesHasMore,
+        onLoadMore: loadMoreUpdatedPages,
+      },
+    },
+    pending: {
+      Component: PendingPagesOverlay,
+      props: {
+        isOpen: activeOverlay === "pending",
+        onClose: () => setActiveOverlay(null),
+        pendingPages,
+        getRelativeTime,
+        handleReview: (pendingId: number, action: "approve" | "reject") =>
+          handleReview({ pendingId, action, userId: user?.user_id || 0 }).then(() =>
+            loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
+          ),
+        hasMore: pendingPagesHasMore,
+        onLoadMore: loadMorePendingPages,
+      },
+    },
+    news: {
+      Component: NewsOverlay,
+      props: {
+        isOpen: activeOverlay === "news",
+        onClose: () => setActiveOverlay(null),
+        getRelativeTime,
+      },
+    },
+    trivia: {
+      Component: TriviaOverlay,
+      props: {
+        isOpen: activeOverlay === "trivia",
+        onClose: () => setActiveOverlay(null),
+        triviaPages,
+        activeTriviaItem,
+        setActiveTriviaItem,
+        showAddTriviaForm,
+        setShowAddTriviaForm,
+        newTriviaTitle,
+        setNewTriviaTitle,
+        newTriviaContent,
+        setNewTriviaContent,
+        isSubmittingTrivia,
+        handleAddTrivia: (e: React.FormEvent) => {
+          e.preventDefault();
+          handleAddTrivia({ title: newTriviaTitle, content: newTriviaContent }).then(() =>
+            loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
+          );
+        },
+        getRelativeTime,
+      },
+    },
+    history: {
+      Component: HistoryOverlay,
+      props: {
+        isOpen: activeOverlay === "history",
+        onClose: () => setActiveOverlay(null),
+        historyPages,
+        activeHistoryItem,
+        setActiveHistoryItem,
+        showAddHistoryForm,
+        setShowAddHistoryForm,
+        newHistoryTitle,
+        setNewHistoryTitle,
+        newHistoryContent,
+        setNewHistoryContent,
+        newHistoryVideoUrl,
+        setNewHistoryVideoUrl,
+        isSubmittingHistory,
+        handleAddHistory: (e: React.FormEvent) => {
+          e.preventDefault();
+          handleAddHistory({
+            title: newHistoryTitle,
+            content: newHistoryContent,
+            videoUrl: newHistoryVideoUrl,
+          }).then(() =>
+            loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
+          );
+        },
+        getRelativeTime,
+      },
+    },
+    editors: {
+      Component: EditorsOverlay,
+      props: {
+        isOpen: activeOverlay === "editors",
+        onClose: () => setActiveOverlay(null),
+        editors,
+      },
+    },
+  };
 
   if (authLoading || auth === null) {
     return (
@@ -868,25 +410,25 @@ ${newHistoryContent}`,
                 imageLoaded={imageLoaded}
                 scrollToFeed={scrollToFeed}
                 spawnHearts={spawnHearts}
-                setShowAllNew={setShowAllNew}
-                setShowAllUpdated={setShowAllUpdated}
-                setShowAllPending={setShowAllPending}
+                setShowAllNew={(val) => setActiveOverlay(val ? "new" : null)}
+                setShowAllUpdated={(val) => setActiveOverlay(val ? "updated" : null)}
+                setShowAllPending={(val) => setActiveOverlay(val ? "pending" : null)}
                 newPages={newPages}
                 updatedPages={updatedPages}
                 pendingPages={pendingPages}
                 loading={loading}
                 getRelativeTime={getRelativeTime}
                 newsPages={newsPages}
-                setShowAllNews={setShowAllNews}
+                setShowAllNews={(val) => setActiveOverlay(val ? "news" : null)}
                 setActiveNewsItem={setActiveNewsItem}
                 triviaPages={triviaPages}
-                setShowAllTrivia={setShowAllTrivia}
+                setShowAllTrivia={(val) => setActiveOverlay(val ? "trivia" : null)}
                 setActiveTriviaItem={setActiveTriviaItem}
                 historyPages={historyPages}
-                setShowAllHistory={setShowAllHistory}
+                setShowAllHistory={(val) => setActiveOverlay(val ? "history" : null)}
                 setActiveHistoryItem={setActiveHistoryItem}
                 editors={editors}
-                setShowAllEditors={setShowAllEditors}
+                setShowAllEditors={(val) => setActiveOverlay(val ? "editors" : null)}
                 totalPagesCount={totalPagesCount}
               />
             ) : activeTab === "search" ? (
@@ -919,81 +461,12 @@ ${newHistoryContent}`,
         )}
       </div>
       {/* Dynamic Overlays */}
-      <NewPagesOverlay
-        isOpen={showAllNew}
-        onClose={() => setShowAllNew(false)}
-        newPages={newPages}
-        getRelativeTime={getRelativeTime}
-        hasMore={newPagesHasMore}
-        onLoadMore={loadMoreNewPages}
-      />
-
-      <UpdatedPagesOverlay
-        isOpen={showAllUpdated}
-        onClose={() => setShowAllUpdated(false)}
-        updatedPages={updatedPages}
-        getRelativeTime={getRelativeTime}
-        hasMore={updatedPagesHasMore}
-        onLoadMore={loadMoreUpdatedPages}
-      />
-
-      <PendingPagesOverlay
-        isOpen={showAllPending}
-        onClose={() => setShowAllPending(false)}
-        pendingPages={pendingPages}
-        getRelativeTime={getRelativeTime}
-        handleReview={handleReview}
-        hasMore={pendingPagesHasMore}
-        onLoadMore={loadMorePendingPages}
-      />
-
-      <NewsOverlay
-        isOpen={showAllNews}
-        onClose={() => setShowAllNews(false)}
-        getRelativeTime={getRelativeTime}
-      />
-
-      <TriviaOverlay
-        isOpen={showAllTrivia}
-        onClose={() => setShowAllTrivia(false)}
-        triviaPages={triviaPages}
-        activeTriviaItem={activeTriviaItem}
-        setActiveTriviaItem={setActiveTriviaItem}
-        showAddTriviaForm={showAddTriviaForm}
-        setShowAddTriviaForm={setShowAddTriviaForm}
-        newTriviaTitle={newTriviaTitle}
-        setNewTriviaTitle={setNewTriviaTitle}
-        newTriviaContent={newTriviaContent}
-        setNewTriviaContent={setNewTriviaContent}
-        isSubmittingTrivia={isSubmittingTrivia}
-        handleAddTrivia={handleAddTrivia}
-        getRelativeTime={getRelativeTime}
-      />
-
-      <HistoryOverlay
-        isOpen={showAllHistory}
-        onClose={() => setShowAllHistory(false)}
-        historyPages={historyPages}
-        activeHistoryItem={activeHistoryItem}
-        setActiveHistoryItem={setActiveHistoryItem}
-        showAddHistoryForm={showAddHistoryForm}
-        setShowAddHistoryForm={setShowAddHistoryForm}
-        newHistoryTitle={newHistoryTitle}
-        setNewHistoryTitle={setNewHistoryTitle}
-        newHistoryContent={newHistoryContent}
-        setNewHistoryContent={setNewHistoryContent}
-        newHistoryVideoUrl={newHistoryVideoUrl}
-        setNewHistoryVideoUrl={setNewHistoryVideoUrl}
-        isSubmittingHistory={isSubmittingHistory}
-        handleAddHistory={handleAddHistory}
-        getRelativeTime={getRelativeTime}
-      />
-
-      <EditorsOverlay
-        isOpen={showAllEditors}
-        onClose={() => setShowAllEditors(false)}
-        editors={editors}
-      />
+      {activeOverlay && (() => {
+        const config = OVERLAYS[activeOverlay as keyof typeof OVERLAYS];
+        if (!config) return null;
+        const { Component, props } = config;
+        return <Component {...(props as any)} />;
+      })()}
     </div>
   );
 }

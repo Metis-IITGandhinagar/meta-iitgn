@@ -37,8 +37,8 @@ interface LeftPanelProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   handleSearchSubmit: (e: React.FormEvent) => void;
-  activeTab: "home" | "search" | "bookmarks";
-  setActiveTab: (tab: "home" | "search" | "bookmarks") => void;
+  activeTab: "home" | "search" | "bookmarks" | "profile";
+  setActiveTab: (tab: "home" | "search" | "bookmarks" | "profile") => void;
   spawnHearts: (e: React.MouseEvent) => void;
 }
 

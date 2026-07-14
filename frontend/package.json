@@ -33,7 +33,8 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.81.0",
     "react-markdown": "^10.1.0",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
