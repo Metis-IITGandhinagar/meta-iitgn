@@ -4,6 +4,8 @@ import { google } from "googleapis";
 import { createToken } from '../service/auth.js';
 import { oauth2client } from '../config/googleConfig.js';
 import axios from 'axios';
+import { userCache } from '../utils/userCache.js';
+import { invalidateSyncCache } from './page.controller.js';
 
 export const devBypass = async (req: Request, res: Response) => {
   if (process.env.NODE_ENV === 'production') {
@@ -40,6 +42,8 @@ export const devBypass = async (req: Request, res: Response) => {
         data: { role: chosenRole as any }
       });
     }
+    userCache.delete(user.user_id);
+    invalidateSyncCache('contributors');
 
     const token = createToken({
       user_id: user.user_id,
@@ -88,31 +92,9 @@ export const handleMe = async (req: Request, res: Response) => {
       });
     }
 
-    const user = await prisma.users.findUnique({
-      where: { user_id: Number(req.user.user_id) },
-      select: {
-        user_id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatar_url: true,
-        is_banned: true,
-        points: true,
-        created_at: true,
-        updated_at: true,
-      }
-    });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-
     return res.json({
       success: true,
-      user
+      user: req.user
     });
   } catch (error: any) {
     console.error("Error in handleMe:", error);
@@ -126,6 +108,9 @@ export const handleMe = async (req: Request, res: Response) => {
 
 export const clearUser = async (req: Request, res: Response) => {
   try {
+    if (req.user && req.user.user_id) {
+      userCache.delete(Number(req.user.user_id));
+    }
     res.clearCookie("token", {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -185,6 +170,8 @@ export const handleGoogleAuth = async (req: Request, res: Response) => {
         }
       });
     }
+    userCache.delete(user.user_id);
+    invalidateSyncCache('contributors');
 
     const token = createToken({
       user_id: user.user_id,

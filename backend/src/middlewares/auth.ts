@@ -1,6 +1,7 @@
 import { validateToken } from "../service/auth.js";
 import express from "express";
 import { prisma } from "../lib/prisma.js";
+import { userCache } from "../utils/userCache.js";
 
 declare global {
   namespace Express {
@@ -34,15 +35,27 @@ export function protect(...allowedRoles: string[]) {
       });
     }
 
-    const dbUser = await prisma.users.findUnique({
-      where: { user_id: Number(tokenUser.user_id) },
-      select: {
-        user_id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    });
+    const userId = Number(tokenUser.user_id);
+    let dbUser = userCache.get(userId);
+    if (!dbUser) {
+      dbUser = await prisma.users.findUnique({
+        where: { user_id: userId },
+        select: {
+          user_id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatar_url: true,
+          is_banned: true,
+          points: true,
+          created_at: true,
+          updated_at: true,
+        },
+      });
+      if (dbUser) {
+        userCache.set(userId, dbUser);
+      }
+    }
 
     if (!dbUser) {
       return res.status(401).json({
@@ -90,15 +103,27 @@ export async function checkAuth(
     });
   }
 
-  const dbUser = await prisma.users.findUnique({
-    where: { user_id: Number(tokenUser.user_id) },
-    select: {
-      user_id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
-  });
+  const userId = Number(tokenUser.user_id);
+  let dbUser = userCache.get(userId);
+  if (!dbUser) {
+    dbUser = await prisma.users.findUnique({
+      where: { user_id: userId },
+      select: {
+        user_id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar_url: true,
+        is_banned: true,
+        points: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
+    if (dbUser) {
+      userCache.set(userId, dbUser);
+    }
+  }
 
   if (!dbUser) {
     return res.status(401).json({
@@ -128,15 +153,27 @@ export async function checkAuthOptional(
       return next();
     }
 
-    const dbUser = await prisma.users.findUnique({
-      where: { user_id: Number(tokenUser.user_id) },
-      select: {
-        user_id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    });
+    const userId = Number(tokenUser.user_id);
+    let dbUser = userCache.get(userId);
+    if (!dbUser) {
+      dbUser = await prisma.users.findUnique({
+        where: { user_id: userId },
+        select: {
+          user_id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatar_url: true,
+          is_banned: true,
+          points: true,
+          created_at: true,
+          updated_at: true,
+        },
+      });
+      if (dbUser) {
+        userCache.set(userId, dbUser);
+      }
+    }
 
     if (dbUser) {
       req.user = dbUser;

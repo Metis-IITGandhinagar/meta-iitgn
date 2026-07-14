@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
+import { invalidateCategoriesCache } from './category.controller.js';
+import { invalidateStatsCache, invalidateSearchCache, invalidateSyncCache } from './page.controller.js';
 
 /**
  * POST /drafts
@@ -29,6 +31,8 @@ export const submitDraft = async (req: Request, res: Response) => {
         version: base_version !== undefined ? base_version : null,
       },
     });
+
+    invalidateSyncCache('pendingpages');
 
     return res.status(201).json(draft);
   } catch (error: any) {
@@ -277,6 +281,13 @@ export const reviewDraft = async (req: Request, res: Response) => {
         return { message: 'Draft approved and published.', data: updatedLivePage };
       }
     });
+
+    invalidateCategoriesCache();
+    invalidateStatsCache();
+    invalidateSearchCache();
+    invalidateSyncCache('pendingpages');
+    invalidateSyncCache('updatedpages');
+    invalidateSyncCache('news');
 
     return res.json(result);
   } catch (error: any) {

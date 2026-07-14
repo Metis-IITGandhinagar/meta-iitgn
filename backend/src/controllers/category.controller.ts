@@ -15,8 +15,18 @@ const DEFAULT_CATEGORIES = [
   { slug: "placements", name: "Placement Stats", description: "Analyze trends, recruiter information, and sector-wise distribution profiles." }
 ];
 
+let categoriesCache: any[] | null = null;
+
+export const invalidateCategoriesCache = () => {
+  categoriesCache = null;
+};
+
 export const getCategories = async (req: Request, res: Response) => {
   try {
+    if (categoriesCache) {
+      return res.json(categoriesCache);
+    }
+
     // 1. Check if categories table is empty
     let count = await prisma.categories.count();
     if (count === 0) {
@@ -31,27 +41,28 @@ export const getCategories = async (req: Request, res: Response) => {
       orderBy: { name: "asc" }
     });
 
-    // 3. Count live pages per category dynamically
-    const livePages = await prisma.live_pages.findMany({
-      where: { deleted_at: null },
-      select: { metadata: true }
-    });
-
+    // 3. Count live pages per category dynamically using raw SQL (highly optimized)
     const counts: Record<string, number> = {};
-    for (const page of livePages) {
-      const meta = page.metadata as any;
-      const cat = meta?.category;
-      if (cat) {
-        counts[cat] = (counts[cat] || 0) + 1;
+    const rawCounts = await prisma.$queryRaw<Array<{ category: string | null; count: number }>>`
+      SELECT (metadata->>'category') AS category, COUNT(*)::int AS count
+      FROM "live_pages"
+      WHERE "deleted_at" IS NULL AND (metadata->>'category') IS NOT NULL
+      GROUP BY metadata->>'category'
+    `;
+
+    for (const row of rawCounts) {
+      if (row.category) {
+        counts[row.category] = row.count;
       }
     }
 
     // 4. Map count to results
     const results = categories.map(cat => ({
       ...cat,
-      total_articles: counts[cat.slug] || 0
+      total_articles: counts[cat.slug] || counts[cat.name] || 0
     }));
 
+    categoriesCache = results;
     return res.json(results);
   } catch (error: any) {
     console.error("Error in getCategories:", error);
@@ -94,6 +105,8 @@ export const createCategory = async (req: Request, res: Response) => {
         total_articles: 0
       }
     });
+
+    invalidateCategoriesCache();
 
     return res.status(201).json({
       ...category,
@@ -170,18 +183,15 @@ export const updateCategory = async (req: Request, res: Response) => {
       data
     });
 
-    // Count live pages for this slug
-    const livePages = await prisma.live_pages.findMany({
-      where: { deleted_at: null },
-      select: { metadata: true }
-    });
-    let count = 0;
-    for (const page of livePages) {
-      const meta = page.metadata as any;
-      if (meta?.category === updated.slug) {
-        count++;
-      }
-    }
+    invalidateCategoriesCache();
+
+    // Count live pages for this slug using raw SQL query (super fast)
+    const rawCounts = await prisma.$queryRaw<Array<{ count: number }>>`
+      SELECT COUNT(*)::int AS count
+      FROM "live_pages"
+      WHERE "deleted_at" IS NULL AND (metadata->>'category') = ${updated.slug}
+    `;
+    const count = rawCounts[0]?.count || 0;
 
     return res.json({
       ...updated,

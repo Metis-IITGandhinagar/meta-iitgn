@@ -1,5 +1,47 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
+import { invalidateCategoriesCache } from './category.controller.js';
+
+let statsCache: { totalPages: number } | null = null;
+
+export const invalidateStatsCache = () => {
+  statsCache = null;
+};
+
+const searchCache = new Map<string, { data: any; expiry: number }>();
+const SEARCH_CACHE_TTL = 30000; // 30 seconds
+
+export const invalidateSearchCache = () => {
+  searchCache.clear();
+};
+
+let syncCheckCache: {
+  news: { last_updated: number; count: number } | null;
+  contributors: { last_updated: number; count: number } | null;
+  pendingpages: { last_updated: number; count: number } | null;
+  updatedpages: { last_updated: number; count: number } | null;
+} = {
+  news: null,
+  contributors: null,
+  pendingpages: null,
+  updatedpages: null
+};
+
+export const invalidateSyncCache = (key?: 'news' | 'contributors' | 'pendingpages' | 'updatedpages') => {
+  if (key) {
+    syncCheckCache[key] = null;
+  } else {
+    syncCheckCache.news = null;
+    syncCheckCache.contributors = null;
+    syncCheckCache.pendingpages = null;
+    syncCheckCache.updatedpages = null;
+  }
+};
+
+const bookmarkStatsCache = new Map<number, { last_updated: number; count: number; expiry: number }>();
+export const invalidateBookmarkCache = (userId: number) => {
+  bookmarkStatsCache.delete(userId);
+};
 
 /**
  * GET /pages/recent/new
@@ -73,6 +115,11 @@ export const searchPages = async (req: Request, res: Response) => {
 
     if (!query) {
       return res.json([]);
+    }
+
+    const cached = searchCache.get(query);
+    if (cached && cached.expiry > Date.now()) {
+      return res.json(cached.data);
     }
 
     // 1. Fetch all live pages
@@ -231,6 +278,7 @@ export const searchPages = async (req: Request, res: Response) => {
     results.sort((a, b) => b.score - a.score);
     const limitedResults = results.slice(0, 25).map(({ score, ...rest }) => rest);
 
+    searchCache.set(query, { data: limitedResults, expiry: Date.now() + SEARCH_CACHE_TTL });
     return res.json(limitedResults);
   } catch (error: any) {
     console.error('Error in searchPages:', error);
@@ -321,10 +369,14 @@ export const getPage = async (req: Request, res: Response) => {
  */
 export const getPageStats = async (req: Request, res: Response) => {
   try {
+    if (statsCache) {
+      return res.json(statsCache);
+    }
     const totalPages = await prisma.live_pages.count({
       where: { deleted_at: null }
     });
-    return res.json({ totalPages });
+    statsCache = { totalPages };
+    return res.json(statsCache);
   } catch (error: any) {
     console.error('Error in getPageStats:', error);
     return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -337,9 +389,13 @@ export const getPageStats = async (req: Request, res: Response) => {
  */
 export const getPageCount = async (req: Request, res: Response) => {
   try {
+    if (statsCache) {
+      return res.json({ count: statsCache.totalPages });
+    }
     const count = await prisma.live_pages.count({
       where: { deleted_at: null }
     });
+    statsCache = { totalPages: count };
     return res.json({ count });
   } catch (error: any) {
     console.error('Error in getPageCount:', error);
@@ -370,8 +426,8 @@ export const createPage = async (req: Request, res: Response) => {
     let slug = baseSlug;
     let counter = 1;
     while (true) {
-      const existing = await prisma.live_pages.findFirst({
-        where: { slug, deleted_at: null },
+      const existing = await prisma.live_pages.findUnique({
+        where: { slug },
       });
       if (!existing) break;
       slug = `${baseSlug}-${counter}`;
@@ -391,6 +447,12 @@ export const createPage = async (req: Request, res: Response) => {
       },
     });
 
+    invalidateCategoriesCache();
+    invalidateStatsCache();
+    invalidateSearchCache();
+    invalidateSyncCache('updatedpages');
+    invalidateSyncCache('news');
+
     return res.status(201).json(newPage);
   } catch (error: any) {
     console.error('Error in createPage:', error);
@@ -409,11 +471,11 @@ export const updatePage = async (req: Request, res: Response) => {
 
     const editorId = Number(req.user.user_id);
 
-    const livePage = await prisma.live_pages.findFirst({
-      where: { slug, deleted_at: null },
+    const livePage = await prisma.live_pages.findUnique({
+      where: { slug },
     });
 
-    if (!livePage) {
+    if (!livePage || livePage.deleted_at !== null) {
       return res.status(404).json({ error: 'Page not found' });
     }
 
@@ -444,6 +506,12 @@ export const updatePage = async (req: Request, res: Response) => {
       },
     });
 
+    invalidateCategoriesCache();
+    invalidateStatsCache();
+    invalidateSearchCache();
+    invalidateSyncCache('updatedpages');
+    invalidateSyncCache('news');
+
     return res.json(updatedPage);
   } catch (error: any) {
     console.error('Error in updatePage:', error);
@@ -459,11 +527,11 @@ export const deletePage = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;
 
-    const livePage = await prisma.live_pages.findFirst({
-      where: { slug, deleted_at: null },
+    const livePage = await prisma.live_pages.findUnique({
+      where: { slug },
     });
 
-    if (!livePage) {
+    if (!livePage || livePage.deleted_at !== null) {
       return res.status(404).json({ error: 'Page not found' });
     }
 
@@ -473,6 +541,12 @@ export const deletePage = async (req: Request, res: Response) => {
         deleted_at: new Date(),
       },
     });
+
+    invalidateCategoriesCache();
+    invalidateStatsCache();
+    invalidateSearchCache();
+    invalidateSyncCache('updatedpages');
+    invalidateSyncCache('news');
 
     return res.json({ success: true, message: 'Page soft-deleted successfully' });
   } catch (error: any) {
@@ -488,39 +562,66 @@ export const deletePage = async (req: Request, res: Response) => {
 export const getSyncCheck = async (req: Request, res: Response) => {
   try {
     // 1. news last updated (filter metadata category: news)
-    const pages = await prisma.live_pages.findMany({
-      where: { deleted_at: null },
-      select: { updated_at: true, metadata: true }
-    });
-    
-    const newsItems = pages.filter((p: any) => p.metadata?.category?.toLowerCase() === 'news');
-    const news_last_updated = newsItems.length > 0 ? Math.max(...newsItems.map((p: any) => p.updated_at.getTime())) : 0;
+    if (!syncCheckCache.news) {
+      const newsItems = await prisma.live_pages.findMany({
+        where: {
+          deleted_at: null,
+          OR: [
+            {
+              metadata: {
+                path: ['category'],
+                equals: 'news'
+              }
+            },
+            {
+              metadata: {
+                path: ['category'],
+                equals: 'News'
+              }
+            }
+          ]
+        },
+        select: { updated_at: true }
+      });
+      
+      const news_last_updated = newsItems.length > 0 ? Math.max(...newsItems.map((p: any) => p.updated_at.getTime())) : 0;
+      syncCheckCache.news = { last_updated: news_last_updated, count: newsItems.length };
+    }
 
     // 2. contributors
-    const userStats = await prisma.users.aggregate({
-      _max: { created_at: true },
-      _count: { user_id: true },
-      where: { deleted_at: null }
-    });
-    const contributors_last_updated = userStats._max.created_at ? userStats._max.created_at.getTime() : 0;
-    const contributors_count = userStats._count.user_id;
+    if (!syncCheckCache.contributors) {
+      const userStats = await prisma.users.aggregate({
+        _max: { created_at: true },
+        _count: { user_id: true },
+        where: { deleted_at: null }
+      });
+      const contributors_last_updated = userStats._max.created_at ? userStats._max.created_at.getTime() : 0;
+      const contributors_count = userStats._count.user_id;
+      syncCheckCache.contributors = { last_updated: contributors_last_updated, count: contributors_count };
+    }
 
     // 3. pendingpages
-    const pendingStats = await prisma.pending_pages.aggregate({
-      _max: { created_at: true },
-      _count: { pending_id: true },
-    });
-    const pending_last_updated = pendingStats._max.created_at ? pendingStats._max.created_at.getTime() : 0;
-    const pending_count = pendingStats._count.pending_id;
+    if (!syncCheckCache.pendingpages) {
+      const pendingStats = await prisma.pending_pages.aggregate({
+        _max: { created_at: true },
+        _count: { pending_id: true },
+      });
+      const pending_last_updated = pendingStats._max.created_at ? pendingStats._max.created_at.getTime() : 0;
+      const pending_count = pendingStats._count.pending_id;
+      syncCheckCache.pendingpages = { last_updated: pending_last_updated, count: pending_count };
+    }
 
     // 4. updatedpages
-    const liveStats = await prisma.live_pages.aggregate({
-      _max: { updated_at: true },
-      _count: { page_id: true },
-      where: { deleted_at: null }
-    });
-    const updated_last_updated = liveStats._max.updated_at ? liveStats._max.updated_at.getTime() : 0;
-    const updated_count = liveStats._count.page_id;
+    if (!syncCheckCache.updatedpages) {
+      const liveStats = await prisma.live_pages.aggregate({
+        _max: { updated_at: true },
+        _count: { page_id: true },
+        where: { deleted_at: null }
+      });
+      const updated_last_updated = liveStats._max.updated_at ? liveStats._max.updated_at.getTime() : 0;
+      const updated_count = liveStats._count.page_id;
+      syncCheckCache.updatedpages = { last_updated: updated_last_updated, count: updated_count };
+    }
 
     // 5. bookmarks count & max created_at for this user (if logged in)
     let bookmarks_last_updated = 0;
@@ -528,20 +629,31 @@ export const getSyncCheck = async (req: Request, res: Response) => {
     
     if (req.user && req.user.user_id) {
       const userId = Number(req.user.user_id);
-      const bookmarkStats = await prisma.bookmarks.aggregate({
-        _max: { created_at: true },
-        _count: { bookmark_id: true },
-        where: { user_id: userId }
-      });
-      bookmarks_last_updated = bookmarkStats._max.created_at ? bookmarkStats._max.created_at.getTime() : 0;
-      bookmarks_count = bookmarkStats._count.bookmark_id;
+      const cachedBookmark = bookmarkStatsCache.get(userId);
+      if (cachedBookmark && cachedBookmark.expiry > Date.now()) {
+        bookmarks_last_updated = cachedBookmark.last_updated;
+        bookmarks_count = cachedBookmark.count;
+      } else {
+        const bookmarkStats = await prisma.bookmarks.aggregate({
+          _max: { created_at: true },
+          _count: { bookmark_id: true },
+          where: { user_id: userId }
+        });
+        bookmarks_last_updated = bookmarkStats._max.created_at ? bookmarkStats._max.created_at.getTime() : 0;
+        bookmarks_count = bookmarkStats._count.bookmark_id;
+        bookmarkStatsCache.set(userId, {
+          last_updated: bookmarks_last_updated,
+          count: bookmarks_count,
+          expiry: Date.now() + 10000 // 10 seconds cache
+        });
+      }
     }
 
     return res.json({
-      news: { last_updated: news_last_updated, count: newsItems.length },
-      contributors: { last_updated: contributors_last_updated, count: contributors_count },
-      pendingpages: { last_updated: pending_last_updated, count: pending_count },
-      updatedpages: { last_updated: updated_last_updated, count: updated_count },
+      news: syncCheckCache.news,
+      contributors: syncCheckCache.contributors,
+      pendingpages: syncCheckCache.pendingpages,
+      updatedpages: syncCheckCache.updatedpages,
       bookmarks: { last_updated: bookmarks_last_updated, count: bookmarks_count }
     });
   } catch (error: any) {
