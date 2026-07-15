@@ -845,3 +845,187 @@ export const getSyncCheck = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
+
+/**
+ * GET /pages/popular
+ * Returns top pages by view_count
+ */
+export const getPopularPages = async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 10, 50);
+    const pages = await prisma.live_pages.findMany({
+      where: { deleted_at: null, view_count: { gt: 0 } },
+      orderBy: { view_count: 'desc' },
+      take: limit,
+      select: {
+        page_id: true,
+        title: true,
+        slug: true,
+        view_count: true,
+        metadata: true,
+      },
+    });
+    return res.json({ success: true, data: pages });
+  } catch (error: any) {
+    console.error('Error in getPopularPages:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message || 'Internal server error' } });
+  }
+};
+
+/**
+ * POST /pages/:slug/view
+ * Increment view count for a page
+ */
+export const incrementViewCount = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    await prisma.live_pages.updateMany({
+      where: { slug, deleted_at: null },
+      data: { view_count: { increment: 1 } },
+    });
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error in incrementViewCount:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};
+
+/**
+ * GET /pages/featured
+ * Returns featured pages with article details
+ */
+export const getFeaturedPages = async (req: Request, res: Response) => {
+  try {
+    const featured = await prisma.featured_pages.findMany({
+      orderBy: { order: 'asc' },
+      include: {
+        live_page: {
+          select: {
+            page_id: true,
+            title: true,
+            slug: true,
+            metadata: true,
+          },
+        },
+      },
+    });
+
+    const result = featured.map((f) => ({
+      featured_id: f.featured_id,
+      page_id: f.page_id,
+      order: f.order,
+      tag: f.tag,
+      location: f.location,
+      description: f.description,
+      title: f.live_page.title,
+      slug: f.live_page.slug,
+      href: `/wiki/page/${f.live_page.slug}`,
+      image: (f.live_page.metadata as any)?.image || '/homepage_bg.png',
+    }));
+
+    return res.json({ success: true, data: result });
+  } catch (error: any) {
+    console.error('Error in getFeaturedPages:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};
+
+/**
+ * POST /pages/featured (admin only)
+ * Set a page as featured
+ */
+export const setFeaturedPage = async (req: Request, res: Response) => {
+  try {
+    const { page_id, order = 0, tag = 'Featured', location = '', description = '' } = req.body;
+    if (!page_id) return res.status(400).json({ success: false, error: { code: 'MISSING_PAGE_ID', message: 'page_id is required' } });
+
+    const result = await prisma.featured_pages.upsert({
+      where: { unique_featured_page: { page_id: Number(page_id) } },
+      update: { order, tag, location, description },
+      create: { page_id: Number(page_id), order, tag, location, description },
+    });
+    return res.json({ success: true, data: result });
+  } catch (error: any) {
+    console.error('Error in setFeaturedPage:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};
+
+/**
+ * DELETE /pages/featured/:featured_id (admin only)
+ * Remove a featured page
+ */
+export const removeFeaturedPage = async (req: Request, res: Response) => {
+  try {
+    const { featured_id } = req.params;
+    await prisma.featured_pages.delete({ where: { featured_id: Number(featured_id) } });
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error in removeFeaturedPage:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};
+
+/**
+ * GET /pages/events
+ * Returns upcoming events (future events first, then recurring)
+ */
+export const getEvents = async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 20, 100);
+    const now = new Date();
+
+    const events = await prisma.events.findMany({
+      where: {
+        deleted_at: null,
+        OR: [
+          { event_date: { gte: now } },
+          { is_recurring: true },
+        ],
+      },
+      orderBy: { event_date: 'asc' },
+      take: limit,
+    });
+
+    return res.json({ success: true, data: events });
+  } catch (error: any) {
+    console.error('Error in getEvents:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};
+
+/**
+ * GET /pages/special/mess-menu
+ * Returns the mess menu page content
+ */
+export const getMessMenu = async (req: Request, res: Response) => {
+  try {
+    const page = await prisma.live_pages.findFirst({
+      where: { slug: 'mess-menu', deleted_at: null },
+      select: { page_id: true, title: true, slug: true, content: true, updated_at: true },
+    });
+    if (!page) return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Mess menu page not found' } });
+    return res.json({ success: true, data: page });
+  } catch (error: any) {
+    console.error('Error in getMessMenu:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};
+
+/**
+ * GET /pages/special/campus-transport
+ * Returns the campus transport page content
+ */
+export const getCampusTransport = async (req: Request, res: Response) => {
+  try {
+    const page = await prisma.live_pages.findFirst({
+      where: { slug: 'campus-transport', deleted_at: null },
+      select: { page_id: true, title: true, slug: true, content: true, updated_at: true },
+    });
+    if (!page) return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Campus transport page not found' } });
+    return res.json({ success: true, data: page });
+  } catch (error: any) {
+    console.error('Error in getCampusTransport:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};

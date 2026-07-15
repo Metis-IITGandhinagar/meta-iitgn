@@ -43,31 +43,10 @@ const getCategoryDisplayName = (cat: string) => {
   return cat.charAt(0).toUpperCase() + cat.slice(1);
 };
 
-// Map old bookmark titles or generated paths to actual live slugs in CATEGORIES_DATA
+// Build the wiki URL from the bookmark slug and category
 const getPagePath = (item: BookmarkItem) => {
-  const title = item.title.toLowerCase();
-  
-  if (title.includes("campus & architecture")) {
-    return "/wiki/page/sports-complex";
-  }
-  if (title.includes("amalthea technical summit") || title === "amalthea") {
-    return "/wiki/page/amalthea";
-  }
-  if (title.includes("academic courses") || title.includes("introduction to computing")) {
-    return "/wiki/page/cs-101";
-  }
-  if (title.includes("senate") || title.includes("coding club")) {
-    return "/wiki/page/coding-club";
-  }
-  if (title.includes("research labs") || title.includes("cognitive science")) {
-    return "/wiki/page/cognitive-science-lab";
-  }
-  if (title.includes("hostel policies") || title.includes("grading policy")) {
-    return "/wiki/page/grading-policy";
-  }
-
-  const slugPart = item.slug ? item.slug.toLowerCase() : item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  return `/wiki/page/${slugPart}`;
+  const slug = item.slug || item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `/wiki/page/${slug}`;
 };
 
 export default function BookmarksTab({

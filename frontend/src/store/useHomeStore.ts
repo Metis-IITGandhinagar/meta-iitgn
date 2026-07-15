@@ -269,60 +269,8 @@ export const useHomeStore = create<HomeState>((set, get) => ({
         set({ historyPages: cachedHistory });
 
         let finalBookmarks = cachedBookmarks;
-        if (finalBookmarks.length === 0 && !user) {
-          const defaultBookmarks = [
-            {
-              id: "1",
-              title: "Computer Science & Engineering",
-              category: "departments",
-              slug: "computer-science",
-              description:
-                "A leading department focused on AI, machine learning, systems, theory, and cryptography.",
-            },
-            {
-              id: "2",
-              title: "Amalthea",
-              category: "fests",
-              slug: "amalthea",
-              description:
-                "IITGN's annual technical summit showcasing innovations, technical contests, and guest lectures.",
-            },
-            {
-              id: "3",
-              title: "CS 101: Introduction to Computing",
-              category: "courses",
-              slug: "cs-101",
-              description:
-                "A foundational course introducing algorithms, Python programming, and computational thinking.",
-            },
-            {
-              id: "4",
-              title: "The Coding Club",
-              category: "clubs",
-              slug: "coding-club",
-              description:
-                "The premier student tech hub for developers, competitive programmers, and designers.",
-            },
-            {
-              id: "5",
-              title: "Cognitive Science Laboratory",
-              category: "research",
-              slug: "cognitive-science-lab",
-              description:
-                "Interdisciplinary research combining neuroscience, psychology, and artificial intelligence.",
-            },
-            {
-              id: "6",
-              title: "Grading Policy",
-              category: "policies",
-              slug: "grading-policy",
-              description:
-                "Details on letter grades, cumulative performance indices (CPI), and minimum passing scores.",
-            },
-          ];
-          await db.bookmarks.bulkAdd(defaultBookmarks);
-          finalBookmarks = defaultBookmarks;
-        }
+        // Guests and non-authenticated users get no bookmarks
+        // (real bookmarks come from API when user is logged in)
         set({ bookmarks: finalBookmarks });
 
         const metaInfo = await db.meta.get("updatedpages");

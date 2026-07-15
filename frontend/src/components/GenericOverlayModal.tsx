@@ -108,7 +108,7 @@ export default function GenericOverlayModal({
         } ${
           isMaximized
             ? "w-full h-full max-w-none max-h-none sm:w-screen sm:h-screen sm:max-h-none sm:rounded-none sm:border-0"
-            : "w-full h-full max-w-4xl sm:h-[min(640px,calc(100vh-2rem))] sm:min-h-0 sm:max-h-[calc(100vh-2rem)] sm:rounded-lg sm:border sm:border-base-200"
+            : "w-full h-full max-w-4xl sm:h-[min(640px,calc(100vh-2rem))] sm:min-h-0 sm:max-h-[calc(100vh-2rem)] sm:rounded-lg border border-base-300/60"
         }`}
       >
         {/* Unified Draggable Header */}

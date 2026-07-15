@@ -18,9 +18,7 @@ export default function SearchTab({
 
   const handleSearch = (query: string) => {
     const q = query.trim();
-    if (!q) {
-      return;
-    }
+    if (!q) return;
     router.push(`/search-results?query=${encodeURIComponent(q)}`);
   };
 
@@ -29,21 +27,21 @@ export default function SearchTab({
       {styleBlock}
 
       <div className="relative z-10 max-w-2xl w-full px-4 space-y-8 flex flex-col items-center animate-hero-content pb-28 md:pb-0">
-        
-        {/* Reorganized Brand Header */}
+
+        {/* Brand Header */}
         <div className="text-center space-y-3 select-none">
           <h2 className="text-xs font-black uppercase tracking-[0.25em] text-primary">
-            Collaborative Knowledge Wiki
+            IIT Gandhinagar Campus Wiki
           </h2>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black tracking-tight text-base-content leading-none">
             Search <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">META IITGN</span>
           </h1>
           <p className="text-xs sm:text-sm text-base-content/55 max-w-md mx-auto font-medium leading-relaxed">
-            Explore and improve documentation for campus guides, academic resources, clubs, and fests.
+            Find campus pages, people, news articles, academic guides, club info, and more — all in one place.
           </p>
         </div>
 
-        {/* Oversized Glassmorphic Search Bar */}
+        {/* Search Bar */}
         <div className="w-full">
           <BeautifulSearchBox
             value={searchTabQuery}
@@ -52,7 +50,7 @@ export default function SearchTab({
               e.preventDefault();
               handleSearch(searchTabQuery);
             }}
-            placeholder="Find articles, pages, policies..."
+            placeholder="Pages, people, news, categories…"
           />
         </div>
 

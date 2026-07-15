@@ -60,6 +60,7 @@ model live_pages {
   updated_by         Int?
   deleted_at         DateTime?
   version            Int?
+  view_count         Int              @default(0)
 
   // Relations
   original_author    users            @relation("OriginalAuthor", fields: [original_author_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
@@ -70,6 +71,7 @@ model live_pages {
   bookmarks          bookmarks[]
   incoming_links     page_links[]     @relation("TargetPage")
   outgoing_links     page_links[]     @relation("SourcePage")
+  featured_pages     featured_pages[]
 
   @@index([slug], name: "live_pages_index_0")
 }
@@ -218,3 +220,35 @@ model news {
   @@index([slug], name: "news_index_0")
 }
 
+model featured_pages {
+  featured_id  Int        @id @default(autoincrement())
+  page_id      Int
+  order        Int        @default(0)
+  tag          String     @default("Featured Story")
+  location     String     @default("")
+  description  String     @default("")
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @default(now()) @updatedAt
+
+  // Relations
+  live_page    live_pages @relation(fields: [page_id], references: [page_id], onDelete: Cascade)
+
+  @@unique([page_id], name: "unique_featured_page")
+}
+
+model events {
+  event_id     Int      @id @default(autoincrement())
+  title        String
+  slug         String   @unique
+  description  String
+  location     String   @default("IIT Gandhinagar")
+  event_date   DateTime
+  is_recurring Boolean  @default(false)
+  recur_day    String?  // e.g. "Thursday"
+  recur_time   String?  // e.g. "6:30 PM"
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now()) @updatedAt
+  deleted_at   DateTime?
+
+  @@index([event_date], name: "events_date_index")
+}

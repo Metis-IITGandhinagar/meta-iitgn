@@ -74,3 +74,46 @@ export const getPageForEdit = async (slug: string) => {
   const response = await api.get(`/pages/${slug}/edit`, { withCredentials: true });
   return response.data;
 };
+
+export const getPopularPages = async (limit = 10) => {
+  const response = await api.get('/pages/popular', { params: { limit } });
+  return response.data;
+};
+
+export const incrementPageViewCount = async (slug: string) => {
+  try {
+    await api.post(`/pages/${slug}/view`);
+  } catch {
+    // Silent fail — view tracking should not block UX
+  }
+};
+
+export const getFeaturedPages = async () => {
+  const response = await api.get('/pages/featured');
+  return response.data;
+};
+
+export const setFeaturedPage = async (data: { page_id: number; order?: number; tag?: string; location?: string; description?: string }) => {
+  const response = await api.post('/pages/featured', data, { withCredentials: true });
+  return response.data;
+};
+
+export const removeFeaturedPage = async (featuredId: number) => {
+  const response = await api.delete(`/pages/featured/${featuredId}`, { withCredentials: true });
+  return response.data;
+};
+
+export const getEvents = async (limit = 20) => {
+  const response = await api.get('/pages/events', { params: { limit } });
+  return response.data;
+};
+
+export const getMessMenu = async () => {
+  const response = await api.get('/pages/special/mess-menu');
+  return response.data;
+};
+
+export const getCampusTransport = async () => {
+  const response = await api.get('/pages/special/campus-transport');
+  return response.data;
+};
