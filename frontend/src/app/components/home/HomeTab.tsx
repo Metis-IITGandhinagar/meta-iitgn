@@ -567,7 +567,6 @@ export default function HomeTab({
                 return (
                   <li key={`pending-page-${pending.pending_id || index}`}>
                     <span className="block text-xs font-semibold text-base-content/85 truncate">{pending.title}</span>
-                    <span className="text-[9px] text-base-content/50 font-semibold block">by {authorName} · {getRelativeTime(pending.created_at)}</span>
                   </li>
                 );
               })}
@@ -601,8 +600,8 @@ export default function HomeTab({
             <div className="space-y-3">
               {upcomingEvents.slice(0, 3).map((event) => (
                 <div key={event.event_id || event.slug} className="rounded-xl border border-base-200 bg-base-200/40 p-3">
-                  <p className="text-xs font-black text-base-content">{event.title}</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-base-content/50 mt-0.5">
+                  <p className="text-sm font-black text-base-content">{event.title}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/50 mt-0.5">
                     {formatEventDate(event.event_date, event.recur_day, event.recur_time)}
                   </p>
                   <p className="text-xs text-base-content/60 mt-1 line-clamp-1">{event.location}</p>

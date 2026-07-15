@@ -279,22 +279,25 @@ html[data-font-style="mono"] .font-style-sensitive {
 
 /* Font Size scaling rule applied on wiki article text */
 html[data-font-size="small"] .milkdown-container,
-html[data-font-size="small"] .prose,
-html[data-font-size="small"] p,
+html[data-font-size="small"] .prose p {
+  font-size: inherit;
+}
 html[data-font-size="small"] article {
   font-size: 0.75rem !important;
 }
 
 html[data-font-size="normal"] .milkdown-container,
-html[data-font-size="normal"] .prose,
-html[data-font-size="normal"] p,
+html[data-font-size="normal"] .prose p {
+  font-size: inherit;
+}
 html[data-font-size="normal"] article {
   font-size: 1rem !important;
 }
 
 html[data-font-size="large"] .milkdown-container,
-html[data-font-size="large"] .prose,
-html[data-font-size="large"] p,
+html[data-font-size="large"] .prose p {
+  font-size: inherit;
+}
 html[data-font-size="large"] article {
   font-size: 1.3rem !important;
 }
@@ -373,4 +376,4 @@ html[data-font-style="mono"] article {
 
 .animate-loading-bar {
   animation: loading-bar 1.2s infinite linear;
-}
+}
