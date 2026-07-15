@@ -106,6 +106,7 @@ export default function HomePage() {
   const router = useRouter();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [mobileNavHidden, setMobileNavHidden] = useState(false);
 
   const lastUserRef = useRef<string | null>(null);
   useEffect(() => {
@@ -206,6 +207,7 @@ export default function HomePage() {
       onClick: () => setActiveTab("profile"),
     },
   ];
+  const mobileTabs = homeTabs.filter((tab) => tab.id !== "search");
 
   function getRelativeTime(dateString: string) {
     if (!dateString) return "some time ago";
@@ -236,6 +238,28 @@ export default function HomePage() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const threshold = 8;
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY;
+
+      if (currentScrollY < 10) {
+        setMobileNavHidden(false);
+      } else if (delta > threshold) {
+        setMobileNavHidden(true);
+      } else if (delta < -threshold) {
+        setMobileNavHidden(false);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const [activeTier, setActiveTier] = useState("gold");
@@ -465,9 +489,15 @@ export default function HomePage() {
         {/* Floating Bottom Navbar on Mobile/Tablet */}
         {!sidebarOpen && (
           <BottomNavbar
-            tabs={homeTabs}
+            tabs={mobileTabs}
             activeTab={activeTab}
-            showLabels={false}
+            hidden={mobileNavHidden}
+            mobileAction={{
+              icon: Search,
+              onClick: () => setActiveTab("search"),
+              label: "Search",
+              active: activeTab === "search",
+            }}
             className="fixed lg:hidden bottom-6 left-1/2 transform -translate-x-1/2 lg:left-[calc(50vw+15rem)] z-9999"
           />
         )}

@@ -99,6 +99,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
 
   const [rightWidth, setRightWidth] = useState(320);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showRevisions, setShowRevisions] = useState(false);
   const [showPendingChanges, setShowPendingChanges] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -156,6 +157,32 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
       window.removeEventListener("show-wiki-pending", handleShowPending);
       window.removeEventListener("hide-wiki-history", handleHideHistory);
     };
+  }, []);
+
+  useEffect(() => {
+    const mainElement = document.querySelector("main");
+    if (!mainElement) return;
+
+    let lastScrollTop = 0;
+    const threshold = 8;
+
+    const handleScroll = () => {
+      const currentScrollTop = mainElement.scrollTop;
+      const delta = currentScrollTop - lastScrollTop;
+
+      if (currentScrollTop < 10) {
+        setMobileNavHidden(false);
+      } else if (delta > threshold) {
+        setMobileNavHidden(true);
+      } else if (delta < -threshold) {
+        setMobileNavHidden(false);
+      }
+
+      lastScrollTop = currentScrollTop;
+    };
+
+    mainElement.addEventListener("scroll", handleScroll, { passive: true });
+    return () => mainElement.removeEventListener("scroll", handleScroll);
   }, []);
 
   const startResizeRight = (e: React.MouseEvent) => {
@@ -591,6 +618,7 @@ export default function WikiClient({ initialMarkdown, defaultEditing, dbPageId, 
               ).filter((tab: any) => tab.id !== "sidebar" || !hideSidebar)
             }
             activeTab={actualSidebarOpen ? "sidebar" : (isEditing ? "edit" : undefined)}
+            hidden={mobileNavHidden}
             style={{
               left: !isMobile && actualSidebarOpen ? `calc((100vw - ${rightWidth}px) / 2)` : "50%",
             }}
