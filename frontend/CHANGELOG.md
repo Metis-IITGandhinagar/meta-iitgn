@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.0.0...frontend-v1.1.0) (2026-07-15)
+
+
+### Features
+
+* working mess, travel, featured cards. Customizations. Masonary layout. ([6414431](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/6414431f4188645530f5ca4762cb3d8e01737300))
+
+
+### Bug Fixes
+
+* fixed page sidebar bug and bottom navbar bug ([b0ad082](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b0ad082cbb9866e7827719675dc6fc9412215818))
+* req and dexie breking fixes ([3f3ecb3](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3f3ecb3ddf9c43ff94ab41ccfeda8fc8c9dca2a3))
+
+
+### Code Refactoring
+
+* added pagination in serch route and load more in frontend ([f031eb7](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f031eb753561e47390ec1f7bc4022c8286f58fa2))
+* added profilecontext for profile page stats caching on first time profile mound ([af834c3](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/af834c384aec7b4f3105543bbb242bdc5c85092b))
+* made blog page ui and edtior ([ade8a92](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ade8a927c8c8bb1492f1453456ab502b3a4a5cd7))
+
 ## [1.0.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v0.4.0...frontend-v1.0.0) (2026-07-15)
 
 
