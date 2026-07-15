@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { invalidateCategoriesCache } from './category.controller.js';
 import { invalidateStatsCache, invalidateSearchCache, invalidateSyncCache } from './page.controller.js';
+import { recomputeUserPoints } from '../utils/points.js';
 
 /**
  * POST /drafts
@@ -222,6 +223,7 @@ export const reviewDraft = async (req: Request, res: Response) => {
     }
 
     // --- APPROVE FLOW (Run in Transaction) ---
+    let editorId: number | undefined;
     const result = await prisma.$transaction(async (tx) => {
       // 1. Fetch pending draft
       const draft = await tx.pending_pages.findUnique({
@@ -231,6 +233,8 @@ export const reviewDraft = async (req: Request, res: Response) => {
       if (!draft) {
         throw new Error('Pending draft not found');
       }
+
+      editorId = draft.editor_id;
 
       const editorUser = await tx.users.findUnique({
         where: { user_id: draft.editor_id }
@@ -404,6 +408,16 @@ export const reviewDraft = async (req: Request, res: Response) => {
     invalidateSyncCache('pendingpages');
     invalidateSyncCache('updatedpages');
     invalidateSyncCache('news');
+
+    // Recompute the editor's contribution points (Fibonacci Scale) from their
+    // edit count, keeping the stored `users.points` column in sync.
+    if (editorId !== undefined) {
+      try {
+        await recomputeUserPoints(editorId);
+      } catch (pointsErr) {
+        console.error('Failed to recompute user points after approval:', pointsErr);
+      }
+    }
 
     return res.json(result);
   } catch (error: any) {

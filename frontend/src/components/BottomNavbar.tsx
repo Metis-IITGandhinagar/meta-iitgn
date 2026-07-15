@@ -35,12 +35,18 @@ export default function BottomNavbar({
   mobileAction,
 }: BottomNavbarProps) {
   return (
-    <div
-      style={style}
-      className={`z-9999 w-[min(92vw,42rem)] transition-all duration-300 ${hidden ? "pointer-events-none translate-y-24 opacity-0" : "translate-y-0 opacity-100"} ${className}`}
-    >
+    <>
+      {/* Bottom gradient scrim (mobile/tablet): fades page content into the theme colour behind the navbar */}
+      <div
+        aria-hidden
+        className={`fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-base-100 via-base-100/60 to-transparent lg:hidden pointer-events-none transition-opacity duration-300 z-[9998] ${hidden ? "opacity-0" : "opacity-100"}`}
+      />
+      <div
+        style={style}
+        className={`z-9999 w-[min(92vw,42rem)] transition-all duration-300 ${hidden ? "pointer-events-none translate-y-24 opacity-0" : "translate-y-0 opacity-100"} ${className}`}
+      >
       <div className="relative flex items-center gap-3">
-        <div className="relative flex min-w-0 flex-1 items-center overflow-hidden bg-base-100 border border-base-300 shadow-[0_10px_30px_rgba(0,0,0,0.08)] rounded-full px-2 py-1 gap-1 select-none">
+        <div className="relative flex min-w-0 flex-1 items-center overflow-hidden bg-base-100 border-2 border-base-300 shadow-[0_18px_44px_rgba(0,0,0,0.22)] rounded-full px-2 py-1 gap-1 select-none">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -90,5 +96,6 @@ export default function BottomNavbar({
         )}
       </div>
     </div>
+    </>
   );
 }

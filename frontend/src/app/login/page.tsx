@@ -35,6 +35,17 @@ export default function LoginPage() {
   const [devRole, setDevRole] = useState(DEV_ACCOUNTS[0].role);
   const [showDevBypass, setShowDevBypass] = useState(false);
 
+  // Cursor-following 3D tilt for the login card (interaction-safe alternative to
+  // daisyUI's hover-3d, whose overlay zones would block the close button / form).
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const handleCardTilt = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    setTilt({ rx: (0.5 - py) * 10, ry: (px - 0.5) * 10 });
+  };
+  const resetCardTilt = () => setTilt({ rx: 0, ry: 0 });
+
   // If already authenticated, redirect to home page
   useEffect(() => {
     if (auth) {
@@ -122,8 +133,15 @@ export default function LoginPage() {
       <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Popover container card */}
-      <div className="relative w-full max-w-md bg-base-100 border border-base-300/80 rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.25)] p-8 flex flex-col items-center animate-in zoom-in-95 duration-200">
-        
+      <div
+        onMouseMove={handleCardTilt}
+        onMouseLeave={resetCardTilt}
+        style={{
+          transform: `perspective(1200px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+          transition: tilt.rx === 0 && tilt.ry === 0 ? "transform .4s ease-out" : "transform .08s ease-out",
+        }}
+        className="relative w-full max-w-md bg-base-100 border border-base-300/80 rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.25)] p-8 flex flex-col items-center animate-in zoom-in-95 duration-200 will-change-transform"
+      >
         {/* Close Button */}
         <button
           onClick={() => {

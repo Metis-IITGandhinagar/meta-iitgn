@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
 
@@ -36,9 +37,10 @@ export default function EditorsOverlay({
           editors.map((editor) => {
             const initials = editor.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "U";
             return (
-              <div
+              <Link
                 key={editor.user_id}
-                className="p-4 border border-base-300 bg-base-100 rounded-2xl shadow-xs flex items-center gap-4 text-left animate-in fade-in"
+                href={`/user/profile?userId=${editor.user_id}`}
+                className="block p-4 border border-base-300 bg-base-100 rounded-2xl shadow-xs flex items-center gap-4 text-left animate-in fade-in transition-colors hover:bg-base-200/60 hover:border-base-300"
               >
                 <div className="w-12 h-12 rounded-full bg-base-200 border border-base-300 flex items-center justify-center font-bold text-base-content/85 shrink-0">
                   {initials}
@@ -52,7 +54,7 @@ export default function EditorsOverlay({
                     {editor.role || "Bronze"}
                   </span>
                 )}
-              </div>
+              </Link>
             );
           })
         )}

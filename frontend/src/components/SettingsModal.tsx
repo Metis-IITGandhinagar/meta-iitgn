@@ -449,25 +449,26 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   {/* Theme Mode */}
                   <div className="space-y-2">
                     <label className="text-[12px] font-semibold text-base-content block">Interface Theme</label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pr-1">
+                    <div className="flex flex-wrap gap-2.5">
                       {WIKI_THEMES.map((t) => {
                         const isSel = theme === t.id;
                         return (
-                          <button
-                            key={t.id}
-                            type="button"
-                            onClick={() => handleSaveTheme(t.id)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold border transition-all duration-150 cursor-pointer bg-base-100 border-base-300 text-base-content hover:bg-base-200/60 ${isSel ? "border-primary ring-1 ring-primary bg-base-200" : ""
-                              }`}
-                          >
-                            <span>{t.label}</span>
-                            <div data-theme={t.id} className="flex gap-0.5 shrink-0 ml-1 bg-transparent">
-                              <span className="w-2.5 h-2.5 rounded-full border border-base-300 bg-primary" />
-                              <span className="w-2.5 h-2.5 rounded-full border border-base-300 bg-secondary" />
-                              <span className="w-2.5 h-2.5 rounded-full border border-base-300 bg-accent" />
-                              <span className="w-2.5 h-2.5 rounded-full border border-base-300 bg-neutral" />
+                          <label key={t.id} className="theme-controller cursor-pointer" title={t.label}>
+                            <input
+                              type="radio"
+                              name="theme-controller"
+                              value={t.id}
+                              checked={isSel}
+                              onChange={() => handleSaveTheme(t.id)}
+                              className="sr-only"
+                            />
+                            <div
+                              data-theme={t.id}
+                              className={`grid place-items-center w-9 h-9 rounded-full bg-base-100 border-2 transition-transform duration-150 ${isSel ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-base-100" : "border-base-300 hover:scale-110"}`}
+                            >
+                              <span className="text-[9px] font-bold text-base-content leading-none">{t.label.split(" ")[0]}</span>
                             </div>
-                          </button>
+                          </label>
                         );
                       })}
                     </div>

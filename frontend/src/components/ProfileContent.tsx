@@ -50,7 +50,7 @@ const DEV_ACCOUNTS = [
 ];
 
 export default function ProfileContent() {
-  const { user: currentUser, loading: authLoading, checkAuth } = useAuth();
+  const { user: currentUser, loading: authLoading, checkAuth, logout } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { bookmarks, removeBookmark } = useHomeStore();
@@ -406,8 +406,7 @@ export default function ProfileContent() {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={async () => {
-                    await api.post('/user/logout', {}, { withCredentials: true });
-                    await checkAuth();
+                    await logout();
                     router.push('/');
                   }}
                   className="btn btn-ghost btn-sm gap-1 text-error/80 hover:text-error"

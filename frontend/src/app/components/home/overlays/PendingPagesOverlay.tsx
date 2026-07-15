@@ -4,6 +4,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { apiService } from "@/api";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
+import WikiReadView from "@/components/article/WikiReadView";
 
 interface PendingPagesOverlayProps {
   isOpen: boolean;
@@ -33,6 +34,8 @@ export default function PendingPagesOverlay({
     setMounted(true);
   }, []);
 
+  const isNewPageProposal = !!activeReviewDraft && !activeReviewDraft.page_id;
+
   const startReview = async (draft: any) => {
     setActiveReviewDraft(draft);
     setLiveContent("");
@@ -61,77 +64,52 @@ export default function PendingPagesOverlay({
 
   if (!isOpen) return null;
 
-  // Side-by-side review modal — rendered via portal so it is never clipped
-  // by the parent modal's overflow or z-index context.
+  // Side-by-side review modal — rendered via portal with the global
+  // GenericOverlayModal so it is never clipped by the parent modal.
   const reviewModal =
     mounted && activeReviewDraft
       ? createPortal(
-          <div className="fixed inset-0 z-[30000] bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-            <div className="bg-base-100 rounded-3xl border border-base-300 shadow-2xl w-full max-w-5xl my-auto flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-              {/* Header */}
-              <header className="px-6 py-4 border-b border-base-200 flex items-center justify-between shrink-0 bg-base-100">
-                <div className="min-w-0">
-                  <h3 className="text-lg font-black text-base-content leading-snug truncate">
-                    Review: {activeReviewDraft.title}
-                  </h3>
-                  <p className="text-xs text-base-content/50 mt-1 font-semibold uppercase tracking-wider">
-                    Author:{" "}
-                    {activeReviewDraft.editor?.name ||
-                      activeReviewDraft.users?.name ||
-                      `User #${activeReviewDraft.editor_id}`}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveReviewDraft(null)}
-                  className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-base-content shrink-0 ml-4"
-                >
-                  ✕
-                </button>
-              </header>
+          <GenericOverlayModal
+            isOpen={true}
+            onClose={() => setActiveReviewDraft(null)}
+            title={`Review: ${activeReviewDraft.title}`}
+            maxWidthClass="max-w-6xl"
+          >
+            <div className="flex flex-col h-[80vh] min-h-0">
+              <p className="text-xs text-base-content/50 mb-3 font-semibold uppercase tracking-wider shrink-0">
+                Author:{" "}
+                {activeReviewDraft.editor?.name ||
+                  activeReviewDraft.users?.name ||
+                  `User #${activeReviewDraft.editor_id}`}
+              </p>
 
-              {/* Side-by-side panes */}
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Side-by-side read-mode panes */}
+              <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
                 {/* Live version */}
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-black text-base-content/60 uppercase tracking-wider">
-                    Live Page Version
-                  </h4>
+                <div className="flex-1 min-w-0 min-h-0 border border-base-200 rounded-2xl overflow-hidden bg-base-200/20">
                   {reviewLoading ? (
-                    <div className="flex flex-col gap-2.5 p-3 animate-pulse">
+                    <div className="flex flex-col gap-2.5 p-4 animate-pulse">
                       <div className="h-3.5 bg-base-300 rounded w-full" />
                       <div className="h-3.5 bg-base-300 rounded w-5/6" />
                       <div className="h-3.5 bg-base-300 rounded w-2/3" />
                     </div>
+                  ) : isNewPageProposal ? (
+                    <div className="h-full flex items-center justify-center text-center text-sm text-base-content/50 italic p-4">
+                      New page proposal. No live version exists.
+                    </div>
                   ) : (
-                    <textarea
-                      readOnly
-                      rows={20}
-                      value={
-                        activeReviewDraft.page_id
-                          ? liveContent || "This article has no live published content yet."
-                          : "New page proposal. No live version exists."
-                      }
-                      className="w-full bg-base-200/50 border border-base-300 rounded-xl p-3 text-xs font-mono resize-y focus:outline-none text-base-content/65 overflow-y-auto"
-                    />
+                    <WikiReadView markdown={liveContent} />
                   )}
                 </div>
 
                 {/* Proposed draft */}
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-black text-primary uppercase tracking-wider">
-                    Proposed Draft Version
-                  </h4>
-                  <textarea
-                    readOnly
-                    rows={20}
-                    value={activeReviewDraft.content}
-                    className="w-full bg-base-100 border border-base-300 rounded-xl p-3 text-xs font-mono resize-y focus:outline-none text-base-content/85 overflow-y-auto"
-                  />
+                <div className="flex-1 min-w-0 min-h-0 border border-base-200 rounded-2xl overflow-hidden bg-base-100">
+                  <WikiReadView markdown={activeReviewDraft.content} />
                 </div>
               </div>
 
               {/* Footer */}
-              <footer className="px-6 py-4 border-t border-base-200 flex justify-end gap-3 shrink-0 bg-base-100">
+              <footer className="pt-4 mt-2 border-t border-base-200 flex justify-end gap-3 shrink-0">
                 <button
                   onClick={() => setActiveReviewDraft(null)}
                   className="btn btn-ghost btn-sm rounded-xl"
@@ -152,7 +130,7 @@ export default function PendingPagesOverlay({
                 </button>
               </footer>
             </div>
-          </div>,
+          </GenericOverlayModal>,
           document.body
         )
       : null;

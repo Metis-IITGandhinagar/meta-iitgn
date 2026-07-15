@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { TIERS } from "@/lib/constants";
@@ -9,6 +10,11 @@ export default function WikiLayout({ children }: { children: React.ReactNode }) 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTier, setCurrentTier] = useState<keyof typeof TIERS>("gold");
   const [hideNavbar, setHideNavbar] = useState(false);
+
+  const pathname = usePathname();
+  const isProfileReadme =
+    pathname?.split("/").pop()?.startsWith("profile-") ||
+    pathname?.split("/")[2] === "profile";
 
   useEffect(() => {
     // Sync state if window is available
@@ -44,12 +50,14 @@ export default function WikiLayout({ children }: { children: React.ReactNode }) 
       {/* Main Content Workspace - Starts from Top 0 */}
       <div className="flex h-full w-full overflow-hidden relative">
         {/* Left Collapsible Sidebar */}
-        <Sidebar 
-          isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
+        {!isProfileReadme && (
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
           currentTier={currentTier}
           onChangeTier={setCurrentTier}
         />
+        )}
         <div className={`flex flex-col lg:flex-row flex-1 h-full w-full min-w-full shrink-0 lg:shrink lg:flex-1 overflow-hidden transition-transform duration-300 ease-in-out`}>
           {children}
         </div>

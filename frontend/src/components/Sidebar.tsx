@@ -22,11 +22,10 @@ import {
   LucideIcon,
   User,
   History,
-  Settings,
   LogOut,
   X,
 } from "lucide-react";
-import { SIDEBAR_SECTIONS, TIERS } from "@/lib/constants";
+import { SIDEBAR_SECTIONS } from "@/lib/constants";
 
 // Local map for statically imported icons to avoid wildcard imports
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -78,17 +77,7 @@ export default function Sidebar({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const { user, setSettingsTab } = useAuth();
-
-  const roleToTier = (role: string): "bronze" | "silver" | "gold" => {
-    const r = role?.toLowerCase();
-    if (r === "admin") return "gold";
-    if (r === "moderator") return "silver";
-    return "bronze";
-  };
-
-  const activeTier = roleToTier(user?.role || "normal");
-  const activeTierData = TIERS[activeTier as keyof typeof TIERS] || TIERS.gold;
+  const { user } = useAuth();
 
   // Helper to render Lucide icons dynamically from their string names
   const renderIcon = (iconName: string, isActive: boolean) => {
@@ -190,26 +179,6 @@ export default function Sidebar({
               </h3>
               <div className="space-y-0.5">
                  <Link
-                  href="/user/profile"
-                  onClick={() => {
-                    if (window.innerWidth < 1024) onClose();
-                  }}
-                  className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/user/profile"
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`}
-                >
-                  <User
-                  className={`h-5 w-5 transition-colors duration-200 ${
-                    pathname === "/user/profile"
-                      ? "text-primary"
-                      : "text-base-content/50 group-hover:text-base-content/80"
-                  }`}
-                  />
-                  <span className="truncate">My Profile</span>
-                </Link>
-                 <Link
                   href="/user/contributions"
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
@@ -229,18 +198,6 @@ export default function Sidebar({
                   />
                   <span className="truncate">My Contributions</span>
                 </Link>
-                 <button
-                  onClick={() => {
-                    if (window.innerWidth < 1024) onClose();
-                    setSettingsTab("appearance");
-                  }}
-                  className="w-full text-left group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 text-base-content/80 hover:text-base-content hover:bg-base-200 cursor-pointer"
-                >
-                  <Settings
-                    className="h-5 w-5 transition-colors duration-200 text-base-content/50 group-hover:text-base-content/80"
-                  />
-                  <span className="truncate">Settings</span>
-                </button>
                 <Link
                   href="/logout"
                   onClick={() => {
@@ -252,53 +209,6 @@ export default function Sidebar({
                   <span className="truncate">Sign Out</span>
                 </Link>
               </div>
-              {/* Tier Banner at Bottom */}
-              {user ? (
-                <div className="mb-3 shrink-0">
-                   <div className="card card-bordered py-3 px-1.5 bg-base-100 border-base-200 shadow-inner">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[9px] font-bold text-base-content/50 tracking-wider uppercase">
-                        Contributor Tier
-                      </span>
-                      <span className="text-[10px] font-bold text-base-content/50">
-                        Rank {activeTierData.rank}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-base leading-none">
-                          {activeTierData.icon}
-                        </span>
-                        <span className="text-xs font-extrabold text-base-content">
-                          {activeTierData.name}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-extrabold text-base-content/75">
-                        {activeTierData.xp} XP
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-full h-1.5 bg-base-300 rounded-full overflow-hidden mb-2">
-                      <div
-                        className={`h-full rounded-full transition-all duration-350 ${activeTierData.progressBar}`}
-                        style={{ width: `${activeTierData.percent}%` }}
-                      />
-                    </div>
-
-                    {/* Next Tier Unlock */}
-                    {activeTierData.nextTier && (
-                      <p className="text-[8px] font-semibold  leading-normal line-clamp-1">
-                        Next: {activeTierData.nextTier} •{" "}
-                        {activeTierData.nextUnlock}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <></>
-              )}
             </div>
           ) : (
             <div className="px-2 mt-4">

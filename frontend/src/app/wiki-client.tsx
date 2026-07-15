@@ -26,6 +26,10 @@ import BottomNavbar from "@/components/BottomNavbar";
 import RevisionsView from "./components/wiki/RevisionsView";
 import PendingChangesView from "./components/wiki/PendingChangesView";
 import WikiInfoBox from "./components/wiki/WikiInfoBox";
+import MessMenuView from "@/components/article/MessMenuView";
+import MessMenuOverlay from "@/app/components/home/overlays/MessMenuOverlay";
+import TransportView from "@/components/article/TransportView";
+import TransportOverlay from "@/app/components/home/overlays/TransportOverlay";
 
 // Dynamically import MilkdownEditor so it doesn't run during SSR
 const MilkdownEditor = dynamic(
@@ -114,8 +118,28 @@ export default function WikiClient({
     );
   }, [parsed]);
 
-  const hideSidebar = isNews && isEditing;
-  const actualSidebarOpen = rightSidebarOpen && !hideSidebar;
+  const isMessMenu = useMemo(() => {
+    const slug =
+      initialMetadata?.slug ||
+      (typeof window !== "undefined"
+        ? window.location.pathname.split("/").pop()
+        : "");
+    return slug === "mess-menu";
+  }, [initialMetadata]);
+
+  const isTransport = useMemo(() => {
+    const slug =
+      initialMetadata?.slug ||
+      (typeof window !== "undefined"
+        ? window.location.pathname.split("/").pop()
+        : "");
+    return slug === "campus-transport";
+  }, [initialMetadata]);
+
+  // Stable prop objects for the editor modals (avoid re-parsing on every render
+  // while a modal is open).
+  const messMenuProp = useMemo(() => ({ content: markdown }), [markdown]);
+  const transportProp = useMemo(() => ({ content: markdown }), [markdown]);
 
   const [rightWidth, setRightWidth] = useState(320);
   const [isMobile, setIsMobile] = useState(false);
@@ -123,6 +147,14 @@ export default function WikiClient({
   const [showRevisions, setShowRevisions] = useState(false);
   const [showPendingChanges, setShowPendingChanges] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [showMessEditor, setShowMessEditor] = useState(false);
+  const [showTransportEditor, setShowTransportEditor] = useState(false);
+
+  // The right sidebar (and its toggle button) is suppressed for page types that
+  // don't use it. Extend `hideSidebar` for any future page/modal that should take
+  // over the whole reading area without the sidebar getting in the way.
+  const hideSidebar = (isNews && isEditing) || isMessMenu || isTransport;
+  const actualSidebarOpen = rightSidebarOpen && !hideSidebar;
 
   const fetchPendingCount = useCallback(async () => {
     try {
@@ -549,15 +581,22 @@ export default function WikiClient({
               </div>
             )}
 
-            {/* Milkdown Editor */}
-            <MilkdownEditor
-              key={isEditing ? "edit" : "view"}
-              initialMarkdown={parsed.contentMarkdown}
-              onMarkdownChange={handleMarkdownChange}
-              readOnly={!isEditing}
-              onLoaded={() => setEditorLoaded(true)}
-              toolbarContainer={toolbarContainer}
-            />
+            {/* Milkdown Editor (replaced by the structured views on the mess-menu
+                and campus-transport pages) */}
+            {isMessMenu ? (
+              <MessMenuView content={parsed.contentMarkdown} />
+            ) : isTransport ? (
+              <TransportView content={parsed.contentMarkdown} />
+            ) : (
+              <MilkdownEditor
+                key={isEditing ? "edit" : "view"}
+                initialMarkdown={parsed.contentMarkdown}
+                onMarkdownChange={handleMarkdownChange}
+                readOnly={!isEditing}
+                onLoaded={() => setEditorLoaded(true)}
+                toolbarContainer={toolbarContainer}
+              />
+            )}
           </article>
           {/* Material Design 3 Bottom Navigation Bar */}
           <BottomNavbar
@@ -613,14 +652,17 @@ export default function WikiClient({
                   },
                 ]
               : ([
-                  (user?.role === "admin" || user?.role === "moderator") && {
-                    id: "delete",
-                    label: "Delete Page",
-                    icon: Trash2,
-                    onClick: handleDelete,
-                    colorClass:
-                      "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
-                  },
+                  (user?.role === "admin" ||
+                    user?.role === "moderator") &&
+                    !isMessMenu &&
+                    !isTransport && {
+                      id: "delete",
+                      label: "Delete Page",
+                      icon: Trash2,
+                      onClick: handleDelete,
+                      colorClass:
+                        "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
+                    },
                   {
                     id: "changes",
                     label: "Changes",
@@ -641,6 +683,16 @@ export default function WikiClient({
                     onClick: async () => {
                       if (!user) {
                         router.push("/login");
+                        return;
+                      }
+                      // The mess-menu and campus-transport pages are edited via
+                      // their dedicated editor modals.
+                      if (isMessMenu) {
+                        setShowMessEditor(true);
+                        return;
+                      }
+                      if (isTransport) {
+                        setShowTransportEditor(true);
                         return;
                       }
                       try {
@@ -812,6 +864,23 @@ export default function WikiClient({
             </footer>
           </div>
         </div>
+      )}
+
+      {/* Mess menu editor modal (opened from the mess-menu wiki page) */}
+      {isMessMenu && (
+        <MessMenuOverlay
+          isOpen={showMessEditor}
+          onClose={() => setShowMessEditor(false)}
+          messMenu={messMenuProp}
+        />
+      )}
+
+      {isTransport && (
+        <TransportOverlay
+          isOpen={showTransportEditor}
+          onClose={() => setShowTransportEditor(false)}
+          transport={transportProp}
+        />
       )}
     </>
   );

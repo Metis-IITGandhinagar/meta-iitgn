@@ -13,6 +13,8 @@ interface HomeCardProps {
   children: React.ReactNode;
   /** Optional footer content (e.g. CTA button) */
   footer?: React.ReactNode;
+  /** When provided, the whole card becomes clickable (e.g. opens a modal). */
+  onClick?: () => void;
   /** Extra classes on the outer card element */
   className?: string;
   /** ID for accessibility */
@@ -31,13 +33,27 @@ export default function HomeCard({
   badge,
   children,
   footer,
+  onClick,
   className = "",
   id,
 }: HomeCardProps) {
   return (
     <div
       id={id}
-      className={`card card-bordered bg-base-100 border-base-200 shadow-depth shadow-depth-hover flex flex-col text-left w-full h-full ${className}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      className={`card card-bordered bg-base-100 border-base-200 shadow-depth shadow-depth-hover flex flex-col text-left w-full h-full ${onClick ? "cursor-pointer transition-colors hover:border-secondary/50" : ""} ${className}`}
     >
       {/* Card header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">

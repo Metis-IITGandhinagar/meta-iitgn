@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useHomeStore } from "@/store/useHomeStore";
 import {
   Menu,
   Heart,
@@ -66,6 +67,7 @@ export default function LeftPanel({
   spawnHearts,
 }: LeftPanelProps) {
   const { categories, activeTier: globalActiveTier, setSettingsTab } = useAuth();
+  const { setActiveOverlay, setActivePortalCategory } = useHomeStore();
   const isGold = globalActiveTier === "gold";
   const [pageCount, setPageCount] = useState<number | null>(null);
 
@@ -82,6 +84,7 @@ export default function LeftPanel({
 
     return pinned.map((c, idx) => ({
       name: c.name,
+      slug: c.slug,
       path: `/wiki/${c.slug}`,
       iconName: c.icon || "BookOpen",
       colorTheme: colors[idx % colors.length],
@@ -154,12 +157,22 @@ export default function LeftPanel({
 
           {/* Logo / Badge */}
           <div className="flex flex-col items-center text-center mt-1">
-            <Link
-              href="/"
-              className="w-18 h-18 sm:w-20 sm:h-20 bg-primary text-primary-content rounded-full flex items-center justify-center font-serif font-black text-2xl sm:text-3xl shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
-            >
-              mI
-            </Link>
+            <div className="hover-3d">
+              <Link
+                href="/"
+                className="w-18 h-18 sm:w-20 sm:h-20 bg-primary text-primary-content rounded-full flex items-center justify-center font-serif font-black text-2xl sm:text-3xl shadow-md cursor-pointer"
+              >
+                mI
+              </Link>
+              <div />
+              <div />
+              <div />
+              <div />
+              <div />
+              <div />
+              <div />
+              <div />
+            </div>
             <div className="mt-4">
               <span className="block text-2xl font-serif font-black text-base-content tracking-tight">
                 {pageCount !== null ? pageCount.toLocaleString() : "..."}
@@ -200,16 +213,20 @@ export default function LeftPanel({
 
             <div className="grid grid-cols-2 gap-4">
               {portalsToDisplay.slice(0, 10).map((portal) => (
-                <Link
+                <button
                   key={portal.name}
-                  href={portal.path}
-                  className={`card card-compact card-bordered flex flex-row items-center gap-2 p-3 border-base-200 bg-base-100 shadow-xs hover:scale-105 transition-all duration-100 ease-in-out cursor-pointer group`}
+                  type="button"
+                  onClick={() => {
+                    setActivePortalCategory(portal.slug);
+                    setActiveOverlay("portal");
+                  }}
+                  className={`card card-compact card-bordered flex flex-row items-center gap-2 p-3 border-base-200 bg-base-100 shadow-xs hover:scale-105 transition-all duration-100 ease-in-out cursor-pointer group text-left w-full`}
                 >
                   {renderPortalIcon(portal.iconName, portal.colorTheme)}
                   <span className="text-xs font-semibold text-base-content group-hover:text-primary transition-colors duration-200">
                     {portal.name}
                   </span>
-                </Link>
+                </button>
               ))}
             </div>
             {portalsToDisplay.length === 0 && (
@@ -241,7 +258,7 @@ export default function LeftPanel({
             </span>
           </div>
           <div className="text-[9px] font-bold text-base-content/50/60 tracking-widest uppercase mt-1">
-            © {new Date().getFullYear()} IIT Gandhinagar
+            © {new Date().getFullYear()} Technical Council
           </div>
         </div>
       </div>

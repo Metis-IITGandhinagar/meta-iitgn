@@ -335,6 +335,7 @@ export const searchPages = async (req: Request, res: Response) => {
         results.push({
           title: p.title || 'Untitled',
           slug: p.slug,
+          page_id: p.page_id,
           path: `/wiki/page/${p.slug}`,
           category,
           type: 'page',
@@ -1048,11 +1049,19 @@ export const setFeaturedPage = async (req: Request, res: Response) => {
     const { page_id, order = 0, tag = 'Featured', location = '', description = '' } = req.body;
     if (!page_id) return res.status(400).json({ success: false, error: { code: 'MISSING_PAGE_ID', message: 'page_id is required' } });
 
-    const result = await prisma.featured_pages.upsert({
-      where: { page_id: Number(page_id) },
-      update: { order, tag, location, description },
-      create: { page_id: Number(page_id), order, tag, location, description },
-    });
+    const pid = Number(page_id);
+    const existing = await prisma.featured_pages.findFirst({ where: { page_id: pid } });
+    let result;
+    if (existing) {
+      result = await prisma.featured_pages.update({
+        where: { featured_id: existing.featured_id },
+        data: { order, tag, location, description },
+      });
+    } else {
+      result = await prisma.featured_pages.create({
+        data: { page_id: pid, order, tag, location, description },
+      });
+    }
     invalidateSyncCache('featured');
     return res.json({ success: true, data: result });
   } catch (error: any) {

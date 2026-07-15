@@ -210,7 +210,7 @@ rows:
     value: campus-transport
     type: text
   - label: Operated by
-    value: IIT Gandhinagar Transport Cell
+    value: IITGN Welfare Council
     type: text
   - label: Contact
     value: transport@iitgn.ac.in
@@ -221,79 +221,69 @@ rows:
 
 > All schedules are indicative. Check notice boards and the official portal for real-time updates.
 
-## Shuttle Routes
+## 29-Seater Non-AC Bus
+> JEET Royal Hostel Accommodation · Highway Turning near JEET Gate-1
 
-### Route A — Campus ↔ Ahmedabad Railway Station
+**Morning** (7:45 am – 11:15 am)
+- 7:45 am · JEET Royal Hotel Apt. → U-Corridor Circle
+- 9:15 am · JEET Royal Hotel Apt. → U-Corridor Circle
+- 9:45 am · JEET Royal Hotel Apt. → U-Corridor Circle
+- 10:15 am · JEET Royal Hotel Apt. → U-Corridor Circle
+- 10:45 am · JEET Royal Hotel Apt. → U-Corridor Circle
+- 11:15 am · JEET Royal Hotel Apt. → U-Corridor Circle
 
-| Departure | From | To |
-|-----------|------|----|
-| 6:00 AM | Campus Gate | Railway Station |
-| 8:30 AM | Campus Gate | Railway Station |
-| 5:00 PM | Railway Station | Campus Gate |
-| 9:00 PM | Railway Station | Campus Gate |
+**Afternoon & Evening** (1:00 pm – 7:15 pm)
+- 1:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 1:30 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 2:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 5:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 5:30 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 6:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 6:30 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 7:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
 
-**Notes:** Runs Monday to Saturday. Book 24 hours in advance via the transport portal.
+**Late Evening** (8:45 pm – 1:15 am)
+- 9:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 9:30 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 10:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 10:30 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 11:00 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 11:30 pm · U-Corridor Circle → JEET Royal Hotel Apt.
+- 12:00 am · U-Corridor Circle → JEET Royal Hotel Apt.
+- 12:30 am · U-Corridor Circle → JEET Royal Hotel Apt.
+- 1:00 am · U-Corridor Circle → JEET Royal Hotel Apt.
 
----
+## 56-Seater Bus
+> Institute Bus Schedule
 
-### Route B — Campus ↔ Ahmedabad Airport
+**Schedule**
+- 7:00 AM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 7:30 AM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 8:30 AM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 9:00 AM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 9:30 AM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 10:00 AM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 4:30 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 5:00 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 5:45 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 6:15 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 6:45 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 7:15 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 7:45 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 8:15 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 9:30 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 10:30 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
 
-| Departure | From | To |
-|-----------|------|----|
-| 4:30 AM | Campus Gate | Airport |
-| 7:00 AM | Campus Gate | Airport |
-| 2:00 PM | Airport | Campus Gate |
-| 8:00 PM | Airport | Campus Gate |
+## 29-Seater Bus
+> Institute Bus Schedule
 
-**Notes:** Runs daily. Subject to flight schedule alignment.
-
----
-
-### Route C — Internal Campus Loop
-
-| Departure | From |
-|-----------|------|
-| Every 20 minutes (8:00 AM – 10:00 PM) | Academic Block → Hostels → Sports Complex → Mess → Academic Block |
-
----
-
-### Route D — Palaj Village ↔ Campus
-
-| Departure | From | To |
-|-----------|------|----|
-| 7:15 AM | Palaj Village | Campus Gate |
-| 9:00 AM | Palaj Village | Campus Gate |
-| 5:30 PM | Campus Gate | Palaj Village |
-| 8:30 PM | Campus Gate | Palaj Village |
-
----
-
-## City Bus (AMTS / BRTS)
-
-The nearest **BRTS** stop is **Palaj**, a 5-minute walk from the main gate.
-
-- **Route 81:** Palaj → Chandkheda → Sabarmati (every 15 min, 6 AM – 10 PM)
-- **Route 107:** Palaj → Maninagar (via SG Highway, every 30 min)
-
----
-
-## Auto-Rickshaw & Cab Zones
-
-- **OLA / Uber:** Available from Campus Gate, typical wait 5–10 min.
-- **Prepaid Auto Stand:** Outside main gate, fixed fares to Chandkheda (₹60), Bopal (₹120).
-
----
-
-## Emergency Transport
-
-For medical emergencies, call the **campus helpline: 079-2395-2001**. A vehicle is dispatched within 10 minutes 24×7.
-
----
-
-## Booking & Passes
-
-- **Student Semester Pass:** ₹500/semester for unlimited campus loops
-- **City Shuttle Booking:** transport.iitgn.ac.in or WhatsApp 9876543210
+**Schedule**
+- 6:30 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 7:00 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 7:30 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 8:00 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
+- 8:30 PM · Palaj → Kudasan · Via: IITGN Mess Parking - Rakshashakti Circle - Kudasan
+- 10:30 PM · Kudasan → Palaj · Via: Kudasan - Rakshashakti Circle - IITGN Mess Parking
 `;
 
   const transportPage = await prisma.live_pages.upsert({

@@ -31,6 +31,9 @@ export interface MasonryCardConfig {
 interface HomeMasonryGridProps {
   cards: MasonryCardConfig[];
   storageKey?: string;
+  // When true, drag handles are shown on every card and reordering is enabled.
+  // When false, cards are not draggable (e.g. customize panel is closed).
+  reorderEnabled?: boolean;
 }
 
 function loadOrder(key: string): string[] | null {
@@ -84,10 +87,10 @@ function useContainerCols(ref: React.RefObject<HTMLDivElement | null>): number {
 interface SortableCardItemProps {
   card: MasonryCardConfig;
   isDraggingOver: boolean;
-  cols: number;
+  reorderEnabled: boolean;
 }
 
-function SortableCardItem({ card, isDraggingOver, cols }: SortableCardItemProps) {
+function SortableCardItem({ card, isDraggingOver, reorderEnabled }: SortableCardItemProps) {
   const {
     attributes,
     listeners,
@@ -95,7 +98,7 @@ function SortableCardItem({ card, isDraggingOver, cols }: SortableCardItemProps)
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id });
+  } = useSortable({ id: card.id, disabled: !reorderEnabled });
 
   const [span, setSpan] = useState(20);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -126,7 +129,7 @@ function SortableCardItem({ card, isDraggingOver, cols }: SortableCardItemProps)
     };
   }, [isDragging]);
 
-  const colSpan = card.featured && cols > 1 ? 2 : 1;
+  const colSpan = 1;
 
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
@@ -147,22 +150,24 @@ function SortableCardItem({ card, isDraggingOver, cols }: SortableCardItemProps)
         isDragging ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-base-100" : ""
       } ${isDraggingOver ? "scale-[0.98]" : ""} transition-transform duration-150`}
     >
-      <button
-        {...attributes}
-        {...listeners}
-        tabIndex={0}
-        aria-label="Drag to reorder"
-        className={`
-          absolute top-3 right-3 z-10 p-1 rounded-lg
-          opacity-0 group-hover/card:opacity-100
-          bg-base-200/80 backdrop-blur-sm border border-base-300
-          text-base-content/50 hover:text-base-content
-          cursor-grab active:cursor-grabbing
-          transition-opacity duration-150 shadow-sm
-        `}
-      >
-        <GripVertical className="w-3.5 h-3.5" />
-      </button>
+      {reorderEnabled && (
+        <button
+          {...attributes}
+          {...listeners}
+          tabIndex={0}
+          aria-label="Drag to reorder"
+          className={`
+            absolute top-3 right-3 z-10 p-1 rounded-lg
+            opacity-100
+            bg-base-200/80 backdrop-blur-sm border border-base-300
+            text-base-content/50 hover:text-base-content
+            cursor-grab active:cursor-grabbing
+            transition-opacity duration-150 shadow-sm
+          `}
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </button>
+      )}
       <div ref={contentRef} className="h-fit">
         {card.content}
       </div>
@@ -181,12 +186,18 @@ const DEFAULT_STORAGE_KEY = "meta_iitgn_home_card_order";
 export default function HomeMasonryGrid({
   cards,
   storageKey = DEFAULT_STORAGE_KEY,
+  reorderEnabled = false,
 }: HomeMasonryGridProps) {
   const [items, setItems] = useState<MasonryCardConfig[]>(cards);
   const [activeId, setActiveId] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const cols = useContainerCols(gridRef);
   const [colWidth, setColWidth] = useState(0);
+
+  // Stable key of the current card id set. Re-syncs the displayed order when the
+  // set of cards changes (e.g. cards are filtered out via preferences) without
+  // clobbering an in-progress drag, which doesn't change the id set.
+  const cardsKey = cards.map((c) => c.id).join(",");
 
   useEffect(() => {
     const el = gridRef.current;
@@ -217,7 +228,7 @@ export default function HomeMasonryGrid({
       setItems(cards);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey]);
+  }, [storageKey, cardsKey]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -250,7 +261,7 @@ export default function HomeMasonryGrid({
   }, []);
 
   const activeCard = items.find((c) => c.id === activeId) ?? null;
-  const activeFeatured = activeCard?.featured && cols > 1;
+  const activeFeatured = false;
 
   return (
     <DndContext
@@ -273,8 +284,8 @@ export default function HomeMasonryGrid({
             <SortableCardItem
               key={card.id}
               card={card}
-              cols={cols}
               isDraggingOver={!!activeId && activeId !== card.id}
+              reorderEnabled={reorderEnabled}
             />
           ))}
         </div>

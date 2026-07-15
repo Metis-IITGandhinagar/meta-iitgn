@@ -20,8 +20,11 @@ export interface HomeState {
   campusTransport: any | null;
   loading: boolean;
 
-  // Active overlay (new, updated, pending, news, trivia, history, editors, null)
-  activeOverlay: "new" | "updated" | "pending" | "news" | "trivia" | "history" | "editors" | null;
+  // Active overlay (new, updated, pending, news, trivia, history, editors, mess, featured-edit, transport, portal, null)
+  activeOverlay: "new" | "updated" | "pending" | "news" | "trivia" | "history" | "editors" | "mess" | "featured-edit" | "transport" | "portal" | null;
+
+  // Slug of the category shown by the "portal" overlay (opened from Quick Portals)
+  activePortalCategory: string | null;
 
   // Pagination states
   newPageNumber: number;
@@ -66,7 +69,8 @@ export interface HomeState {
   setMessMenu: (menu: any | null) => void;
   setCampusTransport: (transport: any | null) => void;
   setLoading: (loading: boolean) => void;
-  setActiveOverlay: (overlay: "new" | "updated" | "pending" | "news" | "trivia" | "history" | "editors" | null) => void;
+  setActiveOverlay: (overlay: "new" | "updated" | "pending" | "news" | "trivia" | "history" | "editors" | "mess" | "featured-edit" | "transport" | "portal" | null) => void;
+  setActivePortalCategory: (slug: string | null) => void;
 
   setNewPageNumber: (num: number) => void;
   setNewPagesHasMore: (hasMore: boolean) => void;
@@ -128,6 +132,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
   // Overlays initial state
   activeOverlay: null,
+  activePortalCategory: null,
 
   // Pagination initial state
   newPageNumber: 1,
@@ -173,6 +178,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   setCampusTransport: (campusTransport) => set({ campusTransport }),
   setLoading: (loading) => set({ loading }),
   setActiveOverlay: (activeOverlay) => set({ activeOverlay }),
+  setActivePortalCategory: (activePortalCategory) => set({ activePortalCategory }),
 
   setNewPageNumber: (newPageNumber) => set({ newPageNumber }),
   setNewPagesHasMore: (newPagesHasMore) => set({ newPagesHasMore }),

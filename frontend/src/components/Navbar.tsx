@@ -18,13 +18,11 @@ import {
   Share2,
   Bookmark,
   History,
-  FileEdit,
   User,
   Settings,
   LogOut,
   Download,
   Printer,
-  Moon,
   AlertTriangle,
 } from "lucide-react";
 
@@ -469,26 +467,6 @@ export default function Navbar({
                   </button>
                   <button
                     onClick={() => {
-                      alert("Opening history logs...");
-                      setMoreMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
-                  >
-                    <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span>Page History</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Redirecting to editor...");
-                      setMoreMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
-                  >
-                    <FileEdit className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span>Edit Article</span>
-                  </button>
-                  <button
-                    onClick={() => {
                       alert("Exporting to PDF...");
                       setMoreMenuOpen(false);
                     }}
@@ -518,17 +496,6 @@ export default function Navbar({
                   >
                     <Printer className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Print Article</span>
-                  </button>
-                  <div className="border-t border-base-200 my-1" />
-                  <button
-                    onClick={() => {
-                      alert("Toggling dark mode...");
-                      setMoreMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
-                  >
-                    <Moon className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span>Dark Mode</span>
                   </button>
                   <button
                     onClick={() => {

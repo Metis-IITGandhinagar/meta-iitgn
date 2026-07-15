@@ -6,6 +6,7 @@ import { oauth2client } from '../config/googleConfig.js';
 import axios from 'axios';
 import { userCache } from '../utils/userCache.js';
 import { invalidateSyncCache } from './page.controller.js';
+import { countUserEdits, fibonacciPoints } from '../utils/points.js';
 
 export const devBypass = async (req: Request, res: Response) => {
   if (process.env.NODE_ENV === 'production') {
@@ -290,10 +291,14 @@ export const getUserStats = async (req: Request, res: Response) => {
       }
     }
 
+    // Contribution points derived from the user's edit count (Fibonacci Scale).
+    const totalEdits = await countUserEdits(userId);
+    const points = fibonacciPoints(totalEdits);
+
     return res.json({
       success: true,
       data: {
-        points: userObj.points,
+        points,
         articlesImproved,
         editsThisMonth,
         streak

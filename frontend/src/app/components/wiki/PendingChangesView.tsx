@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
+import WikiReadView from "@/components/article/WikiReadView";
 import { apiService } from "../../../api";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PendingChangesViewProps {
   setShowPendingChanges: (show: boolean) => void;
@@ -41,6 +44,7 @@ const DraftSkeleton = () => (
 );
 
 export default function PendingChangesView({ setShowPendingChanges, pageId }: PendingChangesViewProps) {
+  const { user } = useAuth();
   const [drafts, setDrafts] = useState<PendingDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +53,11 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
   const [activeReviewDraft, setActiveReviewDraft] = useState<PendingDraft | null>(null);
   const [liveContent, setLiveContent] = useState<string>("");
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchDrafts = useCallback(async () => {
     setLoading(true);
@@ -87,9 +96,14 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
   };
 
   const handleReview = async (pendingId: number, action: "approve" | "reject") => {
+    const reviewerId = user?.user_id ?? 0;
+    if (!reviewerId) {
+      alert("You must be logged in to review drafts.");
+      return;
+    }
     try {
       await apiService.reviewDraft(pendingId, {
-        reviewer_id: 0, // Simulated current reviewer ID
+        reviewer_id: reviewerId,
         action: action,
         rejection_reason: action === "reject" ? "Rejected by reviewer/moderator." : undefined,
       });
@@ -117,6 +131,8 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
     setShowPendingChanges(false);
     window.dispatchEvent(new CustomEvent("hide-wiki-history"));
   };
+
+  const isNewPageProposal = !!activeReviewDraft && !activeReviewDraft.page_id;
 
   return (
     <GenericOverlayModal isOpen={true} onClose={closeModal} title="Pending Approval">
@@ -222,73 +238,65 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
         )}
       </div>
 
-      {activeReviewDraft && (
-        <div className="fixed inset-0 z-[20010] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-base-100 rounded-3xl border border-base-200 shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <header className="px-6 py-4 border-b border-base-200 flex items-center justify-between shrink-0 bg-base-100">
-              <div>
-                <h3 className="text-lg font-black text-base-content leading-snug">Review Proposed Revision: {activeReviewDraft.title}</h3>
-                <p className="text-xs text-base-content/50 mt-1 font-semibold uppercase tracking-wider">Compare live content with proposal. Author: {activeReviewDraft.users?.name || `User #${activeReviewDraft.editor_id}`}</p>
-              </div>
-              <button
-                onClick={() => setActiveReviewDraft(null)}
-                className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-base-content"
-              >
-                ✕
-              </button>
-            </header>
+      {mounted && activeReviewDraft &&
+        createPortal(
+          <GenericOverlayModal
+            isOpen={true}
+            onClose={() => setActiveReviewDraft(null)}
+            title={`Review: ${activeReviewDraft.title}`}
+            maxWidthClass="max-w-6xl"
+          >
+            <div className="flex flex-col h-[80vh] min-h-0">
+              <p className="text-xs text-base-content/50 mb-3 font-semibold uppercase tracking-wider shrink-0">
+                Compare live content with proposal. Author: {activeReviewDraft.users?.name || `User #${activeReviewDraft.editor_id}`}
+              </p>
 
-            <div className="flex-1 p-6 overflow-hidden flex flex-col md:flex-row gap-6 min-h-0">
-              <div className="flex-1 flex flex-col h-full min-h-0 bg-base-200/20 border border-base-200 rounded-2xl p-4 overflow-hidden">
-                <h4 className="text-xs font-black text-base-content/60 uppercase tracking-wider mb-3 shrink-0">Live Page Version</h4>
-                {reviewLoading ? (
-                  <div className="flex-1 flex flex-col gap-2.5 p-3 animate-pulse">
-                    <div className="h-3.5 bg-base-300 rounded w-full"></div>
-                    <div className="h-3.5 bg-base-300 rounded w-5/6"></div>
-                    <div className="h-3.5 bg-base-300 rounded w-2/3"></div>
-                  </div>
-                ) : (
-                  <textarea
-                    readOnly
-                    value={activeReviewDraft.page_id ? (liveContent || "This article has no live published content yet.") : "New page proposal. No live version exists."}
-                    className="flex-1 w-full bg-base-200/50 border border-base-300 rounded-xl p-3 text-xs font-mono resize-none focus:outline-none text-base-content/65 overflow-y-auto"
-                  />
-                )}
+              <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
+                <div className="flex-1 min-w-0 min-h-0 border border-base-200 rounded-2xl overflow-hidden bg-base-200/20">
+                  {reviewLoading ? (
+                    <div className="flex-1 flex flex-col gap-2.5 p-4 animate-pulse">
+                      <div className="h-3.5 bg-base-300 rounded w-full"></div>
+                      <div className="h-3.5 bg-base-300 rounded w-5/6"></div>
+                      <div className="h-3.5 bg-base-300 rounded w-2/3"></div>
+                    </div>
+                  ) : isNewPageProposal ? (
+                    <div className="h-full flex items-center justify-center text-center text-sm text-base-content/50 italic p-4">
+                      New page proposal. No live version exists.
+                    </div>
+                  ) : (
+                    <WikiReadView markdown={liveContent} />
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0 min-h-0 border border-base-200 rounded-2xl overflow-hidden bg-base-100">
+                  <WikiReadView markdown={activeReviewDraft.content} />
+                </div>
               </div>
 
-              <div className="flex-1 flex flex-col h-full min-h-0 bg-base-100 border border-base-200 rounded-2xl p-4 overflow-hidden">
-                <h4 className="text-xs font-black text-primary uppercase tracking-wider mb-3 shrink-0">Proposed Draft Version</h4>
-                <textarea
-                  readOnly
-                  value={activeReviewDraft.content}
-                  className="flex-1 w-full bg-base-100 border border-base-300 rounded-xl p-3 text-xs font-mono resize-none focus:outline-none text-base-content/85 overflow-y-auto"
-                />
-              </div>
+              <footer className="pt-4 mt-2 border-t border-base-200 flex justify-end gap-3 shrink-0">
+                <button
+                  onClick={() => setActiveReviewDraft(null)}
+                  className="btn btn-ghost btn-sm rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleReview(activeReviewDraft.pending_id, "reject")}
+                  className="btn btn-error btn-sm rounded-xl text-white"
+                >
+                  Reject Draft
+                </button>
+                <button
+                  onClick={() => handleReview(activeReviewDraft.pending_id, "approve")}
+                  className="btn btn-success btn-sm rounded-xl text-white"
+                >
+                  Approve & Publish
+                </button>
+              </footer>
             </div>
-
-            <footer className="px-6 py-4 border-t border-base-200 flex justify-end gap-3 shrink-0 bg-base-100">
-              <button
-                onClick={() => setActiveReviewDraft(null)}
-                className="btn btn-ghost btn-sm rounded-xl"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleReview(activeReviewDraft.pending_id, "reject")}
-                className="btn btn-error btn-sm rounded-xl text-white"
-              >
-                Reject Draft
-              </button>
-              <button
-                onClick={() => handleReview(activeReviewDraft.pending_id, "approve")}
-                className="btn btn-success btn-sm rounded-xl text-white"
-              >
-                Approve & Publish
-              </button>
-            </footer>
-          </div>
-        </div>
-      )}
+          </GenericOverlayModal>,
+          document.body
+        )}
     </GenericOverlayModal>
   );
 }

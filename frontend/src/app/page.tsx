@@ -27,6 +27,10 @@ import NewsOverlay from "./components/home/overlays/NewsOverlay";
 import TriviaOverlay from "./components/home/overlays/TriviaOverlay";
 import HistoryOverlay from "./components/home/overlays/HistoryOverlay";
 import EditorsOverlay from "./components/home/overlays/EditorsOverlay";
+import MessMenuOverlay from "./components/home/overlays/MessMenuOverlay";
+import TransportOverlay from "./components/home/overlays/TransportOverlay";
+import FeaturedEditOverlay from "./components/home/overlays/FeaturedEditOverlay";
+import PortalOverlay from "./components/home/overlays/PortalOverlay";
 
 let initialLoadDone = false;
 
@@ -59,6 +63,8 @@ export default function HomePage() {
     // Overlays
     activeOverlay,
     setActiveOverlay,
+    activePortalCategory,
+    setActivePortalCategory,
 
     // Pagination states
     newPagesHasMore,
@@ -398,6 +404,41 @@ export default function HomePage() {
         editors,
       },
     },
+    mess: {
+      Component: MessMenuOverlay,
+      props: {
+        isOpen: activeOverlay === "mess",
+        onClose: () => setActiveOverlay(null),
+        messMenu,
+        onSaved: () => loadHomeData({ user, setTotalPagesCount, forceRefresh: true }),
+      },
+    },
+    "featured-edit": {
+      Component: FeaturedEditOverlay,
+      props: {
+        isOpen: activeOverlay === "featured-edit",
+        onClose: () => setActiveOverlay(null),
+      },
+    },
+    transport: {
+      Component: TransportOverlay,
+      props: {
+        isOpen: activeOverlay === "transport",
+        onClose: () => setActiveOverlay(null),
+        transport: campusTransport,
+      },
+    },
+    portal: {
+      Component: PortalOverlay,
+      props: {
+        isOpen: activeOverlay === "portal",
+        onClose: () => {
+          setActiveOverlay(null);
+          setActivePortalCategory(null);
+        },
+        categorySlug: activePortalCategory,
+      },
+    },
   };
 
   if (initialDelay || authLoading || auth === null) {
@@ -503,6 +544,13 @@ export default function HomePage() {
                 popularPages={popularPages}
                 upcomingEvents={upcomingEvents}
                 messMenu={messMenu}
+                setShowMessMenu={(val) => setActiveOverlay(val ? "mess" : null)}
+                setShowEditFeatured={(val) =>
+                  setActiveOverlay(val ? "featured-edit" : null)
+                }
+                setShowTransport={(val) =>
+                  setActiveOverlay(val ? "transport" : null)
+                }
                 campusTransport={campusTransport}
               />
             ) : activeTab === "search" ? (
@@ -548,6 +596,10 @@ export default function HomePage() {
       <TriviaOverlay {...(OVERLAYS.trivia.props as any)} />
       <HistoryOverlay {...(OVERLAYS.history.props as any)} />
       <EditorsOverlay {...(OVERLAYS.editors.props as any)} />
+      <MessMenuOverlay {...(OVERLAYS.mess.props as any)} />
+      <TransportOverlay {...(OVERLAYS.transport.props as any)} />
+      <FeaturedEditOverlay {...(OVERLAYS["featured-edit"].props as any)} />
+      <PortalOverlay {...(OVERLAYS.portal.props as any)} />
     </div>
   );
 }

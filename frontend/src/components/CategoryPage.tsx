@@ -25,6 +25,10 @@ const ICON_MAP: Record<string, any> = {
 
 interface CategoryPageProps {
   categorySlug: string;
+  // When true, the page is rendered inside a modal (e.g. a Quick Portal) and
+  // its page-only chrome (edit/new buttons, nested edit modal, top nav margin)
+  // is suppressed.
+  embedded?: boolean;
 }
 
 const ArticleSkeleton = () => (
@@ -42,7 +46,7 @@ const ArticleSkeleton = () => (
   </div>
 );
 
-export default function CategoryPage({ categorySlug }: CategoryPageProps) {
+export default function CategoryPage({ categorySlug, embedded = false }: CategoryPageProps) {
   const router = useRouter();
   const { user, categories, updateCategoryState } = useAuth();
   const category = categories?.find(c => c.slug === categorySlug);
@@ -152,7 +156,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
   }
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-15 bg-transparent overflow-y-auto">
+    <main className={`flex-1 p-6 md:p-8 ${embedded ? "" : "mt-15"} bg-transparent overflow-y-auto`}>
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Category Header */}
@@ -173,7 +177,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
           </div>
 
           <div className="flex items-center gap-3 shrink-0 mb-1">
-            {(user?.role === "admin" || user?.role === "moderator") && (
+            {!embedded && (user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={handleStartEdit}
                 className="btn btn-outline btn-sm font-bold rounded-xl shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
@@ -182,7 +186,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
                 <span>Edit Category</span>
               </button>
             )}
-            {(user?.role === "admin" || user?.role === "moderator") && (
+            {!embedded && (user?.role === "admin" || user?.role === "moderator") && (
               <Link
                 href={`/wiki/${categorySlug}/new`}
                 className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-white"
@@ -270,7 +274,7 @@ export default function CategoryPage({ categorySlug }: CategoryPageProps) {
       </div>
 
       {/* Edit Category Modal Overlay */}
-      {isEditing && (
+      {isEditing && !embedded && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
           <form
             onSubmit={onEditSubmit}
