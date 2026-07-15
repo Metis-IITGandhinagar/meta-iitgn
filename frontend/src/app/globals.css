@@ -377,3 +377,115 @@ html[data-font-style="mono"] article {
 .animate-loading-bar {
   animation: loading-bar 1.2s infinite linear;
 }
+
+/* BlockNote Theme Fix for DaisyUI Theme Sync */
+.bn-container,
+.bn-editor,
+.bn-popover,
+.bn-toolbar,
+.bn-side-menu,
+.bn-suggestion-menu,
+.bn-menu-content,
+.bn-file-panel,
+.bn-link-toolbar,
+[data-radix-popper-content-wrapper],
+[role="menu"],
+[role="listbox"],
+[data-popover],
+[data-menu],
+[data-toolbar] {
+  --background: var(--color-base-100, var(--b1, #ffffff)) !important;
+  --foreground: var(--color-base-content, var(--bc, #171717)) !important;
+  --popover: var(--color-base-100, var(--b1, #ffffff)) !important;
+  --popover-foreground: var(--color-base-content, var(--bc, #171717)) !important;
+  --border: var(--color-base-300, var(--b3, #e5e7eb)) !important;
+  --accent: var(--color-base-200, var(--b2, #f3f4f6)) !important;
+  --accent-foreground: var(--color-base-content, var(--bc, #171717)) !important;
+  --primary: var(--color-primary, var(--p, #3b82f6)) !important;
+  --primary-foreground: var(--color-primary-content, var(--pc, #ffffff)) !important;
+  --muted: var(--color-base-300, var(--b3, #e5e7eb)) !important;
+  --muted-foreground: color-mix(in srgb, var(--color-base-content, var(--bc, #171717)) 60%, transparent) !important;
+}
+
+/* Fix background of select popups and menus inside BlockNote */
+.bn-popover,
+.bn-suggestion-menu,
+.bn-menu-content,
+.bn-toolbar,
+[data-radix-popper-content-wrapper] > div,
+[role="menu"],
+[role="listbox"],
+[data-popover],
+[data-menu] {
+  background-color: var(--color-base-100, var(--b1, #ffffff)) !important;
+  color: var(--color-base-content, var(--bc, #171717)) !important;
+  border: 1px solid var(--color-base-300, var(--b3, #e5e7eb)) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 1rem !important;
+}
+
+/* BlockNote button styling */
+.bn-button,
+.bn-menu-item,
+.bn-suggestion-menu-item,
+[data-menu-item],
+[role="menuitem"] {
+  border-radius: 0.5rem !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.bn-button:hover,
+.bn-menu-item:hover,
+.bn-suggestion-menu-item:hover,
+[data-menu-item]:hover,
+[data-menu-item][data-selected],
+[role="menuitem"]:hover,
+.bn-suggestion-menu-item[aria-selected="true"] {
+  background-color: var(--color-base-200, var(--b2, #f3f4f6)) !important;
+  color: var(--color-base-content, var(--bc, #171717)) !important;
+}
+
+/* Ensure the + button and block handle look clean and adapt to theme */
+.bn-side-menu button {
+  color: var(--color-base-content, var(--bc, #171717)) !important;
+}
+.bn-side-menu button:hover {
+  background-color: var(--color-base-200, var(--b2, #f3f4f6)) !important;
+}
+
+
+/* Make BlockNote headings responsive on mobile screens */
+.bn-root h1,
+.bn-root [data-content-type="heading"][data-level="1"] {
+  font-size: 1.75rem !important;
+  line-height: 1.25 !important;
+}
+
+.bn-root h2,
+.bn-root [data-content-type="heading"][data-level="2"] {
+  font-size: 1.5rem !important;
+  line-height: 1.3 !important;
+}
+
+.bn-root h3,
+.bn-root [data-content-type="heading"][data-level="3"] {
+  font-size: 1.25rem !important;
+  line-height: 1.4 !important;
+}
+
+@media (min-width: 640px) {
+  .bn-root h1,
+  .bn-root [data-content-type="heading"][data-level="1"] {
+    font-size: 2.25rem !important;
+  }
+
+  .bn-root h2,
+  .bn-root [data-content-type="heading"][data-level="2"] {
+    font-size: 1.85rem !important;
+  }
+
+  .bn-root h3,
+  .bn-root [data-content-type="heading"][data-level="3"] {
+    font-size: 1.45rem !important;
+  }
+}

@@ -92,8 +92,8 @@ export default function Navbar({
   const { user, activeTier, setSettingsTab } = useAuth();
   const pathname = usePathname();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
-  const isWiki = (segments[0] === "wiki" && segments.length >= 2) || segments[0] === "search-results";
-  const isWikiArticlePage = segments[0] === "wiki" && segments.length >= 3;
+  const isWiki = ((segments[0] === "wiki" || segments[0] === "blog") && segments.length >= 2) || segments[0] === "search-results";
+  const isWikiArticlePage = (segments[0] === "wiki" || segments[0] === "blog") && segments.length >= 3;
 
   const [searchQuery, setSearchQuery] = useState(externalQuery || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -391,7 +391,8 @@ export default function Navbar({
             )}
             </div>
           </div>
-          )}          {/* Kebab More Menu (Wiki Page Only) */}
+          )}
+          {/* Kebab More Menu (Wiki Page Only) */}
           {isWikiArticlePage && (
             <div className="relative flex items-center" ref={moreMenuRef}>
               <button

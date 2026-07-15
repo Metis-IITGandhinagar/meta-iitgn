@@ -6,11 +6,13 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiService } from "@/api";
 import { Calendar, User as UserIcon, Eye, Pencil, Trash2, ArrowLeft } from "lucide-react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import Youtube from "@tiptap/extension-youtube";
-import LinkExtension from "@tiptap/extension-link";
+import dynamic from "next/dynamic";
+import BottomNavbar from "@/components/BottomNavbar";
+
+const BlockNoteReader = dynamic(
+  () => import("@/components/blog/BlockNoteReader"),
+  { ssr: false }
+);
 
 interface BlogAuthor {
   user_id: number;
@@ -41,25 +43,16 @@ export default function BlogDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
-  const editor = useEditor({
-    editable: false,
-    extensions: [
-      StarterKit,
-      Image,
-      Youtube.configure({
-        HTMLAttributes: {
-          class: "w-full aspect-video rounded-2xl my-6 border border-base-300",
-        },
-      }),
-      LinkExtension.configure({
-        openOnClick: true,
-        HTMLAttributes: {
-          class: "link link-primary font-semibold",
-        },
-      }),
-    ],
-    content: null,
-  }, [blog?.content]);
+  const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+
+  // Sync theme
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isDark = document.documentElement.classList.contains("dark") || 
+                     document.documentElement.getAttribute("data-theme") === "dark";
+      setEditorTheme(isDark ? "dark" : "light");
+    }
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -69,17 +62,6 @@ export default function BlogDetailPage() {
         const res = await apiService.getBlog(slug);
         if (res && res.success) {
           setBlog(res.blog);
-          
-          // Parse content and set editor
-          if (res.blog.content && editor) {
-            try {
-              const parsed = JSON.parse(res.blog.content);
-              editor.commands.setContent(parsed);
-            } catch {
-              // fallback for plain text / html
-              editor.commands.setContent(res.blog.content);
-            }
-          }
         }
       } catch (err: any) {
         console.error("Error loading blog details:", err);
@@ -89,7 +71,7 @@ export default function BlogDetailPage() {
       }
     };
     fetchBlog();
-  }, [slug, editor]);
+  }, [slug]);
 
   const handleDelete = async () => {
     if (!blog || deleting) return;
@@ -119,7 +101,7 @@ export default function BlogDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-transparent">
+      <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-4rem)] mt-16 bg-transparent">
         <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
@@ -144,51 +126,40 @@ export default function BlogDetailPage() {
   const isAdminOrMod = user?.role === "admin" || user?.role === "moderator";
   const canEdit = isAuthor || isAdminOrMod;
 
-  return (
-    <main className="flex-1 p-6 md:p-8 mt-16 bg-transparent overflow-y-auto h-full w-full">
-      <article className="max-w-3xl mx-auto space-y-6">
-        
-        {/* Back navigation */}
-        <Link href="/blog" className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider hover:underline">
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Explore Blogs</span>
-        </Link>
+  const tabs = [
+    canEdit && {
+      id: "delete",
+      label: "Delete Post",
+      icon: Trash2,
+      onClick: handleDelete,
+      colorClass: "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
+    },
+    canEdit && {
+      id: "edit",
+      label: "Edit Post",
+      icon: Pencil,
+      onClick: () => router.push(`/blog/${blog.slug}/edit`),
+      colorClass: "bg-primary text-primary-content hover:bg-primary/90",
+    },
+  ].filter(Boolean) as any[];
 
+  return (
+    <main className="flex-1 p-3 sm:p-6 md:p-8 mt-16 bg-transparent overflow-y-auto h-full w-full pb-32">
+      <article className="md:max-w-6xl w-dvw mx-auto space-y-4 sm:space-y-6">
+        
         {/* Blog Title & Meta */}
-        <div className="space-y-4 border-b border-base-200 pb-6">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-black text-base-content tracking-tight leading-tight">
+        <div className="space-y-3 pb-4 sm:pb-6">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-black text-base-content tracking-tight leading-tight">
             {blog.title}
           </h1>
 
           {blog.description && (
-            <p className="text-base-content/70 text-base md:text-lg italic font-medium leading-relaxed">
+            <p className="text-base-content/70 text-sm sm:text-base md:text-lg italic font-medium leading-relaxed">
               {blog.description}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-            {/* Author */}
-            <div className="flex items-center gap-2.5">
-              {blog.original_author.avatar_url ? (
-                <img
-                  src={blog.original_author.avatar_url}
-                  alt={blog.original_author.name}
-                  className="h-10 w-10 rounded-full object-cover border border-base-300 shadow-xs"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-full bg-base-200 flex items-center justify-center border border-base-300 text-base-content/60 shadow-xs">
-                  <UserIcon className="h-5 w-5" />
-                </div>
-              )}
-              <div>
-                <p className="text-xs font-bold text-base-content leading-none">
-                  {blog.original_author.name}
-                </p>
-                <p className="text-[10px] text-base-content/50 font-semibold mt-1">
-                  Author
-                </p>
-              </div>
-            </div>
+          <div className="flex flex-col  justify-end gap-4 pt-4 border-t border-base-200">            
 
             {/* Read Stats */}
             <div className="flex items-center gap-4 text-xs text-base-content/50 font-bold uppercase tracking-wider">
@@ -204,33 +175,17 @@ export default function BlogDetailPage() {
           </div>
         </div>
 
-        {/* Actions Menu (Edit/Delete) */}
-        {canEdit && (
-          <div className="flex justify-end gap-3 pb-2">
-            <Link
-              href={`/blog/${blog.slug}/edit`}
-              className="btn btn-outline btn-sm font-bold rounded-xl transition-all duration-200 active:scale-95 flex items-center gap-1.5"
-            >
-              <Pencil className="h-4 w-4" />
-              <span>Edit Post</span>
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="btn btn-outline btn-error btn-sm font-bold rounded-xl transition-all duration-200 active:scale-95 flex items-center gap-1.5"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span>Delete Post</span>
-            </button>
-          </div>
-        )}
-
-        {/* Tiptap Article content */}
-        <div className="prose prose-base-content max-w-none prose-img:rounded-3xl prose-img:border prose-img:border-base-200 prose-a:text-primary prose-a:font-bold prose-headings:font-serif prose-headings:font-black prose-headings:tracking-tight prose-headings:text-base-content prose-p:text-base-content/85 prose-p:leading-relaxed prose-li:text-base-content/80 prose-code:text-secondary bg-base-100 p-6 md:p-8 rounded-3xl border border-base-200 shadow-2xs select-text">
-          <EditorContent editor={editor} />
+        {/* BlockNote Article content */}
+        <div className="bg-base-100 select-text w-dvw md:w-auto -m-4 p-0 mb-20">
+          <BlockNoteReader contentJson={blog.content} theme={editorTheme} />
         </div>
 
       </article>
+
+      {/* Floating Action Bar */}
+      {canEdit && tabs.length > 0 && (
+        <BottomNavbar tabs={tabs} activeTab={deleting ? "delete" : undefined} />
+      )}
     </main>
   );
 }

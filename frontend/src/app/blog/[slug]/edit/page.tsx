@@ -6,44 +6,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiService } from "@/api";
 import Link from "next/link";
 import {
-  Bold,
-  Italic,
-  Code,
-  List,
-  ListOrdered,
-  Heading1,
-  Heading2,
-  Heading3,
-  Image as ImageIcon,
-  VideoOff,
-  Quote,
   X,
   Check,
   ArrowLeft,
+  PanelRight,
 } from "lucide-react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import Youtube from "@tiptap/extension-youtube";
-import LinkExtension from "@tiptap/extension-link";
+import dynamic from "next/dynamic";
 import BottomNavbar from "@/components/BottomNavbar";
 
-// Custom SVG Youtube icon to avoid build and barrel optimization issues
-const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="24"
-    height="24"
-    stroke="currentColor"
-    strokeWidth="2"
-    fill="none"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
-    <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" />
-  </svg>
+// Dynamically import BlockNoteEditor to disable SSR
+const BlockNoteEditor = dynamic(
+  () => import("@/components/blog/BlockNoteEditor"),
+  { ssr: false }
 );
 
 export default function BlogEditPage() {
@@ -59,43 +33,32 @@ export default function BlogEditPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  
-  // Media states
-  const [showYoutubeModal, setShowYoutubeModal] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [videoWarning, setVideoWarning] = useState("");
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image.configure({
-        HTMLAttributes: {
-          class: "rounded-2xl max-w-full my-6 border border-base-200 shadow-2xs mx-auto block",
-        },
-      }),
-      Youtube.configure({
-        HTMLAttributes: {
-          class: "w-full aspect-video rounded-2xl my-6 border border-base-300",
-        },
-      }),
-      LinkExtension.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "link link-primary font-semibold",
-        },
-      }),
-    ],
-    editorProps: {
-      attributes: {
-        class: "prose prose-base-content max-w-none focus:outline-none min-h-[400px] p-6 bg-base-100 rounded-3xl border border-base-200 select-text leading-relaxed",
-      },
-    },
-  });
+  // BlockNote integration states
+  const [initialContent, setInitialContent] = useState<string | undefined>(undefined);
+  const [isContentReady, setIsContentReady] = useState(false);
+  const contentRef = useRef<string>("");
 
+  const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+
+  // Sync theme
   useEffect(() => {
-    if (isNew || !slug || !editor) return;
+    if (typeof window !== "undefined") {
+      const isDark = document.documentElement.classList.contains("dark") || 
+                     document.documentElement.getAttribute("data-theme") === "dark";
+      setEditorTheme(isDark ? "dark" : "light");
+    }
+  }, []);
+
+  // Fetch / Initialize
+  useEffect(() => {
+    if (isNew) {
+      setIsContentReady(true);
+      return;
+    }
+
+    if (!slug) return;
 
     const fetchBlog = async () => {
       try {
@@ -114,13 +77,10 @@ export default function BlogEditPage() {
           }
 
           if (res.blog.content) {
-            try {
-              const parsed = JSON.parse(res.blog.content);
-              editor.commands.setContent(parsed);
-            } catch {
-              editor.commands.setContent(res.blog.content);
-            }
+            setInitialContent(res.blog.content);
+            contentRef.current = res.blog.content;
           }
+          setIsContentReady(true);
         }
       } catch (err: any) {
         console.error("Error fetching blog for edit:", err);
@@ -130,7 +90,7 @@ export default function BlogEditPage() {
       }
     };
     fetchBlog();
-  }, [slug, isNew, editor, user, router]);
+  }, [slug, isNew, user, router]);
 
   // Auth Protection
   useEffect(() => {
@@ -141,93 +101,53 @@ export default function BlogEditPage() {
 
   if (loading || authLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-transparent">
+      <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-4rem)] mt-16 bg-transparent">
         <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !editor) return;
-
-    // Validate type and size
-    if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file.");
-      return;
+  const handleUploadFile = async (file: File): Promise<string> => {
+    if (file.type.startsWith("video/")) {
+      alert("Direct video uploads are disabled to save cloud space. Please use a YouTube or other video link!");
+      throw new Error("Direct video uploads are disabled");
     }
+
     if (file.size > 2 * 1024 * 1024) {
-      alert("Image size cannot exceed 2MB.");
-      return;
+      alert("File size cannot exceed 2MB.");
+      throw new Error("File size cannot exceed 2MB");
     }
 
     try {
       const formData = new FormData();
       formData.append("file", file);
 
-      // Show temporary uploading text or spinner
-      setSaving(true);
       const res = await apiService.uploadMedia(formData);
       if (res && res.file_url) {
-        editor.chain().focus().setImage({ src: res.file_url }).run();
+        return res.file_url;
       }
+      throw new Error("Upload response did not contain URL");
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to upload image.");
-    } finally {
-      setSaving(false);
-      if (imageInputRef.current) imageInputRef.current.value = "";
-    }
-  };
-
-  const triggerImageUpload = () => {
-    imageInputRef.current?.click();
-  };
-
-  // Prevent video upload and show warning
-  const handleVideoUploadAttempt = () => {
-    setVideoWarning("Direct video uploads are disabled to save cloud space. Please use a YouTube link instead!");
-    if (videoInputRef.current) videoInputRef.current.value = "";
-  };
-
-  const triggerVideoUploadWarning = () => {
-    videoInputRef.current?.click();
-  };
-
-  const handleInsertYoutube = () => {
-    if (!youtubeUrl.trim() || !editor) return;
-
-    // Validate youtube link
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = youtubeUrl.match(regExp);
-
-    if (match && match[2].length === 11) {
-      editor.commands.setYoutubeVideo({
-        src: youtubeUrl,
-      });
-      setShowYoutubeModal(false);
-      setYoutubeUrl("");
-      setVideoWarning("");
-    } else {
-      alert("Please paste a valid YouTube URL.");
+      alert(err.response?.data?.error || err.message || "Failed to upload file.");
+      throw err;
     }
   };
 
   const handleSave = async () => {
-    if (!title.trim() || !editor) {
-      setError("Title is required");
+    if (!title.trim()) {
+      setError("Title is required (configure in right settings panel)");
+      setRightSidebarOpen(true);
       return;
     }
 
     try {
       setError("");
       setSaving(true);
-      
-      const contentJson = JSON.stringify(editor.getJSON());
 
       const payload = {
         title: title.trim(),
         description: description.trim() || undefined,
-        content: contentJson,
+        content: contentRef.current,
       };
 
       if (isNew) {
@@ -249,12 +169,6 @@ export default function BlogEditPage() {
     }
   };
 
-  // Editor styling helpers
-  const isFormatActive = (name: string, attributes?: any) => {
-    if (!editor) return false;
-    return editor.isActive(name, attributes);
-  };
-
   const tabs = [
     {
       id: "cancel",
@@ -265,294 +179,117 @@ export default function BlogEditPage() {
           router.push(isNew ? "/blog" : `/blog/${slug}`);
         }
       },
+      colorClass: "bg-error text-error-content hover:bg-error/90",
     },
     {
       id: "save",
       label: saving ? "Publishing..." : "Publish Blog",
       icon: Check,
       onClick: handleSave,
+      colorClass: "bg-success text-success-content hover:bg-success/90",
+    },
+    {
+      id: "sidebar",
+      label: "Sidebar",
+      icon: PanelRight,
+      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
+      colorClass: rightSidebarOpen 
+        ? "bg-primary text-primary-content hover:bg-primary/90" 
+        : "text-base-content/70 hover:bg-base-200 hover:text-base-content",
     },
   ];
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-16 bg-transparent overflow-y-auto h-full w-full pb-32">
-      <div className="max-w-3xl mx-auto space-y-6">
-        
-        {/* Back Link */}
-        <Link href={isNew ? "/blog" : `/blog/${slug}`} className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider hover:underline">
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to {isNew ? "Blogs" : "Reading"}</span>
-        </Link>
-
-        {/* Heading */}
-        <div>
-          <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
-            {isNew ? "Write a New Blog Post" : "Edit Blog Post"}
-          </h1>
-          <p className="text-xs text-base-content/50 font-bold uppercase tracking-wider mt-1">
-            Create structured, media-rich content using our rich text editor.
-          </p>
-        </div>
-
-        {error && (
-          <div className="p-4 text-xs bg-error/10 text-error border border-error/20 rounded-2xl font-semibold">
-            {error}
-          </div>
-        )}
-
-        {/* Hidden File Inputs */}
-        <input
-          type="file"
-          ref={imageInputRef}
-          onChange={handleImageUpload}
-          accept="image/*"
-          className="hidden"
-        />
-        <input
-          type="file"
-          ref={videoInputRef}
-          onChange={handleVideoUploadAttempt}
-          accept="video/*"
-          className="hidden"
-        />
-
-        {/* Video Upload Warning Alert */}
-        {videoWarning && (
-          <div className="alert alert-warning shadow-xs rounded-2xl flex items-start gap-3">
-            <VideoOff className="h-5 w-5 text-warning-content shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-bold text-xs">Video Upload Restriction</h3>
-              <p className="text-[11px] text-warning-content/80 mt-0.5">{videoWarning}</p>
+    <main className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)] w-full mt-16 bg-transparent relative">
+      {/* Editor Main Workspace */}
+      <div className="flex-1 flex flex-col overflow-y-auto p-3 sm:p-6 md:p-8 pb-32">
+        <div className="max-w-5xl w-full mx-auto space-y-3 sm:space-y-6">
+                    {/* Header */}
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
+                {isNew ? "Write a New Blog Post" : "Edit Blog Post"}
+              </h1>
+              <p className="text-[10px] sm:text-xs text-base-content/50 font-bold uppercase tracking-wider mt-1">
+                Write structured, media-rich content using a Notion-style editor.
+              </p>
             </div>
-            <button onClick={() => setVideoWarning("")} className="btn btn-ghost btn-circle btn-xs text-warning-content">
+          </div>
+
+          {error && (
+            <div className="p-4 text-xs bg-error/10 text-error border border-error/20 rounded-2xl font-semibold">
+              {error}
+            </div>
+          )}
+
+          {/* BlockNote editor container */}
+          <div className="border border-base-200 hover:border-base-300 rounded-xl sm:rounded-3xl overflow-hidden focus-within:border-primary/40 transition-colors select-text bg-base-100 p-2 sm:p-6 min-h-[500px]">
+            {isContentReady ? (
+              <BlockNoteEditor
+                initialContent={initialContent}
+                onChange={(json) => {
+                  contentRef.current = json;
+                }}
+                uploadFile={handleUploadFile}
+                theme={editorTheme}
+              />
+            ) : (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <span className="loading loading-spinner loading-md text-primary"></span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Settings Sidebar */}
+      {rightSidebarOpen && (
+        <aside className="w-80 border-l border-base-200 bg-base-100 p-6 flex flex-col gap-6 overflow-y-auto shrink-0 select-none animate-in slide-in-from-right duration-200 h-full fixed lg:relative top-16 lg:top-0 bottom-0 right-0 z-[999] shadow-2xl lg:shadow-none">
+          <div className="flex items-center justify-between border-b border-base-200 pb-4">
+            <h3 className="text-xs font-bold text-base-content/60 uppercase tracking-wider">
+              Blog Settings
+            </h3>
+            <button
+              onClick={() => setRightSidebarOpen(false)}
+              className="btn btn-ghost btn-xs btn-circle text-base-content/50 hover:text-base-content"
+              title="Close sidebar"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
-        )}
 
-        {/* Editor Inputs */}
-        <div className="space-y-4 bg-base-100 p-6 rounded-3xl border border-base-200 shadow-2xs">
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-base-content/60 uppercase tracking-wider">
+            <label className="text-[10px] uppercase font-bold text-base-content/50 tracking-wider">
               Blog Title
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Give your blog post a catchy title..."
-              className="input input-bordered w-full text-base-content font-serif text-lg font-bold rounded-xl"
+              placeholder="Post title..."
+              className="input input-bordered w-full text-base-content text-sm rounded-xl focus:outline-none focus:border-primary font-semibold"
               required
             />
           </div>
 
           {/* Description */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-base-content/60 uppercase tracking-wider">
+          <div className="space-y-1.5 font-sans">
+            <label className="text-[10px] uppercase font-bold text-base-content/50 tracking-wider">
               Short Description / Summary
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Write a brief overview to show in the listings grid..."
-              className="textarea textarea-bordered w-full text-base-content text-sm rounded-xl min-h-20 max-h-40"
+              placeholder="Write a brief overview..."
+              className="textarea textarea-bordered w-full text-base-content text-xs rounded-xl min-h-[140px] focus:outline-none focus:border-primary resize-none leading-relaxed"
             />
           </div>
-        </div>
-
-        {/* Tiptap Editor & Toolbar */}
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-base-content/60 uppercase tracking-wider block">
-            Blog Content
-          </label>
-
-          {/* Toolbar */}
-          {editor && (
-            <div className="flex flex-wrap gap-1.5 p-2 bg-base-200 border border-base-300 rounded-2xl sticky top-16 z-30">
-              {/* Bold */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("bold") ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Bold"
-              >
-                <Bold className="h-4 w-4" />
-              </button>
-
-              {/* Italic */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("italic") ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Italic"
-              >
-                <Italic className="h-4 w-4" />
-              </button>
-
-              {/* Code */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleCode().run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("code") ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Code Inline"
-              >
-                <Code className="h-4 w-4" />
-              </button>
-
-              <div className="divider divider-horizontal mx-0" />
-
-              {/* H1 */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("heading", { level: 1 }) ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Heading 1"
-              >
-                <Heading1 className="h-4 w-4" />
-              </button>
-
-              {/* H2 */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("heading", { level: 2 }) ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Heading 2"
-              >
-                <Heading2 className="h-4 w-4" />
-              </button>
-
-              {/* H3 */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("heading", { level: 3 }) ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Heading 3"
-              >
-                <Heading3 className="h-4 w-4" />
-              </button>
-
-              <div className="divider divider-horizontal mx-0" />
-
-              {/* Bullet List */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("bulletList") ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Bullet List"
-              >
-                <List className="h-4 w-4" />
-              </button>
-
-              {/* Ordered List */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("orderedList") ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Ordered List"
-              >
-                <ListOrdered className="h-4 w-4" />
-              </button>
-
-              {/* Blockquote */}
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                className={`btn btn-sm btn-square rounded-lg ${isFormatActive("blockquote") ? "btn-primary text-white" : "btn-ghost"}`}
-                title="Blockquote"
-              >
-                <Quote className="h-4 w-4" />
-              </button>
-
-              <div className="divider divider-horizontal mx-0" />
-
-              {/* Image Cloud Upload */}
-              <button
-                type="button"
-                onClick={triggerImageUpload}
-                className="btn btn-sm btn-square rounded-lg btn-ghost hover:text-primary"
-                title="Upload Image to Cloudinary"
-              >
-                <ImageIcon className="h-4 w-4" />
-              </button>
-
-              {/* Video Upload warning trigger */}
-              <button
-                type="button"
-                onClick={triggerVideoUploadWarning}
-                className="btn btn-sm btn-square rounded-lg btn-ghost hover:text-error"
-                title="Upload Video File (Disabled)"
-              >
-                <VideoOff className="h-4 w-4" />
-              </button>
-
-              {/* Youtube Link Embed */}
-              <button
-                type="button"
-                onClick={() => setShowYoutubeModal(true)}
-                className="btn btn-sm btn-square rounded-lg btn-ghost hover:text-red-600"
-                title="Embed Youtube Video"
-              >
-                <YoutubeIcon className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {/* Editor Area */}
-          <div className="tiptap-editor-container border-2 border-base-200 hover:border-base-300 rounded-3xl overflow-hidden focus-within:border-primary/40 transition-colors select-text">
-            <EditorContent editor={editor} />
-          </div>
-        </div>
-
-      </div>
+        </aside>
+      )}
 
       {/* Floating Action Bar */}
       <BottomNavbar tabs={tabs} activeTab={saving ? "save" : undefined} />
-
-      {/* Youtube Embed Modal */}
-      {showYoutubeModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-base-100 p-6 rounded-2xl border border-base-200 shadow-xl space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-2 border-b border-base-200">
-              <h3 className="font-serif font-black text-lg text-base-content flex items-center gap-2">
-                <YoutubeIcon className="h-5 w-5 text-red-600" />
-                <span>Embed YouTube Video</span>
-              </h3>
-              <button onClick={() => { setShowYoutubeModal(false); setYoutubeUrl(""); }} className="text-base-content/50 hover:text-base-content">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-base-content/60 uppercase">
-                YouTube URL
-              </label>
-              <input
-                type="text"
-                value={youtubeUrl}
-                onChange={(e) => setYoutubeUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="input input-bordered w-full text-base-content text-sm rounded-xl"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => { setShowYoutubeModal(false); setYoutubeUrl(""); }}
-                className="btn btn-ghost btn-sm text-base-content/60"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleInsertYoutube}
-                className="btn btn-primary btn-sm text-white"
-              >
-                Insert Embed
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
