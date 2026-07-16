@@ -29,16 +29,16 @@ interface PendingDraft {
 }
 
 const DraftSkeleton = () => (
-  <div className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm animate-pulse select-none">
+  <div className="p-4 sm:p-5 border border-base-300 bg-base-200/50 rounded-2xl shadow-sm animate-pulse select-none">
     <div className="flex items-start gap-4">
-      <div className="w-10 h-10 rounded-xl bg-base-200 shrink-0"></div>
+      <div className="w-10 h-10 rounded-xl bg-base-300 shrink-0"></div>
       <div className="flex-1 min-w-0 space-y-3">
         <div className="h-5 bg-base-300 rounded-md w-1/3"></div>
         <div className="space-y-2">
-          <div className="h-3 bg-base-200 rounded-md w-full"></div>
-          <div className="h-3 bg-base-200 rounded-md w-5/6"></div>
+          <div className="h-3 bg-base-200/60 rounded-md w-full"></div>
+          <div className="h-3 bg-base-200/60 rounded-md w-5/6"></div>
         </div>
-        <div className="h-4 bg-base-200 rounded-md w-1/4 mt-4"></div>
+        <div className="h-4 bg-base-200/60 rounded-md w-1/4 mt-4"></div>
       </div>
     </div>
   </div>
@@ -150,18 +150,18 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
             <DraftSkeleton />
           </div>
         ) : error ? (
-          <div className="p-6 border border-rose-200 bg-rose-50 text-rose-800 rounded-2xl">
+          <div className="p-6 border border-error/20 bg-error/10 text-error rounded-2xl">
             <p className="font-semibold">Error Loading Drafts</p>
             <p className="text-sm mt-1">{error}</p>
             <button
               onClick={fetchDrafts}
-              className="mt-4 px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors"
+              className="mt-4 px-4 py-2 bg-error text-error-content rounded-lg text-xs font-bold hover:bg-error-active transition-colors"
             >
               Try Again
             </button>
           </div>
         ) : drafts.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-gray-300 bg-white rounded-2xl">
+          <div className="text-center py-20 border border-dashed border-base-300 bg-base-200/30 rounded-2xl">
             <p className="text-base-content/60 font-medium">No pending drafts awaiting review.</p>
           </div>
         ) : (
@@ -177,7 +177,7 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
               });
 
               return (
-                <div key={pending.pending_id} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
+                <div key={pending.pending_id} className="p-4 sm:p-5 border border-base-300 bg-base-200/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-base-200 border border-base-300 flex items-center justify-center font-bold text-sm text-base-content/80 shrink-0">
                       {initials}
@@ -194,26 +194,26 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-base-200 border-dashed">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold text-base-content/80">{authorName}</span>
-                          <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-primary border border-blue-200">
+                          <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                             {pending.page_id ? "Edit Proposal" : "New Page Proposal"}
                           </span>
                           {pending.version !== null && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-gray-50 text-gray-600 border border-gray-200">
+                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-neutral/20 text-base-content/80 border border-base-300">
                               v{pending.version}
                             </span>
                           )}
                           {pending.status === "approved" && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20">
                               Approved
                             </span>
                           )}
                           {pending.status === "rejected" && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-error/10 text-error border border-error/20">
                               Rejected
                             </span>
                           )}
                           {pending.status === "in_review" && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20">
                               Pending Review
                             </span>
                           )}

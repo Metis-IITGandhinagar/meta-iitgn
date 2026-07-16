@@ -31,7 +31,7 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
               avatar: "MI",
               time: "4 hours ago",
               badge: "Admin",
-              badgeBg: "bg-blue-50 text-primary border border-blue-200",
+              badgeBg: "bg-primary/10 text-primary border border-primary/20",
               details: "Inserted curriculum listings under CS major and updated hostel rules. Added detail on curriculum pathways.",
             },
             {
@@ -41,7 +41,7 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
               avatar: "AC",
               time: "1 day ago",
               badge: "Gold Contributor",
-              badgeBg: "bg-amber-50 text-amber-600 border border-amber-200",
+              badgeBg: "bg-warning/10 text-warning border border-warning/20",
               details: "Modified placement percentages and Amalthea festival dates. Corrected coordinate references.",
             },
             {
@@ -51,11 +51,11 @@ export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) 
               avatar: "SY",
               time: "2 days ago",
               badge: "System",
-              badgeBg: "bg-gray-50 text-gray-600 border border-gray-200",
+              badgeBg: "bg-neutral/20 text-base-content/85 border border-base-300",
               details: "Imported markdown core structure, category hierarchies, and initial infobox configurations.",
             },
           ].map((revision) => (
-            <div key={revision.rev} className="p-4 sm:p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
+            <div key={revision.rev} className="p-4 sm:p-5 border border-base-300 bg-base-200/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 relative group">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-base-200 border border-base-300 flex items-center justify-center font-bold text-sm text-base-content/80 shrink-0">
                   {revision.avatar}

@@ -571,18 +571,6 @@ export default function WikiClient({
     }
   };
 
-  if (showRevisions) {
-    return <RevisionsView setShowRevisions={setShowRevisions} />;
-  }
-
-  if (showPendingChanges) {
-    return (
-      <PendingChangesView
-        setShowPendingChanges={setShowPendingChanges}
-        pageId={dbPageId}
-      />
-    );
-  }
 
   return (
     <>
@@ -925,6 +913,18 @@ export default function WikiClient({
           isOpen={showTransportEditor}
           onClose={() => router.back()}
           transport={transportProp}
+        />
+      )}
+
+      {/* Wiki overlays for revisions and pending approvals */}
+      {showRevisions && (
+        <RevisionsView setShowRevisions={setShowRevisions} />
+      )}
+
+      {showPendingChanges && (
+        <PendingChangesView
+          setShowPendingChanges={setShowPendingChanges}
+          pageId={dbPageId}
         />
       )}
     </>
