@@ -41,6 +41,26 @@ export default function GenericOverlayModal({
     startPos: { x: 0, y: 0 },
   });
 
+  // Used to detect a double-tap on touch devices (the maximize button is
+  // hidden on small screens, so a double-tap on the header is the only way
+  // to maximize there).
+  const lastTapRef = useRef(0);
+
+  const toggleMaximize = () => setIsMaximized((m) => !m);
+
+  const handleHeaderDoubleTap = (e: React.TouchEvent) => {
+    // Don't hijack taps on header buttons (close, maximize, actions).
+    if ((e.target as HTMLElement).closest("button")) return;
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      e.preventDefault();
+      toggleMaximize();
+      lastTapRef.current = 0;
+    } else {
+      lastTapRef.current = now;
+    }
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -97,7 +117,7 @@ export default function GenericOverlayModal({
   if (!isOpen) return null;
 
   return (
-    <div className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center bg-transparent pointer-events-none overflow-hidden font-sans ${
+    <div className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center bg-transparent overflow-hidden font-sans ${
       isMaximized ? "p-0" : "p-0 sm:p-4"
     }`}>
       {/* Dialog Card - matching SettingsModal aesthetics and draggable header */}
@@ -121,15 +141,20 @@ export default function GenericOverlayModal({
         {/* Unified Draggable Header */}
         <div
           onMouseDown={handleMouseDown}
+          onDoubleClick={(e) => {
+            if ((e.target as HTMLElement).closest("button")) return;
+            toggleMaximize();
+          }}
+          onTouchEnd={handleHeaderDoubleTap}
           className={`flex items-center justify-between px-4 py-2.5 border-b border-base-300 bg-base-200 text-base-content select-none shrink-0 ${
-            isMaximized ? "cursor-default" : "cursor-move"
+            "cursor-default"
           }`}
         >
           {/* Left: Close Button */}
           <div className="flex items-center justify-start">
             <button
               onClick={onClose}
-              className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+              className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
               aria-label="Close"
             >
               <X className="w-5 h-5 shrink-0" />

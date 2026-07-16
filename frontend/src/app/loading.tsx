@@ -9,9 +9,6 @@ export default function Loading() {
         </h1>
       </div>
 
-      <p className="mb-8 text-xs tracking-widest text-base-content/50 uppercase animate-pulse">
-        by metis
-      </p>
     </div>
   );
 }

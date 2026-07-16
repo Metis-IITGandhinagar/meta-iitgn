@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X, Maximize2, Minimize2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,6 +28,25 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
   const [editError, setEditError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+
+  // Used to detect a double-tap on touch devices (the maximize button is
+  // hidden on small screens, so a double-tap on the header is the only way
+  // to maximize there).
+  const lastTapRef = useRef(0);
+
+  const toggleMaximize = () => setIsMaximized((m) => !m);
+
+  const handleHeaderDoubleTap = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      e.preventDefault();
+      toggleMaximize();
+      lastTapRef.current = 0;
+    } else {
+      lastTapRef.current = now;
+    }
+  };
 
   const onEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +86,14 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
         }`}
       >
         {/* Window Header — close (left) · profile + maximize (right) */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-base-200 bg-base-200 text-base-content select-none shrink-0">
+        <div
+          onDoubleClick={(e) => {
+            if ((e.target as HTMLElement).closest("button")) return;
+            toggleMaximize();
+          }}
+          onTouchEnd={handleHeaderDoubleTap}
+          className="flex items-center justify-between px-4 py-2.5 border-b border-base-200 bg-base-200 text-base-content select-none shrink-0"
+        >
           <div className="flex items-center gap-2 text-primary font-bold">
             <Pencil className="h-5 w-5" />
             <span>Edit Category</span>
@@ -89,7 +115,7 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
             <button
               type="button"
               onClick={onClose}
-              className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+              className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
               aria-label="Close"
             >
               <X className="h-5 w-5 shrink-0" />

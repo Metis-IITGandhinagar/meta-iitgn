@@ -3,6 +3,27 @@ import { prisma } from '../lib/prisma.js';
 import { invalidateSyncCache } from './page.controller.js';
 
 /**
+ * Extract the infobox image from a page's markdown frontmatter — the same
+ * `image:` field the article's right sidebar (WikiInfoBox) renders. This is
+ * stored inside the page content, NOT in metadata, so the featured card must
+ * read it here to match the sidebar photo.
+ */
+const extractInfoboxImage = (content: string | null | undefined): string | null => {
+  if (!content || !content.startsWith('---')) return null;
+  const parts = content.split('---');
+  if (parts.length < 3) return null;
+  const frontmatter = parts[1];
+  for (const rawLine of frontmatter.split('\n')) {
+    const line = rawLine.trim();
+    if (line.startsWith('image:')) {
+      const val = line.slice('image:'.length).trim();
+      return val || null;
+    }
+  }
+  return null;
+};
+
+/**
  * GET /pages/featured
  * Fetch all featured pages
  */
@@ -17,6 +38,7 @@ export const getFeaturedPages = async (req: Request, res: Response) => {
             title: true,
             slug: true,
             metadata: true,
+            content: true,
           },
         },
       },
@@ -32,7 +54,10 @@ export const getFeaturedPages = async (req: Request, res: Response) => {
       title: f.live_page.title,
       slug: f.live_page.slug,
       href: `/wiki/page/${f.live_page.slug}`,
-      image: (f.live_page.metadata as any)?.image || '/homepage_bg.png',
+      image:
+        extractInfoboxImage(f.live_page.content) ||
+        (f.live_page.metadata as any)?.image ||
+        '/homepage_bg.png',
     }));
 
     return res.json({ success: true, data: result });

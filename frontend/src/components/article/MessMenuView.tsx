@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { CalendarDays, UtensilsCrossed, Clock } from "lucide-react";
-import { WEEK_DAYS, MessDay, getTimeOfDay, MESS_MOCK_THEME, parseWeeklyMessMenu } from "@/lib/messMenu";
+import { WEEK_DAYS, MessDay, getTimeOfDay, MESS_THEME, parseWeeklyMessMenu } from "@/lib/messMenu";
 
 interface MessMenuViewProps {
   content?: string | null;
@@ -63,7 +63,7 @@ export default function MessMenuView({ content }: MessMenuViewProps) {
             <div className="grid gap-3 sm:grid-cols-2">
               {selectedDay.meals.map((meal, i) => {
                 const tod = getTimeOfDay(meal);
-                const theme = MESS_MOCK_THEME[tod];
+                const theme = MESS_THEME[tod];
                 return (
                   <div
                     key={i}

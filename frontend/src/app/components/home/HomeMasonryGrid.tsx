@@ -260,7 +260,12 @@ export default function HomeMasonryGrid({
     setActiveId(null);
   }, []);
 
-  const activeCard = items.find((c) => c.id === activeId) ?? null;
+  // Resolve from the live `cards` prop first so the drag overlay reflects the
+  // freshest content, falling back to the (possibly stale) ordered snapshot.
+  const activeCard =
+    cards.find((c) => c.id === activeId) ??
+    items.find((c) => c.id === activeId) ??
+    null;
   const activeFeatured = false;
 
   return (
@@ -280,14 +285,22 @@ export default function HomeMasonryGrid({
             gridAutoRows: "10px",
           }}
         >
-          {items.map((card) => (
-            <SortableCardItem
-              key={card.id}
-              card={card}
-              isDraggingOver={!!activeId && activeId !== card.id}
-              reorderEnabled={reorderEnabled}
-            />
-          ))}
+          {items.map((card) => {
+            // `items` is only the persisted ORDER snapshot; its captured React
+            // elements go stale when a card's data (e.g. featured articles)
+            // loads after mount, because the sync effect above only re-runs when
+            // the SET of card ids changes — not when content updates. Always
+            // render the freshest content from the live `cards` prop.
+            const liveCard = cards.find((c) => c.id === card.id) ?? card;
+            return (
+              <SortableCardItem
+                key={card.id}
+                card={liveCard}
+                isDraggingOver={!!activeId && activeId !== card.id}
+                reorderEnabled={reorderEnabled}
+              />
+            );
+          })}
         </div>
       </SortableContext>
 

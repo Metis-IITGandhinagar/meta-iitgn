@@ -69,12 +69,12 @@ export const TIME_OF_DAY_META: Record<
 
 export const TIME_OF_DAY_ORDER: TimeOfDay[] = ["morning", "afternoon", "evening", "night"];
 
-// ── Mock card theme ──────────────────────────────────────────────────────────
+// ── Card theme ──────────────────────────────────────────────────────────────
 // daisyUI semantic colours shared by the mess-menu home card, the overlay, and
 // the editor, keyed by time-of-day bucket so the UI stays data-driven and
 // themeable. breakfast=warning, lunch=success, snacks=secondary, dinner=info;
 // the accent green is `success`.
-export const MESS_MOCK_THEME: Record<
+export const MESS_THEME: Record<
   TimeOfDay,
   { mealName: string; timeBadge: string; card: string }
 > = {
@@ -97,6 +97,76 @@ export const MESS_MOCK_THEME: Record<
     mealName: "text-info",
     timeBadge: "text-info bg-info/10 border-info/30",
     card: "border-info/30 bg-info/5",
+  },
+};
+
+// ── Editor meal-slot pills ────────────────────────────────────────────────────
+// Breakfast / Lunch / Snacks / Dinner quick-pick pills styled to match the
+// mess-menu designer mockup (cream cards, amber/emerald/pink/blue chips).
+// Keyed by time-of-day bucket so the active slot is inferred from the meal.
+export const MEAL_SLOT_PILLS: Record<
+  TimeOfDay,
+  {
+    label: string;
+    /** Accent text colour for the #index, meal name and icons. */
+    accent: string;
+    /** Card border + background tint for this slot. */
+    card: string;
+    /** Inner chip background + text when this slot is selected. */
+    activeChip: string;
+    /** Outer ring border colour when this slot is selected. */
+    activeBorder: string;
+    /** Full pill classes when this slot is not selected. */
+    inactive: string;
+    /** Bullet dot colour for the dish rows. */
+    dot: string;
+    /** Focus border + ring colour for the editable inputs. */
+    fieldFocus: string;
+  }
+> = {
+  // Uses daisyUI *semantic* tokens (warning/success/secondary/info) so the slot
+  // colours follow the active theme. These are real daisyUI colours (not the
+  // raw Tailwind palette that globals.css remaps), so `/opacity` modifiers and
+  // theme switching both work correctly.
+  morning: {
+    label: "Breakfast",
+    accent: "text-warning",
+    card: "border-warning/30 bg-warning/5",
+    activeChip: "bg-warning/15 text-warning",
+    activeBorder: "border-warning",
+    inactive: "bg-warning/10 text-warning hover:bg-warning/20",
+    dot: "bg-warning",
+    fieldFocus: "focus:border-warning focus:ring-warning/25",
+  },
+  afternoon: {
+    label: "Lunch",
+    accent: "text-success",
+    card: "border-success/30 bg-success/5",
+    activeChip: "bg-success/15 text-success",
+    activeBorder: "border-success",
+    inactive: "bg-success/10 text-success hover:bg-success/20",
+    dot: "bg-success",
+    fieldFocus: "focus:border-success focus:ring-success/25",
+  },
+  evening: {
+    label: "Snacks",
+    accent: "text-secondary",
+    card: "border-secondary/30 bg-secondary/5",
+    activeChip: "bg-secondary/15 text-secondary",
+    activeBorder: "border-secondary",
+    inactive: "bg-secondary/10 text-secondary hover:bg-secondary/20",
+    dot: "bg-secondary",
+    fieldFocus: "focus:border-secondary focus:ring-secondary/25",
+  },
+  night: {
+    label: "Dinner",
+    accent: "text-info",
+    card: "border-info/30 bg-info/5",
+    activeChip: "bg-info/15 text-info",
+    activeBorder: "border-info",
+    inactive: "bg-info/10 text-info hover:bg-info/20",
+    dot: "bg-info",
+    fieldFocus: "focus:border-info focus:ring-info/25",
   },
 };
 

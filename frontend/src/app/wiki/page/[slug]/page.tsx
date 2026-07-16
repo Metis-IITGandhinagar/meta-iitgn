@@ -12,6 +12,7 @@ interface WikiArticlePageProps {
   searchParams: Promise<{
     title?: string;
     edit?: string;
+    category?: string;
   }>;
 }
 
@@ -70,6 +71,11 @@ Write your content here...`;
       dbPageId = dbArticle.page_id;
       version = dbArticle.version;
       initialMetadata = dbArticle.metadata;
+
+      // Count a view for genuine article reads (skip edit mode / non-DB pages).
+      if (dbPageId && edit !== "true") {
+        await apiService.incrementPageViewCount(slug);
+      }
     }
   } catch (e) {
     console.warn("Could not find article in db:", slug, e);

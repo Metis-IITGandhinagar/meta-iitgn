@@ -20,12 +20,31 @@ const PORT = process.env.PORT || 3001;
 
 // Resolve directory paths
 
+// Allowlisted origins for CORS. Localhost is always permitted for local dev.
+// Additional production origins are configured via FRONTEND_URL (comma-separated).
+const allowedOrigins = new Set<string>([
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+]);
+
 // Middlewares
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Dynamically allow any requesting origin to resolve all CORS issues
-      callback(null, true);
+      // Allow non-browser / same-origin requests that omit an Origin header
+      // (curl, server-to-server, health checks).
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+      // Reject unknown origins. Because auth uses credentialed cookies, we must
+      // NOT reflect arbitrary origins alongside Access-Control-Allow-Credentials.
+      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

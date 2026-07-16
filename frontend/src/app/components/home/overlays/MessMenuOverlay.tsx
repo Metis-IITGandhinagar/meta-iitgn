@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Loader2, Pencil, Save, CalendarDays, UtensilsCrossed, Plus, Trash2, X, Clock, ArrowUp, ArrowDown } from "lucide-react";
+import { Loader2, Pencil, Save, CalendarDays, UtensilsCrossed, Plus, Trash2, X, Clock, ArrowUp, ArrowDown, CirclePlus } from "lucide-react";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
@@ -13,7 +13,7 @@ import {
   TimeOfDay,
   TIME_OF_DAY_META,
   TIME_OF_DAY_ORDER,
-  MESS_MOCK_THEME,
+  MEAL_SLOT_PILLS,
   getTimeOfDay,
   parseWeeklyMessMenu,
 } from "@/lib/messMenu";
@@ -153,10 +153,15 @@ export default function MessMenuOverlay({
     setMeals(next);
   };
 
-  // Pick a time-of-day bucket: fills in that bucket's representative time range
-  // and recolours the meal accordingly.
+  // Pick a meal slot (Breakfast/Lunch/Snacks/Dinner): sets the meal name to the
+  // slot label so getTimeOfDay resolves to this bucket (which recolours the
+  // card), and fills a representative time range when none is set yet.
   const applyTimeOfDay = (mi: number, tod: TimeOfDay) => {
-    updateMeal(mi, { time: TIME_OF_DAY_META[tod].presets[0] });
+    const meal = selectedDay?.meals[mi];
+    updateMeal(mi, {
+      name: MEAL_SLOT_PILLS[tod].label,
+      time: meal?.time?.trim() ? meal.time : TIME_OF_DAY_META[tod].presets[0],
+    });
   };
 
   const updateItem = (mi: number, ii: number, value: string) => {
@@ -364,126 +369,123 @@ export default function MessMenuOverlay({
                 ) : (
                   selectedDay.meals.map((meal, mi) => {
                     const tod = getTimeOfDay(meal);
-                    const theme = MESS_MOCK_THEME[tod];
+                    const slot = MEAL_SLOT_PILLS[tod];
                     const isFirst = mi === 0;
                     const isLast = mi === selectedDay.meals.length - 1;
                     return (
                       <div
                         key={mi}
-                        className={`rounded-xl border p-3 space-y-2.5 ${theme.card}`}
+                        className={`rounded-2xl border p-4 shadow-sm space-y-3 transition-colors ${slot.card}`}
                       >
                         {/* Meal name + reorder / remove controls */}
-                        <div className="flex items-start gap-2">
-                          <span
-                            className={`mt-2.5 hidden sm:inline text-[10px] font-black uppercase tracking-wider ${theme.mealName} shrink-0 w-14`}
-                          >
-                            #{mi + 1}
-                          </span>
-                          <input
-                            value={meal.name}
-                            onChange={(e) => updateMeal(mi, { name: e.target.value })}
-                            placeholder="Meal (e.g. Breakfast)"
-                            className="input input-sm input-bordered font-bold flex-1 min-w-0"
-                          />
-                          <div className="flex items-center gap-0.5 shrink-0">
+                        <div className="flex justify-between items-center gap-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className={`${slot.accent} font-semibold text-base shrink-0`}>
+                              #{mi + 1}
+                            </span>
+                            <input
+                              value={meal.name}
+                              onChange={(e) => updateMeal(mi, { name: e.target.value })}
+                              placeholder="Breakfast"
+                              className={`text-base-content font-semibold text-base rounded-lg bg-base-100 border border-base-300 px-2.5 py-1 outline-none focus:ring-2 placeholder:text-base-content/30 w-full min-w-0 transition-colors ${slot.fieldFocus}`}
+                            />
+                          </div>
+                          <div className="flex items-center gap-1.5 text-base-content/40 shrink-0">
                             <button
                               onClick={() => moveMeal(mi, -1)}
                               disabled={isFirst}
                               aria-label="Move meal up"
-                              className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-success disabled:opacity-20"
+                              className="hover:text-base-content/70 transition-colors disabled:opacity-20"
                             >
-                              <ArrowUp className="h-3.5 w-3.5" />
+                              <ArrowUp className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => moveMeal(mi, 1)}
                               disabled={isLast}
                               aria-label="Move meal down"
-                              className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-success disabled:opacity-20"
+                              className="hover:text-base-content/70 transition-colors disabled:opacity-20"
                             >
-                              <ArrowDown className="h-3.5 w-3.5" />
+                              <ArrowDown className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => removeMeal(mi)}
                               aria-label="Remove meal"
-                              className="btn btn-ghost btn-sm btn-square text-base-content/40 hover:text-error"
+                              className="hover:text-error transition-colors ml-0.5"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
 
-                        {/* Time field + live time-of-day pill */}
-                        <div className="flex items-center gap-2">
-                          <div className="relative flex-1 min-w-0">
-                            <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-base-content/40 pointer-events-none" />
-                            <input
-                              value={meal.time ?? ""}
-                              onChange={(e) => updateMeal(mi, { time: e.target.value })}
-                              placeholder="Time (e.g. 7:30 AM – 9:00 AM)"
-                              className="input input-sm input-bordered text-xs pl-8 w-full"
-                            />
-                          </div>
-                          {meal.time?.trim() && (
-                            <span
-                              className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${theme.timeBadge}`}
-                            >
-                              <Clock className="h-3 w-3" />
-                              {TIME_OF_DAY_META[tod].label}
-                            </span>
-                          )}
+                        {/* Time — editable */}
+                        <div className="flex items-center gap-1.5 text-base-content/60">
+                          <Clock className="w-4 h-4 shrink-0" />
+                          <input
+                            value={meal.time ?? ""}
+                            onChange={(e) => updateMeal(mi, { time: e.target.value })}
+                            placeholder="7:30 AM – 9:00 AM"
+                            className={`text-sm text-base-content rounded-lg bg-base-100 border border-base-300 px-2.5 py-1 outline-none focus:ring-2 placeholder:text-base-content/30 w-full min-w-0 transition-colors ${slot.fieldFocus}`}
+                          />
                         </div>
 
-                        {/* Time-of-day quick picks (colour-coded) */}
-                        <div className="flex flex-wrap gap-1">
+                        {/* Slot pills (Breakfast / Lunch / Snacks / Dinner) */}
+                        <div className="flex flex-wrap items-center gap-2">
                           {TIME_OF_DAY_ORDER.map((t) => {
-                            const m = TIME_OF_DAY_META[t];
+                            const s = MEAL_SLOT_PILLS[t];
                             const active = t === tod;
-                            return (
+                            return active ? (
+                              <div
+                                key={t}
+                                className={`inline-flex rounded-full border-[1.5px] p-[2px] ${s.activeBorder}`}
+                              >
+                                <span
+                                  className={`rounded-full px-3 py-0.5 text-xs font-medium ${s.activeChip}`}
+                                >
+                                  {s.label}
+                                </span>
+                              </div>
+                            ) : (
                               <button
                                 key={t}
                                 onClick={() => applyTimeOfDay(mi, t)}
-                                aria-pressed={active}
-                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold cursor-pointer transition-all select-none ${MESS_MOCK_THEME[t].timeBadge} ${
-                                  active ? "ring-2 ring-offset-1 ring-current scale-105" : "opacity-60 hover:opacity-100"
-                                }`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${s.inactive}`}
                               >
-                                {m.label}
+                                {s.label}
                               </button>
                             );
                           })}
                         </div>
 
-                        {/* Items */}
-                        <div className="space-y-1.5 pl-1">
+                        {/* List items */}
+                        <div className="flex flex-col gap-1.5">
                           {meal.items.map((item, ii) => (
                             <div key={ii} className="flex items-center gap-2">
-                              <span
-                                className={`text-base leading-none shrink-0 ${theme.mealName}`}
-                              >
-                                •
-                              </span>
+                              <div className={`w-1.5 h-1.5 rounded-full ${slot.dot} shrink-0`} />
                               <input
                                 value={item}
                                 onChange={(e) => updateItem(mi, ii, e.target.value)}
                                 placeholder="Dish or item"
-                                className="input input-sm input-bordered flex-1 min-w-0"
+                                className={`text-sm text-base-content rounded-lg bg-base-100 border border-base-300 px-2.5 py-1 outline-none focus:ring-2 placeholder:text-base-content/30 w-full min-w-0 transition-colors ${slot.fieldFocus}`}
                               />
                               <button
                                 onClick={() => removeItem(mi, ii)}
                                 aria-label="Remove item"
-                                className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-error shrink-0"
+                                className="text-base-content/30 hover:text-error shrink-0 transition-colors"
                               >
-                                <X className="h-3.5 w-3.5" />
+                                <X className="w-4 h-4" />
                               </button>
                             </div>
                           ))}
-                          <button
-                            onClick={() => addItem(mi)}
-                            className="btn btn-ghost btn-xs text-success gap-1"
-                          >
-                            <Plus className="h-3 w-3" /> Add item
-                          </button>
                         </div>
+
+                        {/* Add item */}
+                        <button
+                          onClick={() => addItem(mi)}
+                          className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${slot.accent} hover:opacity-80`}
+                        >
+                          <CirclePlus className="w-4 h-4" />
+                          <span>Add item</span>
+                        </button>
                       </div>
                     );
                   })

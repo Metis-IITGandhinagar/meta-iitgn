@@ -37,7 +37,7 @@ export interface TransportLine {
 // ── Line theme (daisyUI semantic colours) ────────────────────────────────────
 // Keyed by line index so the UI stays data-driven and themeable. Matches the
 // mess-menu card palette: success / secondary / info / warning.
-export const TRANSPORT_MOCK_THEME: string[] = [
+export const TRANSPORT_THEME: string[] = [
   "text-success bg-success/10 border-success/30",
   "text-secondary bg-secondary/10 border-secondary/30",
   "text-info bg-info/10 border-info/30",
@@ -45,7 +45,7 @@ export const TRANSPORT_MOCK_THEME: string[] = [
 ];
 
 export function lineTheme(index: number): string {
-  return TRANSPORT_MOCK_THEME[index % TRANSPORT_MOCK_THEME.length];
+  return TRANSPORT_THEME[index % TRANSPORT_THEME.length];
 }
 
 // Solid filled style for the active line tab (matches the line's accent colour).

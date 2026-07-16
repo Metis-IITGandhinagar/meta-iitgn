@@ -7,6 +7,7 @@ import axios from 'axios';
 import { userCache } from '../utils/userCache.js';
 import { invalidateSyncCache } from './page.controller.js';
 import { countUserEdits, fibonacciPoints } from '../utils/points.js';
+import { setTokenCookie, clearTokenCookie } from '../utils/cookies.js';
 
 export const devBypass = async (req: Request, res: Response) => {
   if (process.env.NODE_ENV === 'production') {
@@ -51,12 +52,7 @@ export const devBypass = async (req: Request, res: Response) => {
       email: user.email
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setTokenCookie(res, token);
 
     return res.status(200).json({
       success: true,
@@ -126,11 +122,7 @@ export const clearUser = async (req: Request, res: Response) => {
     if (req.user && req.user.user_id) {
       userCache.delete(Number(req.user.user_id));
     }
-    res.clearCookie("token", {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
+    clearTokenCookie(res);
     return res.json({
       success: true,
       message: "Logged out",
@@ -193,12 +185,8 @@ export const handleGoogleAuth = async (req: Request, res: Response) => {
       email: user.email
     });
 
-    return res.status(200).cookie("token", token, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    }).json({
+    setTokenCookie(res, token);
+    return res.status(200).json({
       success: true,
       message: "Login successful",
     });

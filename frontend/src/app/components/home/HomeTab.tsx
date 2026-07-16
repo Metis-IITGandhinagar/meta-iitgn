@@ -12,7 +12,6 @@ import {
   Calendar,
   BookOpen,
   Languages,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Compass,
@@ -24,16 +23,16 @@ import {
   TrendingUp,
   Zap,
   Clock,
+  Eye,
   SlidersHorizontal,
-  Pencil,
 } from "lucide-react";
 
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { useAuth } from "@/hooks/useAuth";
 import HomeCard from "./HomeCard";
 import HomeMasonryGrid, { MasonryCardConfig } from "./HomeMasonryGrid";
-import { getTimeOfDay, MESS_MOCK_THEME } from "@/lib/messMenu";
-import { parseTransport, tripTimeToMinutes, lineTheme, TransportTrip } from "@/lib/transport";
+import { getTimeOfDay, MESS_THEME } from "@/lib/messMenu";
+import { parseTransport, tripTimeToMinutes, TransportTrip } from "@/lib/transport";
 
 interface HomeTabProps {
   mousePos: { x: number; y: number };
@@ -176,7 +175,6 @@ export default function HomeTab({
   newPages,
   updatedPages,
   pendingPages,
-  loading,
   getRelativeTime,
   newsPages,
   setShowAllNews,
@@ -195,20 +193,24 @@ export default function HomeTab({
   campusTransport,
   setShowTransport,
 }: HomeTabProps) {
-  const { categories, activeTier, user } = useAuth();
+  const { categories } = useAuth();
   const router = useRouter();
-  const isGold = activeTier === "gold" || user?.role === "admin" || user?.role === "moderator";
 
   // ── Card visibility preferences (local only) ───────────────────────────────
-  const [hiddenCards, setHiddenCards] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
+  // Start empty so the first client render matches the server render (the server
+  // has no localStorage). Reading it in the initializer would cause a hydration
+  // mismatch, which makes React regenerate the tree and races the home-data
+  // load. We hydrate the persisted set in an effect right after mount instead.
+  const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
     try {
       const raw = localStorage.getItem(HOME_HIDDEN_CARDS_KEY);
-      return raw ? new Set(JSON.parse(raw)) : new Set();
+      if (raw) setHiddenCards(new Set(JSON.parse(raw)));
     } catch {
-      return new Set();
+      /* ignore */
     }
-  });
+  }, []);
   const [showPrefs, setShowPrefs] = useState(false);
 
   const toggleCard = (id: string) => {
@@ -237,36 +239,8 @@ export default function HomeTab({
   const carouselBase = `featured-${useId().replace(/:/g, "")}`;
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Fallback featured slides in case API returns empty
-  const FALLBACK_SLIDES = [
-    {
-      title: "Campus Design & Architecture",
-      image: "/iitgn_campus.png",
-      tag: "Featured Story",
-      location: "Palaj Campus",
-      description: "Explore the climate-responsive architecture, green corridors, and thoughtfully designed spaces that define IITGN.",
-      href: "/wiki/campus/campuses-and-surroundings",
-    },
-    {
-      title: "Student Life & Campus Culture",
-      image: "/homepage_bg.png",
-      tag: "Campus Life",
-      location: "Student Experience",
-      description: "From clubs and fests to everyday routines, discover the community stories that make the campus feel alive.",
-      href: "/wiki/page/mess-menu",
-    },
-    {
-      title: "Facilities & Everyday Guide",
-      image: "/homepage_bg.png",
-      tag: "Quick Guide",
-      location: "Facilities",
-      description: "A concise guide to transport, mess, labs, and the places students use most often on campus.",
-      href: "/wiki/page/campus-transport",
-    },
-  ];
-
   // Derived / computed states from cached store/Dexie props
-  const featuredSlides = (featuredPages && featuredPages.length > 0) ? featuredPages : FALLBACK_SLIDES;
+  const featuredSlides = (featuredPages && featuredPages.length > 0) ? featuredPages : [];
   const messMenuData = messMenu?.content ? parseTodayMessMenu(messMenu.content) : null;
   const transportData = campusTransport?.content ? parseTransport(campusTransport.content) : [];
   const nowMinutes = (() => {
@@ -304,7 +278,6 @@ export default function HomeTab({
   })();
   const nextDeparture = topTrips[0] ?? null;
   const moreTrips = topTrips.slice(1, 3);
-  const dynamicDataLoading = loading;
 
   useEffect(() => {
     if (categories && categories.length > 0) {
@@ -334,20 +307,72 @@ export default function HomeTab({
     }
   };
 
-  // Scroll the featured carousel horizontally to a given slide index.
-  // Uses scrollLeft math (not anchor hrefs) so the page never jumps to top.
-  const scrollToIndex = (index: number) => {
-    const carousel = carouselRef.current;
-    if (!carousel) return;
-    const items = carousel.querySelectorAll<HTMLElement>(".carousel-item");
-    const target = items[index];
-    if (!target) return;
-    const left =
-      target.getBoundingClientRect().left -
-      carousel.getBoundingClientRect().left +
-      carousel.scrollLeft;
-    carousel.scrollTo({ left, behavior: "smooth" });
+  // ── Seamless (cyclic) featured carousel ────────────────────────────────────
+  // Transform-based infinite carousel. The track renders
+  // [clone(last), ...realSlides, clone(first)] and is shifted with translateX by
+  // `featuredIndex` (a DOM index into that track). Real slide r sits at index r+1.
+  // Moving past either clone lets the animation finish, then jumps instantly
+  // (transition off) to the identical real slide — so it always continues in the
+  // same direction with no visible rewind. `featuredIndex` also drives the dots.
+  const featuredPausedRef = useRef(false);
+  const featuredCount = (featuredPages && featuredPages.length > 0) ? featuredPages.length : 0;
+  const hasClones = featuredCount > 1;
+
+  const [featuredIndex, setFeaturedIndex] = useState(1);
+  const [featuredAnim, setFeaturedAnim] = useState(true);
+
+  // Reset to the first real slide whenever the data set changes.
+  useEffect(() => {
+    setFeaturedAnim(false);
+    setFeaturedIndex(hasClones ? 1 : 0);
+  }, [featuredPages, hasClones]);
+
+  const goNext = () => {
+    if (featuredCount < 2) return;
+    setFeaturedAnim(true);
+    setFeaturedIndex((i) => i + 1);
   };
+
+  const goPrev = () => {
+    if (featuredCount < 2) return;
+    setFeaturedAnim(true);
+    setFeaturedIndex((i) => i - 1);
+  };
+
+  // Jump to a real slide (used by the dot indicators).
+  const scrollToIndex = (realIndex: number) => {
+    setFeaturedAnim(true);
+    setFeaturedIndex(hasClones ? realIndex + 1 : realIndex);
+  };
+
+  // When a slide animation ends on a clone, snap instantly to its real twin.
+  const handleFeaturedTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
+    if (!hasClones) return;
+    if (e.target !== e.currentTarget || e.propertyName !== "transform") return;
+    if (featuredIndex >= featuredCount + 1) {
+      setFeaturedAnim(false);
+      setFeaturedIndex(1);
+    } else if (featuredIndex <= 0) {
+      setFeaturedAnim(false);
+      setFeaturedIndex(featuredCount);
+    }
+  };
+
+  // Auto-advance every 2s. Pauses while the pointer is over the card (checked via
+  // a ref so hovering never tears the timer down). Stops when there's <2 slides.
+  useEffect(() => {
+    if (!hasClones) return;
+    const id = setInterval(() => {
+      if (featuredPausedRef.current) return;
+      goNext();
+    }, 2000);
+    return () => clearInterval(id);
+  }, [featuredPages, hasClones]);
+
+  // Active real slide for the dot indicators, derived from the track index.
+  const activeFeatured = hasClones
+    ? (((featuredIndex - 1) % featuredCount) + featuredCount) % featuredCount
+    : featuredIndex;
 
   // ─── Card definitions ──────────────────────────────────────────────────────
   // Display order for the home feed. Mess first, Featured second, the activity
@@ -372,6 +397,10 @@ export default function HomeTab({
       id: "featured-article",
       featured: true,
       content: (
+        <div
+          onMouseEnter={() => { featuredPausedRef.current = true; }}
+          onMouseLeave={() => { featuredPausedRef.current = false; }}
+        >
         <HomeCard
           title="Featured Article"
           icon={<Award className="h-4 w-4" />}
@@ -382,17 +411,6 @@ export default function HomeTab({
                 <Sparkles className="h-3 w-3" />
                 Special Feature
               </span>
-              {isGold && (
-                <button
-                  type="button"
-                  onClick={() => setShowEditFeatured(true)}
-                  className="btn btn-ghost btn-xs btn-square text-primary hover:bg-primary/10"
-                  aria-label="Edit featured list"
-                  title="Edit featured list"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-              )}
             </div>
           }
           footer={
@@ -407,10 +425,14 @@ export default function HomeTab({
               <div className="flex gap-2">
                 {featuredSlides.map((_, index) => (
                   <button
-                    key={index+Math.random()}
+                    key={`featured-dot-${index}`}
                     type="button"
                     onClick={() => scrollToIndex(index)}
-                    className="h-2.5 w-2.5 rounded-full bg-base-300 hover:bg-primary/60 transition-all cursor-pointer"
+                    className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                      activeFeatured === index
+                        ? "w-6 bg-primary"
+                        : "w-2.5 bg-base-300 hover:bg-primary/60"
+                    }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
                 ))}
@@ -418,17 +440,35 @@ export default function HomeTab({
             </div>
           }
         >
-          <div ref={carouselRef} className="carousel w-full scroll-smooth">
-            {featuredSlides.map((slide, index) => {
-              const n = featuredSlides.length;
-              const prevIndex = (index - 1 + n) % n;
-              const nextIndex = (index + 1) % n;
-              const targetUrl = slide?.slug ? `/wiki/page/${slide.slug}` : null;
+          {featuredSlides.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-base-300 bg-base-200/40 px-4 py-12 text-center">
+              <Award className="h-6 w-6 text-base-content/30" />
+              <p className="text-sm font-bold text-base-content/60">No featured articles yet</p>
+              <p className="text-xs text-base-content/40">Featured articles will appear here once they&rsquo;re added.</p>
+            </div>
+          ) : (
+          <div className="w-full overflow-hidden">
+          <div
+            ref={carouselRef}
+            className="flex w-full"
+            style={{
+              transform: `translateX(-${featuredIndex * 100}%)`,
+              transition: featuredAnim ? "transform 0.5s ease" : "none",
+            }}
+            onTransitionEnd={handleFeaturedTransitionEnd}
+          >
+            {(hasClones
+              ? [featuredSlides[featuredSlides.length - 1], ...featuredSlides, featuredSlides[0]]
+              : featuredSlides
+            ).map((slide, index) => {
+              const targetUrl = slide?.slug
+                ? `/wiki/page/${slide.slug}`
+                : slide?.href || null;
               return (
                 <div
-                  key={index+Math.random()}
+                  key={`featured-slide-${index}`}
                   id={`${carouselBase}-${index + 1}`}
-                  className="carousel-item w-full"
+                  className="w-full shrink-0"
                 >
                   <div className="w-full">
                     <div className="relative overflow-hidden rounded-xl">
@@ -451,10 +491,10 @@ export default function HomeTab({
 
                       {/* DaisyUI next/prev buttons */}
                       <div className="absolute left-3 right-3 top-1/2 flex -translate-y-1/2 transform justify-between z-10">
-                        <button type="button" onClick={() => scrollToIndex(prevIndex)} className="btn btn-circle btn-sm bg-base-100/80 border-0 shadow-sm hover:bg-base-100 cursor-pointer">
+                        <button type="button" onClick={goPrev} className="btn btn-circle btn-sm bg-base-100/80 border-0 shadow-sm hover:bg-base-100 cursor-pointer">
                           <ChevronLeft className="h-4 w-4" />
                         </button>
-                        <button type="button" onClick={() => scrollToIndex(nextIndex)} className="btn btn-circle btn-sm bg-base-100/80 border-0 shadow-sm hover:bg-base-100 cursor-pointer">
+                        <button type="button" onClick={goNext} className="btn btn-circle btn-sm bg-base-100/80 border-0 shadow-sm hover:bg-base-100 cursor-pointer">
                           <ChevronRight className="h-4 w-4" />
                         </button>
                       </div>
@@ -483,7 +523,10 @@ export default function HomeTab({
               );
             })}
           </div>
+          </div>
+          )}
         </HomeCard>
+        </div>
       ),
     },
 
@@ -552,12 +595,7 @@ export default function HomeTab({
           </div>
 
           {/* Event items */}
-          {loading ? (
-            <div className="flex items-center gap-2 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : upcomingEvents && upcomingEvents.length > 0 ? (
+          {upcomingEvents && upcomingEvents.length > 0 ? (
             <div className="space-y-4">
               {upcomingEvents.slice(0, 3).map((event, i) => {
                 const dateObj = new Date(event.event_date);
@@ -642,12 +680,7 @@ export default function HomeTab({
             </button>
           }
         >
-          {loading ? (
-            <div className="flex items-center gap-2 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : newPages.length === 0 ? (
+          {newPages.length === 0 ? (
             <p className="text-xs text-base-content/50 py-3">No new pages created yet.</p>
           ) : (
             <ul className="space-y-3">
@@ -678,12 +711,7 @@ export default function HomeTab({
             </button>
           }
         >
-          {loading ? (
-            <div className="flex items-center gap-2 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : updatedPages.length === 0 ? (
+          {updatedPages.length === 0 ? (
             <p className="text-xs text-base-content/50 py-3">No pages updated yet.</p>
           ) : (
             <ul className="space-y-3">
@@ -714,12 +742,7 @@ export default function HomeTab({
             </button>
           }
         >
-          {loading ? (
-            <div className="flex items-center gap-2 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : pendingPages.length === 0 ? (
+          {pendingPages.length === 0 ? (
             <p className="text-xs text-base-content/50 py-3">No pending pages.</p>
           ) : (
             <ul className="space-y-3">
@@ -747,12 +770,7 @@ export default function HomeTab({
           badge={<span className="badge badge-secondary badge-sm rounded-2xl">Trending</span>}
         >
           <div className="space-y-3">
-            {dynamicDataLoading && popularPages.length === 0 ? (
-              <div className="flex items-center gap-2 py-3">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-xs text-base-content/50">Loading…</span>
-              </div>
-            ) : popularPages.length > 0 ? (
+            {popularPages.length > 0 ? (
               popularPages.slice(0, 5).map((page, i) => (
                 <Link
                   key={page.page_id+Math.random()}
@@ -760,7 +778,15 @@ export default function HomeTab({
                   className="flex items-center justify-between rounded-xl border border-base-200 bg-base-200/40 p-3 text-xs font-semibold text-base-content/80 hover:border-primary/40 hover:text-primary transition-colors"
                 >
                   <span className="truncate">{page.title}</span>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40 shrink-0 ml-2">#{i + 1}</span>
+                  <span className="flex items-center gap-2 shrink-0 ml-2">
+                    <span className="flex items-center gap-1 text-[10px] font-semibold text-base-content/50">
+                      <Eye className="h-3 w-3" />
+                      {Number(page.view_count ?? 0).toLocaleString()}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40">
+                      #{i + 1}
+                    </span>
+                  </span>
                 </Link>
               ))
             ) : (
@@ -792,7 +818,7 @@ export default function HomeTab({
       ),
     },
 
-    // ── 12. Today's Mess Menu (mock-driven by the HTML design reference) ──────
+    // ── 12. Today's Mess Menu (driven by the wiki mess-menu page content) ─────
     {
       id: "mess-menu",
       content: (
@@ -829,15 +855,10 @@ export default function HomeTab({
           </div>
 
           {/* Meal sections */}
-          {dynamicDataLoading && !messMenuData ? (
-            <div className="flex items-center gap-2 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-success" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : messMenuData && messMenuData.meals.length > 0 ? (
+          {messMenuData && messMenuData.meals.length > 0 ? (
             <div className="space-y-5">
               {messMenuData.meals.map((meal, i) => {
-                const theme = MESS_MOCK_THEME[getTimeOfDay(meal)];
+                const theme = MESS_THEME[getTimeOfDay(meal)];
                 return (
                   <div key={i+Math.random()}>
                     <div className="mb-2.5 flex items-center justify-between gap-2">
@@ -930,12 +951,7 @@ export default function HomeTab({
             </button>
           }
         >
-          {dynamicDataLoading && transportNext.length === 0 ? (
-            <div className="flex items-center gap-2 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-secondary" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : nextDeparture ? (
+          {nextDeparture ? (
             <div className="space-y-3">
               {/* Next departure highlight */}
               <div className="relative overflow-hidden rounded-2xl border border-secondary/20 bg-secondary/10 p-3.5">
@@ -969,7 +985,7 @@ export default function HomeTab({
                     Also departing
                   </p>
                   <div className="space-y-2">
-                    {moreTrips.map(({ line, index, trip }, mi) => (
+                    {moreTrips.map(({ trip }, mi) => (
                       <div
                         key={mi}
                         className="flex items-center justify-between gap-2 rounded-xl border border-base-200 bg-base-100 px-2.5 py-2"
@@ -985,11 +1001,6 @@ export default function HomeTab({
                             {trip!.to ?? "—"}
                           </span>
                         </div>
-                        <span
-                          className={`badge border font-mono text-[9px] tracking-tight uppercase ${lineTheme(index)}`}
-                        >
-                          {line.name}
-                        </span>
                       </div>
                     ))}
                   </div>

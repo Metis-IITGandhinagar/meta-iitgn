@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Article } from "@/lib/placeholder-articles";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowRight, BookOpen, PlusCircle, Pencil, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
 import CategoryEditModal from "@/components/CategoryEditModal";
+
+export interface Article {
+  slug: string;
+  title: string;
+  snippet: string;
+  content: string;
+}
 
 export const ICON_MAP: Record<string, any> = {
   BookOpen,

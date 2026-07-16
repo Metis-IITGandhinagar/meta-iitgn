@@ -9,15 +9,6 @@ import {
   LucideIcon
 } from "lucide-react";
 
-export interface SearchableItem {
-  title: string;
-  category: string;
-  path: string;
-  description: string;
-}
-
-export const allSearchableItems: SearchableItem[] = [];
-
 export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   Campus: Building2,
   Academics: BookOpen,

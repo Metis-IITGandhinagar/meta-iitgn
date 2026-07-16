@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { apiService } from "@/api";
-import { db } from "@/lib/db";
+import { useHomeStore } from "@/store/useHomeStore";
 import Link from "next/link";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
 import {
@@ -89,6 +88,7 @@ export default function Navbar({
 }: NavbarProps) {
   const router = useRouter();
   const { user, activeTier, setSettingsTab } = useAuth();
+  const addBookmark = useHomeStore((s) => s.addBookmark);
   const pathname = usePathname();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
   const isWiki = ((segments[0] === "wiki" || segments[0] === "blog") && segments.length >= 2) || segments[0] === "search-results";
@@ -397,49 +397,33 @@ export default function Navbar({
                     <span>Share Page</span>
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const cleanPath = pathname.replace(/\/$/, "");
                       const title = document.title || cleanPath.split("/").pop() || "Wiki Page";
-                      const slug = cleanPath.split("/").pop() || "";
+                      const bookmarkSlug = cleanPath.split("/").pop() || "";
                       const category = cleanPath.split("/")[2] || "general";
                       const titleClean = title.replace(" - META IITGN", "").trim();
-                      const bookmarkSlug = slug;
 
                       if (!window.confirm(`Are you sure you want to bookmark "${titleClean}"?`)) {
                         setMoreMenuOpen(false);
                         return;
                       }
 
-                      db.bookmarks.where("slug").equals(bookmarkSlug).toArray().then(async (exists) => {
-                        if (exists.length > 0) {
-                          alert("Page is already bookmarked!");
-                          setMoreMenuOpen(false);
-                          return;
-                        }
-
-                        try {
-                          let bookmarkObj: any;
-                          if (user) {
-                            bookmarkObj = await apiService.addBookmark({ slug: bookmarkSlug });
-                          } else {
-                            bookmarkObj = {
-                              bookmark_id: Date.now(),
-                              id: `guest-${Date.now()}`,
-                              title: titleClean,
-                              category: category,
-                              slug: bookmarkSlug,
-                              description: `Bookmarked article: ${titleClean}`
-                            };
-                          }
-
-                          await db.bookmarks.put(bookmarkObj);
-                          alert("Page bookmarked successfully!");
-                        } catch (err: any) {
-                          console.error("Failed to add bookmark:", err);
-                          alert(err.response?.data?.error || err.message || "Failed to bookmark page");
-                        }
-                        setMoreMenuOpen(false);
+                      const res = await addBookmark({
+                        slug: bookmarkSlug,
+                        title: titleClean,
+                        category,
+                        user,
                       });
+
+                      if (res.already) {
+                        alert("Page is already bookmarked!");
+                      } else if (res.ok) {
+                        alert("Page bookmarked successfully!");
+                      } else {
+                        alert(res.error || "Failed to bookmark page");
+                      }
+                      setMoreMenuOpen(false);
                     }}
                     className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >

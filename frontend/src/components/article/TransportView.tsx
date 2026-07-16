@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Bus, Clock, ArrowRight, Route, X } from "lucide-react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { Bus, Clock, ArrowRight, Route, ChevronDown } from "lucide-react";
 import {
   TransportTrip,
   parseTransport,
@@ -55,8 +55,25 @@ export default function TransportView({ content }: TransportViewProps) {
   }, [lines]);
 
   const [routeQ, setRouteQ] = useState<RouteOption | null>(null);
-  const toggleRoute = (r: RouteOption) =>
-    setRouteQ(routeQ && routeQ.from === r.from && routeQ.to === r.to ? null : r);
+  const [routeOpen, setRouteOpen] = useState(false);
+  const routeRef = useRef<HTMLDivElement>(null);
+
+  const selectRoute = (r: RouteOption | null) => {
+    setRouteQ(r);
+    setRouteOpen(false);
+  };
+
+  // Close the route dropdown when clicking outside of it.
+  useEffect(() => {
+    if (!routeOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (routeRef.current && !routeRef.current.contains(e.target as Node)) {
+        setRouteOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [routeOpen]);
 
   const tripMatches = (trip: TransportTrip) =>
     !routeQ ||
@@ -95,34 +112,95 @@ export default function TransportView({ content }: TransportViewProps) {
 
   return (
     <>
-      {/* ── Route filter (unique from→to routes as toggle buttons) ─────────── */}
+      {/* ── Route filter (unique from→to routes as a dropdown selector) ─────── */}
       {routes.length > 0 && (
-        <div className="mb-5">
-          <label className="mb-1.5 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
-            <Route className="h-3 w-3" /> Routes
+        <div className="mb-5" ref={routeRef}>
+          <label
+            htmlFor="route-selector"
+            className="mb-2 ml-1 block text-[11px] font-bold uppercase tracking-wider text-secondary"
+          >
+            Select Active Route
           </label>
-          <div className="flex flex-wrap gap-1.5">
-            {routes.map((r) => {
-              const selected =
-                routeQ !== null && routeQ.from === r.from && routeQ.to === r.to;
-              return (
-                <button
-                  key={`${r.from}|${r.to}`}
-                  onClick={() => toggleRoute(r)}
-                  aria-pressed={selected}
-                  className={`relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold cursor-pointer transition-all ${
-                    selected
-                      ? "bg-primary text-primary-content border-primary shadow-sm"
-                      : "bg-base-100 border-base-300 text-base-content/70 hover:border-primary/50"
-                  }`}
-                >
-                  {r.label}
-                  {selected && (
-                    <X className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border border-base-300 bg-base-100 text-base-content/70 shadow-sm" />
+
+          <div className="relative">
+            {/* Dropdown / selector button */}
+            <button
+              id="route-selector"
+              type="button"
+              onClick={() => setRouteOpen((o) => !o)}
+              aria-haspopup="listbox"
+              aria-expanded={routeOpen}
+              className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-base-300 bg-base-100 px-4 py-3 shadow-sm transition-colors duration-200 hover:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <Route className="h-5 w-5 shrink-0 text-secondary" />
+                <span className="truncate text-[15px] font-semibold text-base-content">
+                  {routeQ ? (
+                    <>
+                      {routeQ.from}
+                      <span className="mx-1.5 font-semibold text-secondary">→</span>
+                      {routeQ.to || "—"}
+                    </>
+                  ) : (
+                    "All routes"
                   )}
-                </button>
-              );
-            })}
+                </span>
+              </div>
+
+              <ChevronDown
+                className={`h-5 w-5 shrink-0 text-base-content/50 transition-transform duration-200 ${
+                  routeOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {/* Dropdown menu */}
+            {routeOpen && (
+              <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-lg">
+                <ul
+                  role="listbox"
+                  tabIndex={-1}
+                  className="max-h-64 overflow-y-auto py-1 text-sm text-base-content"
+                >
+                  <li role="option" aria-selected={routeQ === null}>
+                    <button
+                      type="button"
+                      onClick={() => selectRoute(null)}
+                      className={`block w-full cursor-pointer truncate px-4 py-2 text-left transition-colors hover:bg-base-200 ${
+                        routeQ === null ? "font-semibold text-secondary" : ""
+                      }`}
+                    >
+                      All routes
+                    </button>
+                  </li>
+                  {routes.map((r) => {
+                    const selected =
+                      routeQ !== null && routeQ.from === r.from && routeQ.to === r.to;
+                    return (
+                      <li
+                        key={`${r.from}|${r.to}`}
+                        role="option"
+                        aria-selected={selected}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => selectRoute(r)}
+                          className={`flex w-full cursor-pointer items-center px-4 py-2 text-left transition-colors hover:bg-base-200 ${
+                            selected ? "font-semibold text-secondary" : ""
+                          }`}
+                        >
+                          <span className="truncate">
+                            {r.from}
+                            <span className="mx-1.5 font-semibold text-secondary">→</span>
+                            {r.to || "—"}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}

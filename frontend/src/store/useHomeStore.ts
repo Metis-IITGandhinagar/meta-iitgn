@@ -103,6 +103,7 @@ export interface HomeState {
   handleReview: (args: { pendingId: number; action: "approve" | "reject"; userId: number }) => Promise<void>;
   handleAddTrivia: (args: { title: string; content: string }) => Promise<void>;
   handleAddHistory: (args: { title: string; content: string; videoUrl: string }) => Promise<void>;
+  addBookmark: (args: { slug: string; title: string; category: string; user: any }) => Promise<{ ok: boolean; already?: boolean; error?: string }>;
   removeBookmark: (id: string) => Promise<void>;
 }
 
@@ -869,14 +870,56 @@ ${content}`,
     }
   },
 
+  addBookmark: async ({ slug, title, category, user }) => {
+    const { bookmarks } = get();
+    try {
+      // Guard against duplicates. `slug` is not a Dexie index, so filter in JS
+      // (a `.where("slug")` query would throw a SchemaError).
+      const existing = await db.bookmarks.toArray();
+      if (existing.some((b) => b.slug === slug)) {
+        return { ok: false, already: true };
+      }
+
+      let bookmarkObj: any;
+      if (user) {
+        bookmarkObj = await apiService.addBookmark({ slug });
+      } else {
+        // Guests keep bookmarks locally only.
+        bookmarkObj = {
+          bookmark_id: Date.now(),
+          id: `guest-${slug}`,
+          title,
+          category,
+          slug,
+          description: `Bookmarked article: ${title}`,
+        };
+      }
+
+      await db.bookmarks.put(bookmarkObj);
+      set({ bookmarks: [...bookmarks, bookmarkObj] });
+      return { ok: true };
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message;
+      // Server rejects an already-bookmarked page with 400.
+      if (msg && /already bookmarked/i.test(msg)) {
+        return { ok: false, already: true };
+      }
+      console.error("Failed to add bookmark:", err);
+      return { ok: false, error: msg || "Failed to bookmark page" };
+    }
+  },
+
   removeBookmark: async (id) => {
     const { bookmarks } = get();
     try {
       const bObj = bookmarks.find((b) => b.id === id);
       await db.bookmarks.delete(id);
 
+      // Guest bookmarks live only in Dexie (their id is `guest-...`); skip the
+      // server call for those to avoid a guaranteed 404/401.
+      const isGuestBookmark = typeof id === "string" && id.startsWith("guest-");
       const toDeleteId = bObj?.bookmark_id || Number(id);
-      if (toDeleteId && !isNaN(toDeleteId)) {
+      if (!isGuestBookmark && toDeleteId && !isNaN(toDeleteId)) {
         await apiService.removeBookmark(toDeleteId).catch((err) => {
           console.error("Failed to delete bookmark on server:", err);
         });

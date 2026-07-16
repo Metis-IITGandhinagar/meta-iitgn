@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { devBypass, getUsers, handleGoogleAuth, clearUser, handleMe, getUserStats, getUserById } from "../controllers/user.controller.js";
-import { protect } from "../middlewares/auth.js";
+import { protect, checkAuth } from "../middlewares/auth.js";
 
 const router = Router();
 
 router.post("/", devBypass);
-router.get("/", getUsers);
-router.get("/:user_id", getUserById);
+// Bulk user listing exposes every user's email — restrict to admins.
+router.get("/", checkAuth, protect("admin"), getUsers);
+// Single-user lookup (profile view) requires authentication.
+router.get("/:user_id", checkAuth, getUserById);
 
 // Authentication routes
 router.get("/auth/google", handleGoogleAuth);
