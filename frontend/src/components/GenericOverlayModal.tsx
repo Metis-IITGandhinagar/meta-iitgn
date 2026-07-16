@@ -9,6 +9,8 @@ interface GenericOverlayModalProps {
   title: string;
   headerColorClass?: string;
   maxWidthClass?: string;
+  headerActions?: React.ReactNode;
+  headerTrailing?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -18,6 +20,8 @@ export default function GenericOverlayModal({
   title,
   children,
   maxWidthClass = "max-w-4xl",
+  headerActions,
+  headerTrailing,
 }: GenericOverlayModalProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isMounted, setIsMounted] = useState(false);
@@ -138,6 +142,8 @@ export default function GenericOverlayModal({
 
           {/* Right: Actions */}
           <div className="flex items-center justify-end gap-1">
+            {headerActions}
+            {headerTrailing}
             <button
               onClick={() => setIsMaximized(!isMaximized)}
               className="hidden sm:inline-flex p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"

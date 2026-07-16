@@ -8,7 +8,8 @@ import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 
 import { EditableCell } from "@/components/article/editable-cell";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { parseModalParams, buildQuery } from "@/lib/modalUrl";
 import {
   Edit3,
   Check,
@@ -58,6 +59,7 @@ export default function WikiClient({
 }: WikiClientProps) {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
   const [markdown, setMarkdown] = useState(initialMarkdown);
   const parsed = useMemo(() => parseMarkdown(markdown), [markdown]);
@@ -173,6 +175,49 @@ export default function WikiClient({
       window.removeEventListener("wiki-pending-updated", fetchPendingCount);
     };
   }, [fetchPendingCount]);
+
+  // URL -> state: open the matching wiki modal on deep-link load / back-forward.
+  useEffect(() => {
+    const { wmodal } = parseModalParams(searchParams);
+    const target = wmodal ?? "";
+    if (target !== "revisions" && showRevisions) setShowRevisions(false);
+    if (target !== "pending" && showPendingChanges) setShowPendingChanges(false);
+    if (target !== "mess" && showMessEditor) setShowMessEditor(false);
+    if (target !== "transport" && showTransportEditor) setShowTransportEditor(false);
+    if (target === "revisions" && !showRevisions) setShowRevisions(true);
+    if (target === "pending" && !showPendingChanges) setShowPendingChanges(true);
+    if (target === "mess" && !showMessEditor) setShowMessEditor(true);
+    if (target === "transport" && !showTransportEditor) setShowTransportEditor(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // state -> URL (open only): push one entry when a wiki modal opens, clearing
+  // the settings/overlay params so the modal systems don't fight over the URL.
+  const lastPushedWmodal = useRef<string | null>(null);
+  if (lastPushedWmodal.current === null && typeof window !== "undefined") {
+    lastPushedWmodal.current = window.location.search.replace(/^\?/, "");
+  }
+  useEffect(() => {
+    let desired: string | null = null;
+    if (showRevisions) desired = "revisions";
+    else if (showPendingChanges) desired = "pending";
+    else if (showMessEditor) desired = "mess";
+    else if (showTransportEditor) desired = "transport";
+    if (!desired) {
+      lastPushedWmodal.current = "";
+      return;
+    }
+    const qs = buildQuery(window.location.search.slice(1), {
+      wmodal: desired,
+      settings: null,
+      overlay: null,
+    });
+    if (qs !== lastPushedWmodal.current) {
+      lastPushedWmodal.current = qs;
+      router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showRevisions, showPendingChanges, showMessEditor, showTransportEditor]);
 
   useEffect(() => {
     const savedRight = localStorage.getItem("wiki-right-sidebar-width");
@@ -870,7 +915,7 @@ export default function WikiClient({
       {isMessMenu && (
         <MessMenuOverlay
           isOpen={showMessEditor}
-          onClose={() => setShowMessEditor(false)}
+          onClose={() => router.back()}
           messMenu={messMenuProp}
         />
       )}
@@ -878,7 +923,7 @@ export default function WikiClient({
       {isTransport && (
         <TransportOverlay
           isOpen={showTransportEditor}
-          onClose={() => setShowTransportEditor(false)}
+          onClose={() => router.back()}
           transport={transportProp}
         />
       )}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { parseModalParams, buildQuery } from "@/lib/modalUrl";
 import {
   Search,
   Bookmark as BookmarkIcon,
@@ -298,7 +299,7 @@ export default function HomePage() {
       Component: NewPagesOverlay,
       props: {
         isOpen: activeOverlay === "new",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         newPages,
         getRelativeTime,
         hasMore: newPagesHasMore,
@@ -309,7 +310,7 @@ export default function HomePage() {
       Component: UpdatedPagesOverlay,
       props: {
         isOpen: activeOverlay === "updated",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         updatedPages,
         getRelativeTime,
         hasMore: updatedPagesHasMore,
@@ -320,7 +321,7 @@ export default function HomePage() {
       Component: PendingPagesOverlay,
       props: {
         isOpen: activeOverlay === "pending",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         pendingPages,
         getRelativeTime,
         handleReview: (pendingId: number, action: "approve" | "reject") =>
@@ -335,7 +336,7 @@ export default function HomePage() {
       Component: NewsOverlay,
       props: {
         isOpen: activeOverlay === "news",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         getRelativeTime,
       },
     },
@@ -343,7 +344,7 @@ export default function HomePage() {
       Component: TriviaOverlay,
       props: {
         isOpen: activeOverlay === "trivia",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         triviaPages,
         activeTriviaItem,
         setActiveTriviaItem,
@@ -370,7 +371,7 @@ export default function HomePage() {
       Component: HistoryOverlay,
       props: {
         isOpen: activeOverlay === "history",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         historyPages,
         activeHistoryItem,
         setActiveHistoryItem,
@@ -400,7 +401,7 @@ export default function HomePage() {
       Component: EditorsOverlay,
       props: {
         isOpen: activeOverlay === "editors",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         editors,
       },
     },
@@ -408,7 +409,7 @@ export default function HomePage() {
       Component: MessMenuOverlay,
       props: {
         isOpen: activeOverlay === "mess",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         messMenu,
         onSaved: () => loadHomeData({ user, setTotalPagesCount, forceRefresh: true }),
       },
@@ -417,14 +418,14 @@ export default function HomePage() {
       Component: FeaturedEditOverlay,
       props: {
         isOpen: activeOverlay === "featured-edit",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
       },
     },
     transport: {
       Component: TransportOverlay,
       props: {
         isOpen: activeOverlay === "transport",
-        onClose: () => setActiveOverlay(null),
+        onClose: () => router.back(),
         transport: campusTransport,
       },
     },
@@ -432,10 +433,7 @@ export default function HomePage() {
       Component: PortalOverlay,
       props: {
         isOpen: activeOverlay === "portal",
-        onClose: () => {
-          setActiveOverlay(null);
-          setActivePortalCategory(null);
-        },
+        onClose: () => router.back(),
         categorySlug: activePortalCategory,
       },
     },
@@ -589,6 +587,9 @@ export default function HomePage() {
         )}
       </div>
       {/* Dynamic Overlays */}
+      <Suspense fallback={null}>
+        <HomeModalUrlSync />
+      </Suspense>
       <NewPagesOverlay {...(OVERLAYS.new.props as any)} />
       <UpdatedPagesOverlay {...(OVERLAYS.updated.props as any)} />
       <PendingPagesOverlay {...(OVERLAYS.pending.props as any)} />
@@ -602,4 +603,65 @@ export default function HomePage() {
       <PortalOverlay {...(OVERLAYS.portal.props as any)} />
     </div>
   );
+}
+
+/**
+ * Keeps the home overlays in sync with the URL. Rendered inside a <Suspense>
+ * boundary so reading search params never triggers a full-page reload (which
+ * is what caused the modal to "blink" on open/close).
+ *
+ * - URL -> store: deep-link opens + browser back/forward.
+ * - store -> URL: pushes ONE new history entry when an overlay opens, so the
+ *   browser back button closes it. A ref guards against re-pushing the same
+ *   URL, and the effect only pushes on open (close is handled by router.back()).
+ *   Opening an overlay also clears the settings/wmodal params so the two
+ *   modal systems don't leave each other's params dangling in the address bar.
+ */
+function HomeModalUrlSync() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const {
+    activeOverlay,
+    setActiveOverlay,
+    activePortalCategory,
+    setActivePortalCategory,
+  } = useHomeStore();
+
+  const lastPushed = useRef<string | null>(null);
+  if (lastPushed.current === null && typeof window !== "undefined") {
+    lastPushed.current = window.location.search.replace(/^\?/, "");
+  }
+
+  // URL -> store
+  useEffect(() => {
+    const { overlay, category } = parseModalParams(searchParams);
+    if ((activeOverlay ?? null) !== (overlay ?? null)) {
+      setActiveOverlay(overlay as Parameters<typeof setActiveOverlay>[0]);
+    }
+    if ((activePortalCategory ?? null) !== (category ?? null)) {
+      setActivePortalCategory(category);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // store -> URL (open only)
+  useEffect(() => {
+    if (!activeOverlay) {
+      lastPushed.current = "";
+      return;
+    }
+    const desired = buildQuery(window.location.search.slice(1), {
+      overlay: activeOverlay,
+      category: activeOverlay === "portal" ? activePortalCategory : null,
+      settings: null,
+      wmodal: null,
+    });
+    if (desired !== lastPushed.current) {
+      lastPushed.current = desired;
+      router.push(desired ? `/?${desired}` : "/", { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOverlay, activePortalCategory]);
+
+  return null;
 }

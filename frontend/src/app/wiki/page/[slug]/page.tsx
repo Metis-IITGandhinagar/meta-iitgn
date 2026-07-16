@@ -2,6 +2,9 @@ import WikiClient from "../../../wiki-client";
 import Link from "next/link";
 import { apiService } from "@/api";
 
+// Wiki modals reflect state in the URL (useSearchParams); keep this dynamic.
+export const dynamic = "force-dynamic";
+
 interface WikiArticlePageProps {
   params: Promise<{
     slug: string;

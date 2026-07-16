@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { AuthProvider } from "@/context/AuthProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ProfileProvider } from "@/context/ProfileContext";
 
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { parseModalParams, buildQuery } from "@/lib/modalUrl";
 
 const SettingsModal = dynamic(() => import("@/components/SettingsModal"), {
   ssr: false,
@@ -14,7 +16,13 @@ const SettingsModal = dynamic(() => import("@/components/SettingsModal"), {
 
 function SettingsModalTrigger() {
   const { settingsTab, setSettingsTab } = useAuth();
-  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const lastPushed = React.useRef<string | null>(null);
+  if (lastPushed.current === null && typeof window !== "undefined") {
+    lastPushed.current = window.location.search.replace(/^\?/, "");
+  }
+
   React.useEffect(() => {
     const handleOpenSettings = (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -35,10 +43,41 @@ function SettingsModalTrigger() {
       window.removeEventListener("wiki_close_settings", handleCloseSettings);
     };
   }, [setSettingsTab]);
-  
+
+  // URL -> store: open the settings modal on deep-link load / back-forward.
+  React.useEffect(() => {
+    const { settings } = parseModalParams(searchParams);
+    if ((settingsTab ?? null) !== (settings ?? null)) {
+      setSettingsTab(settings as Parameters<typeof setSettingsTab>[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // store -> URL (open only): push one entry when settings opens, clearing the
+  // overlay/wmodal params so the two modal systems don't fight over the URL.
+  React.useEffect(() => {
+    if (!settingsTab) {
+      lastPushed.current = "";
+      return;
+    }
+    const desired = buildQuery(window.location.search.slice(1), {
+      settings: settingsTab,
+      overlay: null,
+      wmodal: null,
+    });
+    if (desired !== lastPushed.current) {
+      lastPushed.current = desired;
+      router.push(
+        desired ? `?${desired}` : window.location.pathname,
+        { scroll: false }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingsTab]);
+
   if (!settingsTab) return null;
-  
-  return <SettingsModal initialTab={settingsTab} onClose={() => setSettingsTab(null)} />;
+
+  return <SettingsModal initialTab={settingsTab} onClose={() => router.back()} />;
 }
 
 import { DARK_THEMES } from "@/lib/constants";
@@ -88,7 +127,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <ProfileProvider>
           {children}
-          <SettingsModalTrigger />
+          <Suspense fallback={null}>
+            <SettingsModalTrigger />
+          </Suspense>
         </ProfileProvider>
       </AuthProvider>
     </GoogleOAuthProvider>

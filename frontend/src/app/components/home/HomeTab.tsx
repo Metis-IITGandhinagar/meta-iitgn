@@ -91,13 +91,10 @@ const HOME_HIDDEN_CARDS_KEY = "meta_iitgn_home_hidden_cards";
 const CARD_LABELS: Record<string, string> = {
   "featured-article": "Featured Article",
   "in-the-news": "In the News",
-  "did-you-know": "Did You Know?",
-  "on-this-day": "On This Day",
   contributors: "Wiki Contributors",
   "new-pages": "New Pages",
   "updated-pages": "Updated Pages",
   "pending-pages": "Pending Review",
-  "upcoming-events": "Upcoming Events",
   "popular-pages": "Popular Pages",
   "random-page": "Random Page",
   "mess-menu": "Today's Mess Menu",
@@ -114,7 +111,7 @@ const CARD_GROUPS: { title: string; ids: string[] }[] = [
   },
   {
     title: "Community",
-    ids: ["did-you-know", "on-this-day", "photo-of-week", "upcoming-events"],
+    ids: ["photo-of-week"],
   },
   { title: "Campus Services", ids: ["mess-menu", "campus-transport"] },
 ];
@@ -158,12 +155,6 @@ function parseTodayMessMenu(markdown: string): MessDay | null {
 }
 
 // ── Format event date ─────────────────────────────────────────────────────────
-function formatEventDate(dateStr: string, recur_day?: string | null, recur_time?: string | null): string {
-  if (recur_day) return `Every ${recur_day}${recur_time ? " · " + recur_time : ""}`;
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) + (recur_time ? " · " + recur_time : "");
-}
-
 // Next upcoming trip from a flat list of trips, given minutes-since-midnight.
 // Wraps to the first trip of the day if none remain today.
 function nextTrip(trips: TransportTrip[], nowMinutes: number): TransportTrip | null {
@@ -372,9 +363,6 @@ export default function HomeTab({
     "campus-transport": 2,
     "featured-article": 3,
     "in-the-news": 4,
-    "did-you-know": 5,
-    "on-this-day": 6,
-    "upcoming-events": 7,
     "popular-pages": 8,
     contributors: 9,
     "random-page": 10,
@@ -530,70 +518,6 @@ export default function HomeTab({
       ),
     },
 
-    // ── 3. Did You Know? ──────────────────────────────────────────────────────
-    {
-      id: "did-you-know",
-      content: (
-        <HomeCard
-          title="Did You Know?"
-          accentColor="accent"
-          footer={
-            <button onClick={() => setShowAllTrivia(true)} className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider cursor-pointer">
-              More trivia
-            </button>
-          }
-        >
-          {triviaPages.length > 0 ? (
-            <div onClick={() => { setActiveTriviaItem(triviaPages[0]); setShowAllTrivia(true); }} className="cursor-pointer group">
-              <h4 className="text-xs font-bold text-base-content group-hover:text-primary transition-colors mb-1">{triviaPages[0].title}</h4>
-              <p className="text-xs text-base-content/60 leading-relaxed font-semibold line-clamp-4">
-                {triviaPages[0].content ? triviaPages[0].content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : triviaPages[0].description}
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs text-base-content/60 leading-relaxed font-semibold">
-              Hostels at IIT Gandhinagar are named after famous rivers — Sabarmati, Narmada, Shipra, and more.
-            </p>
-          )}
-        </HomeCard>
-      ),
-    },
-
-    // ── 4. On This Day ────────────────────────────────────────────────────────
-    {
-      id: "on-this-day",
-      content: (
-        <HomeCard
-          title="On This Day"
-          icon={<Calendar className="h-4 w-4" />}
-          accentColor="success"
-          badge={
-            <span className="text-primary text-xs font-extrabold">
-              {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-            </span>
-          }
-          footer={
-            <button onClick={() => setShowAllHistory(true)} className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider cursor-pointer">
-              History timeline
-            </button>
-          }
-        >
-          {historyPages.length > 0 ? (
-            <div onClick={() => { setActiveHistoryItem(historyPages[0]); setShowAllHistory(true); }} className="cursor-pointer group">
-              <h4 className="text-xs font-bold text-base-content group-hover:text-primary transition-colors mb-1">{historyPages[0].title}</h4>
-              <p className="text-xs text-base-content/60 leading-relaxed font-semibold line-clamp-4">
-                {historyPages[0].content ? historyPages[0].content.replace(/---[\s\S]*?---/, "").replace(/#[\s\S]*?\n/, "").trim() : historyPages[0].description}
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs text-base-content/60 leading-relaxed font-semibold">
-              In 2015, IIT Gandhinagar completed the transition to its permanent campus in Palaj.
-            </p>
-          )}
-        </HomeCard>
-      ),
-    },
-
     // ── 5. Wiki Contributors ─────────────────────────────────────────────────
     {
       id: "contributors",
@@ -742,46 +666,6 @@ export default function HomeTab({
                 );
               })}
             </ul>
-          )}
-        </HomeCard>
-      ),
-    },
-
-    // ── 9. Upcoming Events ────────────────────────────────────────────────────
-    {
-      id: "upcoming-events",
-      content: (
-        <HomeCard
-          title="Upcoming Events"
-          icon={<Calendar className="h-4 w-4" />}
-          accentColor="secondary"
-          badge={<span className="badge badge-primary badge-sm rounded-2xl">This week</span>}
-          footer={
-            <Link href="/wiki/page/upcoming-events" className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider gap-1">
-              All events <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          }
-        >
-          {dynamicDataLoading && upcomingEvents.length === 0 ? (
-            <div className="flex items-center gap-2 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs text-base-content/50">Loading…</span>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {upcomingEvents.slice(0, 3).map((event) => (
-                <div key={event.event_id || event.slug} className="rounded-xl border border-base-200 bg-base-200/40 p-3">
-                  <p className="text-sm font-black text-base-content">{event.title}</p>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/50 mt-0.5">
-                    {formatEventDate(event.event_date, event.recur_day, event.recur_time)}
-                  </p>
-                  <p className="text-xs text-base-content/60 mt-1 line-clamp-1">{event.location}</p>
-                </div>
-              ))}
-              {upcomingEvents.length === 0 && (
-                <p className="text-xs text-base-content/50">No upcoming events. Check back soon!</p>
-              )}
-            </div>
           )}
         </HomeCard>
       ),
@@ -1096,12 +980,20 @@ export default function HomeTab({
     <>
       {/* ── Mountain Hero Banner ───────────────────────────────────────────── */}
       <div className="relative w-full h-[85vh] lg:h-dvh min-h-125 hidden md:flex flex-col items-center justify-center text-center p-6 bg-primary overflow-hidden select-none">
-        <ParallaxBackground mousePos={mousePos} imageSrc="/homepage_bg.png" overlayClass="bg-linear-to-b via-slate-900/45 to-slate-950/65" />
+        <ParallaxBackground mousePos={mousePos} imageSrc="/homepage_bg.png" overlayClass="" />
 
         <style>{`
           @keyframes gradient-x { 0%, 100% { background-position: 0% 50%; } 55% { background-position: 100% 50%; } }
           @keyframes slide-up-fade { 0% { opacity: 0; transform: translateY(120px); } 100% { opacity: 1; transform: translateY(0); } }
           .animate-gradient-text { background-size: 200% auto; animation: gradient-x 6s ease infinite; }
+          .hero-gradient-text {
+            background-image: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+          }
           .animate-hero-content { animation: slide-up-fade 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         `}</style>
 
@@ -1110,7 +1002,7 @@ export default function HomeTab({
             <span className="text-4xl sm:text-6xl lg:text-[75px] font-light tracking-wide bg-linear-to-r from-white to-slate-200 bg-clip-text text-transparent block">
               Welcome to
             </span>
-            <span className="text-5xl sm:text-7xl lg:text-[105px] font-bold tracking-widest bg-linear-to-r from-blue-400 via-indigo-300 to-cyan-400 bg-clip-text text-transparent block mt-4 filter drop-shadow-[0_2px_10px_rgba(59,130,246,0.35)] animate-gradient-text uppercase">
+            <span className="text-5xl sm:text-7xl lg:text-[105px] font-bold tracking-widest hero-gradient-text block mt-4 animate-gradient-text uppercase">
               META IITGN
             </span>
           </h1>

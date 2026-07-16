@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
 
 interface RevisionsViewProps {
@@ -8,9 +9,9 @@ interface RevisionsViewProps {
 }
 
 export default function RevisionsView({ setShowRevisions }: RevisionsViewProps) {
+  const router = useRouter();
   const closeModal = () => {
-    setShowRevisions(false);
-    window.dispatchEvent(new CustomEvent("hide-wiki-history"));
+    router.back();
   };
 
   return (

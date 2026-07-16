@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
 import WikiReadView from "@/components/article/WikiReadView";
 import { apiService } from "../../../api";
@@ -45,6 +46,7 @@ const DraftSkeleton = () => (
 
 export default function PendingChangesView({ setShowPendingChanges, pageId }: PendingChangesViewProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [drafts, setDrafts] = useState<PendingDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,8 +130,7 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
   };
 
   const closeModal = () => {
-    setShowPendingChanges(false);
-    window.dispatchEvent(new CustomEvent("hide-wiki-history"));
+    router.back();
   };
 
   const isNewPageProposal = !!activeReviewDraft && !activeReviewDraft.page_id;

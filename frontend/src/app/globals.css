@@ -378,6 +378,42 @@ html[data-font-style="mono"] article {
   animation: loading-bar 1.2s infinite linear;
 }
 
+/* Meta IITGN loading screen — zoom-in splash.
+   The wordmark starts small and centred, then scales up so it
+   grows past the screen edges (clipped by the overflow-hidden
+   container) as if we are zooming into the middle of it. */
+@keyframes meta-zoom-in {
+  0% {
+    font-size: 6vw;
+    opacity: 0;
+    letter-spacing: 0.2em;
+  }
+
+  18% {
+    font-size: 9vw;
+    opacity: 1;
+    letter-spacing: 0.12em;
+  }
+
+  72% {
+    font-size: 14vw;
+    opacity: 1;
+    letter-spacing: 0.04em;
+  }
+
+  100% {
+    font-size: 16vw;
+    opacity: 0;
+    letter-spacing: 0.02em;
+  }
+}
+
+.animate-loading-zoom {
+  transform-origin: center center;
+  will-change: font-size, opacity;
+  animation: meta-zoom-in 2.6s ease-in-out infinite;
+}
+
 /* BlockNote Theme Fix for DaisyUI Theme Sync */
 .bn-container,
 .bn-editor,
