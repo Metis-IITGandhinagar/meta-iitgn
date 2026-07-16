@@ -197,7 +197,7 @@ export default function HomeTab({
 }: HomeTabProps) {
   const { categories, activeTier, user } = useAuth();
   const router = useRouter();
-  const isGold = activeTier === "gold" || user?.role === "admin";
+  const isGold = activeTier === "gold" || user?.role === "admin" || user?.role === "moderator";
 
   // ── Card visibility preferences (local only) ───────────────────────────────
   const [hiddenCards, setHiddenCards] = useState<Set<string>>(() => {

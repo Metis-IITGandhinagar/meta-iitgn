@@ -21,8 +21,8 @@ router.get("/recent/updated", getRecentUpdatedPages);
 // Popular & featured
 router.get("/popular", getPopularPages);
 router.get("/featured", getFeaturedPages);
-router.post("/featured", checkAuth, protect("admin"), setFeaturedPage);
-router.delete("/featured/:featured_id", checkAuth, protect("admin"), removeFeaturedPage);
+router.post("/featured", checkAuth, protect("admin", "moderator"), setFeaturedPage);
+router.delete("/featured/:featured_id", checkAuth, protect("admin", "moderator"), removeFeaturedPage);
 
 // Events
 router.get("/events", getEvents);
