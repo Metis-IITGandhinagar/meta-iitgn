@@ -479,6 +479,15 @@ html[data-font-style="mono"] article {
   --primary-foreground: var(--color-primary-content, var(--pc, #ffffff)) !important;
   --muted: var(--color-base-300, var(--b3, #e5e7eb)) !important;
   --muted-foreground: color-mix(in srgb, var(--color-base-content, var(--bc, #171717)) 60%, transparent) !important;
+
+  /* BlockNote Native CSS Variable Overrides */
+  --bn-colors-editor-background: transparent !important;
+  --bn-colors-editor-text: var(--color-base-content, var(--bc, #171717)) !important;
+  --bn-colors-menu-background: var(--color-base-100, var(--b1, #ffffff)) !important;
+  --bn-colors-menu-text: var(--color-base-content, var(--bc, #171717)) !important;
+  --bn-colors-tooltip-background: var(--color-base-300, var(--b3, #e5e7eb)) !important;
+  --bn-colors-hovered-background: var(--color-base-200, var(--b2, #f3f4f6)) !important;
+  --bn-colors-selected-background: var(--color-base-300, var(--b3, #e5e7eb)) !important;
 }
 
 /* Fix background of select popups, menus, and file uploader panels inside BlockNote */
@@ -577,8 +586,12 @@ html[data-font-style="mono"] article {
   padding: 0 !important;
 }
 
-.bn-root {
+.bn-root,
+.bn-container,
+.bn-editor {
   padding: 0 !important;
+  background-color: transparent !important;
+  color: var(--color-base-content) !important;
 }
 
 @media (max-width: 768px) {
