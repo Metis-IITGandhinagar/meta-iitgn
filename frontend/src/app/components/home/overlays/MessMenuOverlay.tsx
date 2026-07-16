@@ -247,26 +247,49 @@ export default function MessMenuOverlay({
 
   if (!isOpen) return null;
 
+  const headerActions = editing ? (
+    <>
+      <button
+        onClick={handleClose}
+        disabled={saving}
+        className="btn btn-ghost btn-xs"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="btn btn-success btn-xs gap-1.5 font-bold"
+      >
+        {saving ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting…
+          </>
+        ) : (
+          <>
+            <Save className="h-3.5 w-3.5" /> Submit for review
+          </>
+        )}
+      </button>
+    </>
+  ) : canEdit ? (
+    <button
+      onClick={handleEdit}
+      className="btn btn-xs btn-outline border-success/40 text-success hover:bg-success hover:text-success-content gap-1.5 font-bold"
+    >
+      <Pencil className="h-3.5 w-3.5" /> Edit menu
+    </button>
+  ) : null;
+
   return (
     <GenericOverlayModal
       isOpen={isOpen}
       onClose={handleClose}
       title={editing ? "Edit Mess Menu" : "Weekly Mess Menu"}
       headerColorClass="text-success bg-base-200"
+      headerActions={headerActions}
     >
       <div className="max-w-3xl mx-auto w-full">
-        {/* Action bar */}
-        {!editing && canEdit && (
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={handleEdit}
-              className="btn btn-sm btn-outline border-success/40 text-success hover:bg-success hover:text-success-content gap-1.5 font-bold"
-            >
-              <Pencil className="h-3.5 w-3.5" /> Edit menu
-            </button>
-          </div>
-        )}
-
         {error && (
           <div className="alert alert-error text-xs mb-3 py-2">{error}</div>
         )}
@@ -486,27 +509,6 @@ export default function MessMenuOverlay({
                 ) : null}
               </div>
             )}
-
-            <div className="flex justify-end gap-2 pt-1">
-              <button onClick={handleClose} disabled={saving} className="btn btn-ghost btn-sm">
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn btn-success btn-sm gap-1.5 font-bold"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting…
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-3.5 w-3.5" /> Submit for review
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         ) : (
           <MessMenuView content={messMenu?.content} />

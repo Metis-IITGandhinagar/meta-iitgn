@@ -25,6 +25,7 @@ import {
   Printer,
   AlertTriangle,
 } from "lucide-react";
+import Avatar from "@/components/Avatar";
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -96,10 +97,6 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState(externalQuery || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-
-  const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-  };
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -231,19 +228,11 @@ export default function Navbar({
                 }}
                 className="flex items-center gap-2 py-1.5 px-3 rounded-full transition-all duration-200 cursor-pointer active:scale-97"
               >
-                {user.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt={user.name}
-                    className="w-7 h-7 rounded-full shadow-inner object-cover"
-                  />
-                ) : (
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-primary-content shadow-inner transition-colors duration-300 ${activeTierData.progressBar}`}
-                  >
-                    {getInitials(user.name)}
-                  </div>
-                )}
+                <Avatar
+                  email={user.email}
+                  name={user.name}
+                  className="w-7 h-7 rounded-full shadow-inner object-cover"
+                />
                 <span className="text-sm font-bold text-base-content hidden sm:inline">
                   {user.name}
                 </span>
@@ -264,19 +253,11 @@ export default function Navbar({
                 >
                   {/* Header info */}
                   <div className="flex items-center gap-3 pb-3 border-b border-base-200">
-                    {user.avatar_url ? (
-                      <img
-                        src={user.avatar_url}
-                        alt={user.name}
-                        className={`w-14 h-14 rounded-2xl border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0 object-cover`}
-                      />
-                    ) : (
-                      <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-base-content bg-base-200 border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0`}
-                      >
-                        {getInitials(user.name)}
-                      </div>
-                    )}
+                    <Avatar
+                      email={user.email}
+                      name={user.name}
+                      className={`w-14 h-14 rounded-2xl border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0 object-cover`}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <h3 className="text-base font-bold text-base-content truncate">

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowRight, BookOpen, PlusCircle, Calendar, User as UserIcon } from "lucide-react";
+import { ArrowRight, BookOpen, PlusCircle, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
+import Avatar from "@/components/Avatar";
 
 interface BlogAuthor {
   user_id: number;
@@ -158,17 +159,11 @@ export default function BlogGridPage() {
                     <div className="pt-6 flex items-center justify-between border-t border-base-200 mt-4">
                       {/* Author Info */}
                       <div className="flex items-center gap-2">
-                        {blog.original_author.avatar_url ? (
-                          <img
-                            src={blog.original_author.avatar_url}
-                            alt={blog.original_author.name}
-                            className="h-6 w-6 rounded-full object-cover border border-base-300"
-                          />
-                        ) : (
-                          <div className="h-6 w-6 rounded-full bg-base-200 flex items-center justify-center border border-base-300 text-base-content/60">
-                            <UserIcon className="h-3.5 w-3.5" />
-                          </div>
-                        )}
+                        <Avatar
+                          seed={String(blog.original_author.user_id)}
+                          name={blog.original_author.name}
+                          className="h-6 w-6 rounded-full object-cover border border-base-300"
+                        />
                         <span className="text-[11px] font-bold text-base-content/70 truncate max-w-[120px]">
                           {blog.original_author.name}
                         </span>

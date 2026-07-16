@@ -140,7 +140,7 @@ export default function GenericOverlayModal({
           <div className="flex items-center justify-end gap-1">
             {headerActions}
             {headerActions ? (
-              <span className="mx-1 h-5 w-px bg-base-300/80" aria-hidden="true" />
+              <span className="mx-1.5 h-5 w-px bg-base-content/20" aria-hidden="true" />
             ) : null}
             {headerTrailing ?? <ProfilePopover />}
             <button

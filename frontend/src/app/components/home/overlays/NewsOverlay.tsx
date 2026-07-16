@@ -97,6 +97,26 @@ export default function NewsOverlay({
 
   if (!isOpen) return null;
 
+  const headerActions = canManageNews ? (
+    showAddNewsForm ? (
+      <button
+        type="submit"
+        form="add-news-form"
+        disabled={isSubmittingNews}
+        className="btn btn-primary btn-xs px-3 font-bold rounded-lg shadow-sm cursor-pointer transition-all duration-150 active:scale-97"
+      >
+        {isSubmittingNews ? "Publishing..." : "Publish News"}
+      </button>
+    ) : !selectedNews ? (
+      <button
+        onClick={() => setShowAddNewsForm(true)}
+        className="btn btn-primary btn-xs px-3 font-bold rounded-lg shadow-sm cursor-pointer transition-all duration-150 active:scale-97"
+      >
+        Add News
+      </button>
+    ) : null
+  ) : null;
+
   return (
     <GenericOverlayModal
       isOpen={isOpen}
@@ -111,21 +131,11 @@ export default function NewsOverlay({
       }}
       title={showAddNewsForm ? "Add Campus News" : selectedNews ? selectedNews.title : "Campus News"}
       headerColorClass="text-blue-500 bg-base-200"
+      headerActions={headerActions}
     >
       <div className="max-w-3xl mx-auto space-y-4 w-full">
-        {!showAddNewsForm && canManageNews && (
-          <div className="flex justify-end mb-2">
-            <button
-              onClick={() => setShowAddNewsForm(true)}
-              className="btn btn-primary btn-sm px-4 font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all duration-150 active:scale-97"
-            >
-              Add News
-            </button>
-          </div>
-        )}
-
         {showAddNewsForm ? (
-          <form onSubmit={handleAddNews} className="space-y-4 bg-base-100 p-6 border border-base-350 rounded-2xl shadow-xs text-left w-full">
+          <form id="add-news-form" onSubmit={handleAddNews} className="space-y-4 bg-base-100 p-6 border border-base-350 rounded-2xl shadow-xs text-left w-full">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-extrabold uppercase text-base-content/90">News Title</label>
               <input
@@ -158,13 +168,6 @@ export default function NewsOverlay({
                 className="w-full border border-base-300 bg-base-100 text-base-content/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none font-semibold"
               />
             </div>
-            <button
-              type="submit"
-              disabled={isSubmittingNews}
-              className="btn btn-primary btn-md w-full font-bold text-sm rounded-xl cursor-pointer transition-all duration-150 active:scale-97"
-            >
-              {isSubmittingNews ? "Publishing..." : "Publish News"}
-            </button>
           </form>
         ) : selectedNews ? (
           <div className="space-y-5">

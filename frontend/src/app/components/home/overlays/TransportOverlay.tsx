@@ -211,26 +211,49 @@ export default function TransportOverlay({
 
   if (!isOpen) return null;
 
+  const headerActions = editing ? (
+    <>
+      <button
+        onClick={handleClose}
+        disabled={saving}
+        className="btn btn-ghost btn-xs"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="btn btn-secondary btn-xs gap-1.5 font-bold"
+      >
+        {saving ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting…
+          </>
+        ) : (
+          <>
+            <Save className="h-3.5 w-3.5" /> Submit for review
+          </>
+        )}
+      </button>
+    </>
+  ) : canEdit ? (
+    <button
+      onClick={handleEdit}
+      className="btn btn-xs btn-outline border-secondary/40 text-secondary hover:bg-secondary hover:text-secondary-content gap-1.5 font-bold"
+    >
+      <Pencil className="h-3.5 w-3.5" /> Edit schedule
+    </button>
+  ) : null;
+
   return (
     <GenericOverlayModal
       isOpen={isOpen}
       onClose={handleClose}
       title={editing ? "Edit Transport" : "Campus Transport"}
       headerColorClass="text-secondary bg-base-200"
+      headerActions={headerActions}
     >
       <div className="max-w-3xl mx-auto w-full">
-        {/* Action bar */}
-        {!editing && canEdit && (
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={handleEdit}
-              className="btn btn-sm btn-outline border-secondary/40 text-secondary hover:bg-secondary hover:text-secondary-content gap-1.5 font-bold"
-            >
-              <Pencil className="h-3.5 w-3.5" /> Edit schedule
-            </button>
-          </div>
-        )}
-
         {error && <div className="alert alert-error text-xs mb-3 py-2">{error}</div>}
         {success && <div className="alert alert-secondary text-xs mb-3 py-2">{success}</div>}
 
@@ -422,27 +445,6 @@ export default function TransportOverlay({
                 </button>
               </div>
             )}
-
-            <div className="flex justify-end gap-2 pt-1">
-              <button onClick={handleClose} disabled={saving} className="btn btn-ghost btn-sm">
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn btn-secondary btn-sm gap-1.5 font-bold"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting…
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-3.5 w-3.5" /> Submit for review
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         ) : (
           <TransportView content={transport?.content} />
