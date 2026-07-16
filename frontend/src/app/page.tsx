@@ -7,11 +7,11 @@ import {
   Search,
   Bookmark as BookmarkIcon,
   Home,
-  User,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import BottomNavbar from "@/components/BottomNavbar";
+import AvatarIcon from "@/components/AvatarIcon";
 import Loading from "./loading";
 
 // Subcomponents
@@ -228,8 +228,8 @@ export default function HomePage() {
     },
     {
       id: "profile",
-      label: "User",
-      icon: User,
+      label: "Profile",
+      icon: AvatarIcon,
       onClick: () => setActiveTab("profile"),
     },
   ];
@@ -474,6 +474,7 @@ export default function HomePage() {
               {homeTabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
+                const isProfile = tab.id === "profile";
 
                 const buttonStyle = isActive
                   ? "bg-primary text-primary-content border border-transparent shadow-xs"
@@ -485,7 +486,7 @@ export default function HomePage() {
                     onClick={tab.onClick}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer ${buttonStyle}`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className={isProfile ? "h-5 w-5" : "h-3.5 w-3.5"} />
                     {tab.label}
                   </button>
                 );

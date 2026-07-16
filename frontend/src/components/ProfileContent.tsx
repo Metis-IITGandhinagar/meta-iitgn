@@ -23,7 +23,10 @@ import {
   Trash2,
   ArrowRight,
   LogOut,
+  Shuffle,
 } from "lucide-react";
+import Avatar from "@/components/Avatar";
+import { shuffleAvatarSeed } from "@/lib/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { apiService } from "@/api";
 import { db } from "@/lib/db";
@@ -44,6 +47,9 @@ export default function ProfileContent() {
   const [editReadmeContent, setEditReadmeContent] = useState("");
   const userIdParam = searchParams?.get("userId");
   const targetUserId = userIdParam ? Number(userIdParam) : currentUser?.user_id;
+  const isOwnProfile =
+    !!currentUser &&
+    (!userIdParam || Number(userIdParam) === currentUser.user_id);
 
   const handleSaveReadme = async () => {
     setIsSavingReadme(true);
@@ -225,12 +231,6 @@ export default function ProfileContent() {
   }
 
   const name = profileUser?.name || "Campus Contributor";
-  const initials = name
-    .split(" ")
-    .map((part: string) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
   const joined = profileUser?.created_at
     ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(
         new Date(profileUser.created_at)
@@ -262,17 +262,29 @@ export default function ProfileContent() {
           {/* Avatar - overlaps banner */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between -mt-10">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="h-20 w-20 rounded-2xl border-4 border-base-100 bg-base-200 flex items-center justify-center text-xl font-black text-base-content shadow-lg shrink-0 overflow-hidden">
-                {dataLoading ? (
-                  <div className="h-full w-full bg-base-300 animate-pulse" />
-                ) : profileUser?.avatar_url ? (
-                  <img
-                    src={profileUser.avatar_url}
-                    alt={name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  initials
+              <div className="relative">
+                <div className="h-20 w-20 rounded-2xl border-4 border-base-100 bg-base-200 shadow-lg shrink-0 overflow-hidden">
+                  {dataLoading ? (
+                    <div className="h-full w-full bg-base-300 animate-pulse" />
+                  ) : (
+                    <Avatar
+                      email={profileUser?.email}
+                      name={name}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+                </div>
+
+                {isOwnProfile && !dataLoading && (
+                  <button
+                    type="button"
+                    onClick={() => currentUser && shuffleAvatarSeed(currentUser.email)}
+                    title="Shuffle avatar"
+                    aria-label="Shuffle avatar"
+                    className="absolute -bottom-2 -right-2 btn btn-circle btn-xs bg-base-100 border border-base-300 shadow hover:bg-base-200 text-base-content transition-colors cursor-pointer"
+                  >
+                    <Shuffle className="h-3.5 w-3.5" />
+                  </button>
                 )}
               </div>
 

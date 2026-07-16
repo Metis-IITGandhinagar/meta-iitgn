@@ -4,16 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { User as UserIcon, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+import Avatar from "@/components/Avatar";
 
 export default function ProfilePopover() {
   const { user, logout } = useAuth();
@@ -48,31 +39,21 @@ export default function ProfilePopover() {
         className="btn btn-circle btn-sm bg-base-200 hover:bg-base-300 border border-base-300 text-base-content cursor-pointer flex items-center justify-center overflow-hidden p-0 shrink-0"
         aria-label="Open profile menu"
       >
-        {user.avatar_url ? (
-          <img
-            src={user.avatar_url}
-            alt={user.name}
-            className="h-7 w-7 rounded-full object-cover"
-          />
-        ) : (
-          <span className="text-[11px] font-bold">{getInitials(user.name)}</span>
-        )}
+        <Avatar
+          email={user.email}
+          name={user.name}
+          className="h-7 w-7 rounded-full object-cover"
+        />
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-64 card card-bordered bg-base-100 shadow-xl p-4 z-[80] animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center gap-3 pb-3 border-b border-base-200">
-            {user.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt={user.name}
-                className="h-12 w-12 rounded-2xl object-cover border-2 border-base-300 shrink-0"
-              />
-            ) : (
-              <div className="h-12 w-12 rounded-2xl bg-base-200 border-2 border-base-300 flex items-center justify-center font-bold text-base-content shrink-0">
-                {getInitials(user.name)}
-              </div>
-            )}
+            <Avatar
+              email={user.email}
+              name={user.name}
+              className="h-12 w-12 rounded-2xl object-cover border-2 border-base-300 shrink-0"
+            />
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-bold text-base-content truncate">{user.name}</h3>
               <p className="text-xs text-base-content/60 truncate">{user.email}</p>
