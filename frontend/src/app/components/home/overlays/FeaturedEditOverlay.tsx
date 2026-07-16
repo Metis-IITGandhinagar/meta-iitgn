@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Search, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
@@ -18,7 +17,6 @@ export default function FeaturedEditOverlay({
   isOpen,
   onClose,
 }: FeaturedEditOverlayProps) {
-  const router = useRouter();
   const { activeTier, user } = useAuth();
   const isGold = activeTier === "gold" || user?.role === "admin" || user?.role === "moderator";
 
@@ -143,16 +141,12 @@ export default function FeaturedEditOverlay({
                   className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl pl-9 pr-3 py-2.5 text-sm text-base-content placeholder-base-content/40 bg-base-100 focus:outline-none transition-all duration-150 shadow-sm"
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  router.push("/wiki/page/new?title=New%20Featured%20Article&category=Featured");
-                }}
-                className="btn btn-primary rounded-xl font-bold text-xs gap-1.5 shrink-0 cursor-pointer"
+              <Link
+                href="/wiki/page/new?title=New%20Featured%20Article&category=Featured"
+                className="btn btn-primary rounded-xl font-bold text-xs gap-1.5 shrink-0 cursor-pointer flex items-center justify-center text-primary-content hover:text-primary-content"
               >
                 <Plus className="h-4 w-4" /> Create & Feature
-              </button>
+              </Link>
             </div>
 
             {searching && (

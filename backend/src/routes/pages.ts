@@ -2,10 +2,10 @@ import { Router } from "express";
 import {
   getPage, getRecentNewPages, getRecentUpdatedPages, searchPages, getPageStats,
   createPage, updatePage, deletePage, getPageCount, getSyncCheck, getPageForEdit,
-  getPageById, getPopularPages, incrementViewCount, getFeaturedPages, setFeaturedPage,
-  removeFeaturedPage, getEvents, getMessMenu, getCampusTransport
+  getPageById, getPopularPages, incrementViewCount
 } from "../controllers/page.controller.js";
 import { checkAuth, protect, checkAuthOptional } from "../middlewares/auth.js";
+import featuredRouter from "./featured.js";
 
 const router = Router();
 
@@ -20,16 +20,7 @@ router.get("/recent/updated", getRecentUpdatedPages);
 
 // Popular & featured
 router.get("/popular", getPopularPages);
-router.get("/featured", getFeaturedPages);
-router.post("/featured", checkAuth, protect("admin", "moderator"), setFeaturedPage);
-router.delete("/featured/:featured_id", checkAuth, protect("admin", "moderator"), removeFeaturedPage);
-
-// Events
-router.get("/events", getEvents);
-
-// Special wiki pages (mess menu, transport)
-router.get("/special/mess-menu", getMessMenu);
-router.get("/special/campus-transport", getCampusTransport);
+router.use("/featured", featuredRouter);
 
 // Search
 router.get("/search", searchPages);

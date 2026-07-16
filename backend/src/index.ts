@@ -8,6 +8,7 @@ import NewsRouter from "./routes/news.js"
 import MediaRouter from "./routes/media.js"
 import BookmarksRouter from "./routes/bookmarks.js"
 import BlogRouter from "./routes/blogs.js"
+import CollegeInfoRouter from "./routes/collegeinfo.js"
 
 const router = Router();
 
@@ -17,6 +18,9 @@ router.use("/user", UserRouter);
 
 // Pages routes
 router.use("/pages",PageRouter);
+
+// College Info routes (events, mess menu, campus transport)
+router.use("/collegeinfo", CollegeInfoRouter);
 
 // Drafts / Workflows routes
 router.use("/drafts",DraftRouter)
