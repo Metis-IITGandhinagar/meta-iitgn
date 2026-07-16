@@ -9,6 +9,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import hljs from "highlight.js";
+import { blogSchema } from "./schema";
 
 interface BlockNoteReaderProps {
   contentJson?: string | null;
@@ -78,7 +79,9 @@ interface BlockNoteJSONRendererProps {
 
 // Dedicated renderer for BlockNote JSON content to optimize performance and prevent unnecessary editor recreation
 function BlockNoteJSONRenderer({ blocks, theme }: BlockNoteJSONRendererProps) {
-  const editor = useCreateBlockNote();
+  const editor = useCreateBlockNote({
+    schema: blogSchema,
+  });
   const [isReady, setIsReady] = useState(false);
   const isInitialized = useRef(false);
 

@@ -5,6 +5,7 @@ import { BlockNoteView } from "@blocknote/shadcn";
 import { useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/shadcn/style.css";
 import { useEffect, useRef } from "react";
+import { blogSchema } from "./schema";
 
 interface BlockNoteEditorProps {
   initialContent?: string;
@@ -20,6 +21,7 @@ export default function BlockNoteEditor({
   theme,
 }: BlockNoteEditorProps) {
   const editor = useCreateBlockNote({
+    schema: blogSchema,
     uploadFile,
   });
 
