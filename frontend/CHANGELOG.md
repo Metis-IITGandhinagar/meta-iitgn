@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.2.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.1.0...frontend-v1.2.0) (2026-07-17)
+
+
+### Features
+
+* added most settings ([3a145fc](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3a145fc81a1969d37bd07a22ce90973f9fe24a11))
+* better cards ([06b1e2b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/06b1e2b89e176851dbca1c88f13c3cb9c813968f))
+* better theme support ([1290b88](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/1290b88907bd587e99e4d50d3aba56c40757c627))
+* improved themes ([5a5b42b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5a5b42b32bb8e351591c0f0943c9fb7e87ebb604))
+* profile avatars ([32b3198](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/32b319855292ec450e96e974734e68cd428eb26f))
+* routes for all modals ([8f36395](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/8f36395773d3ade66099384a2b3d5b7dc1173374))
+
+
+### Bug Fixes
+
+* added custon skeleton loading pages and fix blog page themes ([6af6032](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/6af60324e96f23aff6ed7bcd696ea506a82c61ff))
+* editor toolbar scroll problem and theme ([00e96cd](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/00e96cdb147bc6a85a75f1ac4db7a4ef583d3275))
+* fixed blog ui in mobile ([c35903d](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c35903dcf9177a85ce84ef829bf595baab4e2f21))
+* fixed the browse wiki link ([777157b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/777157b89b879a13201f2ed8e2e5b18142a312e7))
+* navbar hidding bug and theme issues in peding and revison history ([ff881bc](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ff881bcd1fee832334aa6d2a88de2d9e81e2f55d))
+* remove video direct upload from notes user can add video links ([4b8aedb](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4b8aedbdcfe99e31b5ef1030fbc2fb293bfb98f9))
+* removed contributors and added event card in home page also fixed fetured article redirect issues ([678658b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/678658b86585ee31a32224ed4ed921e4fe397572))
+* sidebar margin and image issue ([348cecc](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/348ceccb958dec339316375b782e2997a20551cf))
+
+
+### Code Refactoring
+
+* added profile readme add option and routes ([b0b221f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b0b221fe27f40964354b0ceb9c3bf7b896eaa302))
+* fixed edior and blogs image handling to upload on cloud and remove unused one every 24 hours ([159c7d0](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/159c7d0cd157c6f7fd986e2552b4a0dc5a048af7))
+* removed duplicate logic for logout and login fron user profile ([bbfabef](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/bbfabefb1f1960a4441306374f924d421b14fa02))
+* seperated routes to files ([5bbf769](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5bbf76904b61f8772c4a9c9af00b6d99960311a4))
+
 ## [1.1.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.0.0...frontend-v1.1.0) (2026-07-15)
 
 
