@@ -26,7 +26,7 @@ This repository contains the complete codebase, logically separated into the use
 
 ## 📖 Documentation
 
-For comprehensive project details, architecture overviews, and detailed setup instructions, please visit the **[Meta IITGN GitHub Wiki](https://github.com/Metis-IITGandhinagar/meta-iitgn/wiki)**.
+For comprehensive project details, architecture overviews, and detailed setup instructions, please visit the **[Meta IITGN GitHub Wiki](https://meta-iitgn-vercel.vercel.app/wiki/internal-pages)**.
 
 
 
