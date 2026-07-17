@@ -77,6 +77,14 @@ export const getUsers = async (req: Request, res: Response) => {
         orderBy: { created_at: 'desc' },
         skip,
         take: limit,
+        // Exclude email: this admin list returns other users' records.
+        select: {
+          user_id: true,
+          name: true,
+          avatar_url: true,
+          role: true,
+          created_at: true,
+        },
       }),
       prisma.users.count({
         where: { deleted_at: null },
@@ -131,6 +139,18 @@ export const updateUserRole = async (req: Request, res: Response) => {
       const updated = await tx.users.update({
         where: { user_id: userIdToUpdate },
         data: { role },
+        // Exclude email: this returns another user's record.
+        select: {
+          user_id: true,
+          name: true,
+          role: true,
+          avatar_url: true,
+          is_banned: true,
+          points: true,
+          last_login_at: true,
+          created_at: true,
+          updated_at: true,
+        },
       });
 
       await tx.audit_logs.create({
@@ -156,7 +176,20 @@ export const updateUserRole = async (req: Request, res: Response) => {
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const user = await prisma.users.findUnique({
-      where: { user_id: Number(req.params.user_id), deleted_at: null }
+      where: { user_id: Number(req.params.user_id), deleted_at: null },
+      // Exclude email so a user can never fetch another user's email via this
+      // public profile endpoint. Own email is still available via /auth/me.
+      select: {
+        user_id: true,
+        name: true,
+        role: true,
+        avatar_url: true,
+        is_banned: true,
+        points: true,
+        last_login_at: true,
+        created_at: true,
+        updated_at: true,
+      },
     });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });

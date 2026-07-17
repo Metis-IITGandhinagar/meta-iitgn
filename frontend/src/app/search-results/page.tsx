@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { BeautifulSearchBox, BeautifulTabBar } from "@/components/SearchDesign";
 import { getSearchHistory, addSearchHistory, clearSearchHistory } from "@/lib/searchHistory";
+import Avatar from "@/components/Avatar";
 
 const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   Campus: Building2,
@@ -97,7 +98,7 @@ function SearchResultsContent() {
     setHistory(getSearchHistory());
   }, []);
 
-  const autoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
+  const autoFocus = localStorage.getItem("wiki_autofocus_search") === "true";
   // "Open links in new tab" applies to internal search-result links.
   const openInNewTab = localStorage.getItem("wiki_open_new_tab") === "true";
 
@@ -223,34 +224,36 @@ function SearchResultsContent() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28">
-        {history.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 mr-1">
-              Recent
-            </span>
-            {history.map((item) => (
+        <div className="min-h-[2rem] flex flex-wrap items-center gap-2 mb-4">
+          {history.length > 0 && (
+            <>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 mr-1">
+                Recent
+              </span>
+              {history.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => {
+                    setSearchQuery(item);
+                    addSearchHistory(item);
+                  }}
+                  className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
+                >
+                  {item}
+                </button>
+              ))}
               <button
-                key={item}
                 onClick={() => {
-                  setSearchQuery(item);
-                  addSearchHistory(item);
+                  clearSearchHistory();
+                  setHistory([]);
                 }}
-                className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
+                className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 hover:text-rose-500 transition-colors cursor-pointer ml-1"
               >
-                {item}
+                Clear
               </button>
-            ))}
-            <button
-              onClick={() => {
-                clearSearchHistory();
-                setHistory([]);
-              }}
-              className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 hover:text-rose-500 transition-colors cursor-pointer ml-1"
-            >
-              Clear
-            </button>
-          </div>
-        )}
+            </>
+          )}
+        </div>
         <div className="flex items-center justify-between mb-4 select-none">
           <p className="text-[10px] font-black text-base-content/50 uppercase tracking-widest">
             {loading ? "Searching…" : `${total} result${total !== 1 ? "s" : ""} found`}
@@ -292,7 +295,13 @@ function SearchResultsContent() {
                           <span className="badge badge-warning badge-xs">Pending</span>
                         )}
                       </div>
-                      <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug">
+                      <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug flex items-center gap-2.5">
+                        {item.type === "profile" && (
+                          <Avatar
+                            name={item.title}
+                            className="h-7 w-7 rounded-full object-cover ring-1 ring-base-300 shrink-0"
+                          />
+                        )}
                         {highlightText(item.title, queryParam)}
                       </h4>
                       <p className="text-xs text-base-content/50 leading-relaxed mt-2 line-clamp-3">

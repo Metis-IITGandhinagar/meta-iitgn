@@ -7,8 +7,6 @@ import {
   Trash2,
   Search,
   X,
-  Copy,
-  Check,
   Compass,
 } from "lucide-react";
 import { db } from "@/lib/db";
@@ -57,7 +55,6 @@ export default function BookmarksTab({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const [localBookmarks, setLocalBookmarks] = useState<BookmarkItem[]>([]);
   const [limit, setLimit] = useState(5);
@@ -104,16 +101,6 @@ export default function BookmarksTab({
     const set = new Set(bookmarks.map((b) => b.category));
     return Array.from(set);
   }, [bookmarks]);
-
-  const handleCopyLink = (e: React.MouseEvent, item: BookmarkItem) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const fullUrl = `${window.location.origin}${getPagePath(item)}`;
-    navigator.clipboard.writeText(fullUrl).then(() => {
-      setCopiedId(item.id);
-      setTimeout(() => setCopiedId(null), 2000);
-    });
-  };
 
   const handleDelete = async (e: React.MouseEvent, itemId: string) => {
     e.preventDefault();
@@ -184,18 +171,17 @@ export default function BookmarksTab({
             <div className="flex-1 overflow-y-auto no-scrollbar pb-10 w-full">
               {localBookmarks.length > 0 ? (
                 <>
-                  <div className={`grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 ${
+                  <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${
                     compact ? "gap-1.5" : "gap-3"
                   }`}>
                     {localBookmarks.map((item) => {
                       const pagePath = getPagePath(item);
-                      const isCopied = copiedId === item.id;
 
                       return (
                         <div
                           key={item.id}
                           onClick={() => handleCardClick(pagePath)}
-                          className="card card-compact card-bordered bg-base-100 border-base-300/80 hover:border-primary/50 p-4 flex flex-row items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md group cursor-pointer"
+                          className="card card-compact bg-base-100 border border-base-300 hover:border-primary/50 p-4 flex flex-row items-center justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md group cursor-pointer"
                         >
                           <div className="min-w-0 flex-1 pr-3">
                             {/* Card Content (Title & Category display) */}
@@ -209,21 +195,6 @@ export default function BookmarksTab({
 
                           {/* Actions aligned on the right, compact */}
                           <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <button
-                              onClick={(e) => handleCopyLink(e, item)}
-                              className={`btn btn-square btn-xs border transition-all cursor-pointer ${
-                                isCopied
-                                  ? "btn-success bg-emerald-50 text-emerald-600 border-emerald-100"
-                                  : "btn-ghost bg-base-250 hover:bg-base-300 border-base-300 text-base-content/50"
-                              }`}
-                              title="Copy link"
-                            >
-                              {isCopied ? (
-                                <Check className="w-3.5 h-3.5 text-success" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                            </button>
                             <button
                               onClick={(e) => handleDelete(e, item.id)}
                               className="btn btn-square btn-xs btn-ghost bg-base-250 hover:bg-rose-50 border-base-300 hover:border-rose-100 text-base-content/50 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"

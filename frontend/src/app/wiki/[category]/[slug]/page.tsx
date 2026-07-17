@@ -60,8 +60,8 @@ export default async function ArticlePage({ params, searchParams }: ArticlePageP
     const displayCategoryName = category.charAt(0).toUpperCase() + category.slice(1);
     const displayTitle = title ? title : "Untitled Article";
     const template = `---
-image: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600
-imageAlt: New Article
+image:
+imageAlt:
 rows:
   - label: Category
     value: ${displayCategoryName}

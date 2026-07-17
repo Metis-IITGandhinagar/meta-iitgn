@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowRight, BookOpen, PlusCircle, Pencil, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap } from "lucide-react";
+import { BookOpen, PlusCircle, Pencil, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
 import CategoryEditModal from "@/components/CategoryEditModal";
@@ -38,7 +38,7 @@ interface CategoryPageProps {
 }
 
 const ArticleSkeleton = () => (
-  <div className="card card-compact card-bordered flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] animate-pulse select-none">
+  <div className="card card-compact card-border w-full flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] animate-pulse select-none">
     <div className="space-y-3">
       <div className="h-4 bg-base-300 rounded-md w-3/4"></div>
       <div className="space-y-2">
@@ -120,7 +120,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   }
 
   return (
-    <main className={`flex-1 p-6 md:p-8 ${embedded ? "" : "mt-15"} bg-transparent overflow-y-auto`}>
+    <main className={`flex-1 p-6 md:p-8 ${embedded ? "" : "mt-15"} bg-transparent overflow-y-auto ${loading ? "no-scrollbar" : ""}`}>
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Category Header */}
@@ -169,7 +169,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
           </h2>
 
           {loading ? (
-            <div className="flex flex-col md:flex-row gap-6 flex-wrap w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
               <ArticleSkeleton />
               <ArticleSkeleton />
               <ArticleSkeleton />
@@ -180,11 +180,12 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             </div>
           ) : (
             <div className="w-full flex flex-col gap-8">
-              <div className="flex flex-col md:flex-row gap-6 flex-wrap">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {articles.map((article) => (
-                  <div
+                  <Link
                     key={article.slug}
-                    className="card card-compact card-bordered flex-1 min-w-75 md:max-w-[48%] lg:max-w-[32%] flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary transition-all duration-300 group"
+                    href={`/wiki/${categorySlug}/${article.slug}`}
+                    className="card card-compact card-border w-full flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary transition-all duration-300 group cursor-pointer"
                   >
                     <div className="space-y-2 md:space-y-3">
                       <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300">
@@ -195,17 +196,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                         {article.snippet}
                       </p>
                     </div>
-
-                    <div className="pt-6">
-                      <Link
-                        href={`/wiki/${categorySlug}/${article.slug}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline transition-colors uppercase tracking-wider cursor-pointer"
-                      >
-                        <span>Read Article</span>
-                        <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
+                  </Link>
                 ))}
                 {loadingMore && (
                   <>

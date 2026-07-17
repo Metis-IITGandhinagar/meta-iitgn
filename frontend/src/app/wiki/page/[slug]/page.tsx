@@ -81,8 +81,8 @@ export default async function WikiArticlePage({ params, searchParams }: WikiArti
     }
 
     const template = `---
-image: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600
-imageAlt: New Article
+image:
+imageAlt:
 rows:
 ${templateRows}
 ---

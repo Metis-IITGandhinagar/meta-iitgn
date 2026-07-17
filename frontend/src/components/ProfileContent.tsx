@@ -24,11 +24,9 @@ import {
   ArrowRight,
   LogIn,
   LogOut,
-  Shuffle,
   Settings,
 } from "lucide-react";
 import Avatar from "@/components/Avatar";
-import { shuffleAvatarSeed } from "@/lib/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { apiService } from "@/api";
 import { db } from "@/lib/db";
@@ -344,18 +342,6 @@ export default function ProfileContent() {
                     />
                   )}
                 </div>
-
-                {isOwnProfile && !dataLoading && (
-                  <button
-                    type="button"
-                    onClick={() => currentUser && shuffleAvatarSeed(currentUser.email)}
-                    title="Shuffle avatar"
-                    aria-label="Shuffle avatar"
-                    className="absolute -bottom-2 -right-2 btn btn-circle btn-xs bg-base-100 border border-base-300 shadow hover:bg-base-200 text-base-content transition-colors cursor-pointer"
-                  >
-                    <Shuffle className="h-3.5 w-3.5" />
-                  </button>
-                )}
               </div>
 
               <div className="space-y-1 pb-1">
@@ -409,7 +395,7 @@ export default function ProfileContent() {
                 {currentUser?.role === "admin" && (
                   <button
                     onClick={() => setShowDashboard(true)}
-                    className="btn btn-outline btn-sm gap-1 text-primary hover:bg-primary/5 cursor-pointer rounded-xl font-bold"
+                    className="btn"
                   >
                     <Settings className="h-4 w-4" /> Admin Panel
                   </button>

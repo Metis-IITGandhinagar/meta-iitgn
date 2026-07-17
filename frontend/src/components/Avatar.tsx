@@ -19,7 +19,7 @@ interface AvatarProps {
 }
 
 /**
- * Always renders a generated DiceBear (lorelei) avatar. Never uses an uploaded
+ * Always renders a generated DiceBear (notionists) avatar. Never uses an uploaded
  * photo. Seeds by the resolved localStorage override -> email -> name, and
  * re-renders live when the user shuffles their avatar.
  */

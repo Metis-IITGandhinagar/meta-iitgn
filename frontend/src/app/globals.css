@@ -463,6 +463,62 @@ html[data-font-style="mono"] body {
   border-bottom: 1px solid var(--color-base-300) !important;
 }
 
+/* Reader-only section folding: each H2/H3 becomes a collapsible handle. The
+   markup is injected by MilkdownEditor (enableFolding) in read-only mode only,
+   so it never touches the editing surface or other consumers. */
+.wiki-fold {
+  /* Sections stack with the same rhythm as the surrounding prose. */
+  margin-top: 1.5rem;
+}
+.wiki-fold:first-child {
+  margin-top: 0;
+}
+.wiki-fold-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.wiki-fold-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: -0.375rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--color-base-content);
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+.wiki-fold-toggle:hover {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--color-base-content) 12%, transparent);
+}
+.wiki-fold-toggle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  transition: transform 0.18s ease;
+}
+.wiki-fold.collapsed > .wiki-fold-title .wiki-fold-toggle svg {
+  transform: rotate(-90deg);
+}
+.wiki-fold-body > :first-child {
+  margin-top: 0;
+}
+.wiki-fold-body > :last-child {
+  margin-bottom: 0;
+}
+.wiki-fold.collapsed > .wiki-fold-body {
+  display: none;
+}
+
 /* Override editor text content colors */
 .milkdown-container .crepe .ProseMirror,
 .milkdown-container [contenteditable] {

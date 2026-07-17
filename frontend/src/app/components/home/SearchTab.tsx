@@ -30,7 +30,7 @@ export default function SearchTab({
     router.push(`/search-results?query=${encodeURIComponent(q)}`);
   };
 
-  const autoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
+  const autoFocus = localStorage.getItem("wiki_autofocus_search") === "true";
 
   return (
     <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-base-100 overflow-hidden select-none">
@@ -40,14 +40,22 @@ export default function SearchTab({
 
         {/* Brand Header */}
         <div className="text-center space-y-3 select-none">
-          <h2 className="text-xs font-black uppercase tracking-[0.25em] text-primary">
-            IIT Gandhinagar Campus Wiki
-          </h2>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black tracking-tight text-base-content leading-none">
-            Search <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">META IITGN</span>
+            <span className="text-7xl sm:text-8xl lg:text-9xl">Search</span>{' '}
+            <br />
+            <span className="text-rotate text-4xl sm:text-5xl lg:text-6xl duration-3500">
+              <span className="justify-items-center">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">META IITGN</span>
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">PEOPLE</span>
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">CLUBS</span>
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">NEWS</span>
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">EVENTS</span>
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">COURSES</span>
+              </span>
+            </span>
           </h1>
           <p className="text-xs sm:text-sm text-base-content/55 max-w-md mx-auto font-medium leading-relaxed">
-            Find campus pages, people, news articles, academic guides, club info, and more — all in one place.
+            Find campus pages, people, news articles, club info, and more — all in one place.
           </p>
         </div>
 
@@ -65,32 +73,35 @@ export default function SearchTab({
           />
         </div>
 
-        {/* Recent searches */}
-        {history.length > 0 && (
-          <div className="w-full max-w-2xl flex flex-wrap items-center justify-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 mr-1">
-              Recent
-            </span>
-            {history.map((item) => (
+        {/* Recent searches — keep a reserved height so the vertically
+            centered search box never shifts when history appears/disappears */}
+        <div className="w-full max-w-2xl min-h-[2.25rem] flex flex-wrap items-center justify-center gap-2">
+          {history.length > 0 && (
+            <>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 mr-1">
+                Recent
+              </span>
+              {history.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleSearch(item)}
+                  className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
+                >
+                  {item}
+                </button>
+              ))}
               <button
-                key={item}
-                onClick={() => handleSearch(item)}
-                className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
+                onClick={() => {
+                  clearSearchHistory();
+                  setHistory([]);
+                }}
+                className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 hover:text-rose-500 transition-colors cursor-pointer ml-1"
               >
-                {item}
+                Clear
               </button>
-            ))}
-            <button
-              onClick={() => {
-                clearSearchHistory();
-                setHistory([]);
-              }}
-              className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 hover:text-rose-500 transition-colors cursor-pointer ml-1"
-            >
-              Clear
-            </button>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
       </div>
     </div>

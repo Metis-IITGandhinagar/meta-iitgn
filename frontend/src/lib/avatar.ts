@@ -1,14 +1,14 @@
 import { Style, Avatar } from "@dicebear/core";
-import loreleiDefinition from "@dicebear/styles/lorelei.json";
+import notionistsDefinition from "@dicebear/styles/notionists.json";
 
 // Build the style once and reuse it for every avatar.
-const style = new Style(loreleiDefinition as ConstructorParameters<typeof Style>[0]);
+const style = new Style(notionistsDefinition as ConstructorParameters<typeof Style>[0]);
 
 // Memoize generated SVGs and data URIs so repeated renders are free.
 const svgCache = new Map<string, string>();
 const dataUriCache = new Map<string, string>();
 
-/** Generate the raw lorelei SVG string for a given seed. */
+/** Generate the raw notionists SVG string for a given seed. */
 export function generateAvatarSvg(seed: string): string {
   const cached = svgCache.get(seed);
   if (cached) return cached;
