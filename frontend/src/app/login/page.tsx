@@ -4,11 +4,13 @@ import React, { useState, useEffect } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { api } from "@/lib/api";
 import { devBypass } from "@/api/user";
 import { BookOpen, AlertCircle, CheckCircle, ShieldAlert, Cpu, X, ChevronLeft } from "lucide-react";
 
 export default function LoginPage() {
+  useDocumentTitle("Log In");
   const router = useRouter();
   const { auth, checkAuth } = useAuth();
   const [loading, setLoading] = useState(false);

@@ -66,9 +66,10 @@ export default function LeftPanel({
   activeTab,
   spawnHearts,
 }: LeftPanelProps) {
-  const { categories, activeTier: globalActiveTier, setSettingsTab } = useAuth();
+  const { categories, activeTier: globalActiveTier, setSettingsTab, auth } = useAuth();
   const { setActiveOverlay, setActivePortalCategory } = useHomeStore();
   const isGold = globalActiveTier === "gold";
+  const isLoggedIn = auth === true;
   const [pageCount, setPageCount] = useState<number | null>(null);
 
   const portalsToDisplay = useMemo(() => {
@@ -199,12 +200,12 @@ export default function LeftPanel({
               <h2 className="text-xl font-serif font-bold text-base-content tracking-tight">
                 Quick Portals
               </h2>
-              {isGold ? (
+              {isLoggedIn ? (
                 <Link
                   href="/wiki/categories"
                   className="text-[10px] font-extrabold text-primary hover:text-blue-700 hover:underline tracking-wider uppercase shrink-0"
                 >
-                  Manage
+                  All
                 </Link>
               ) : (
                 <div className="w-12" />

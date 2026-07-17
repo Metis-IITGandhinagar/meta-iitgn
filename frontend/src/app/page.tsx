@@ -9,6 +9,7 @@ import {
   Home,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useHomeStore } from "@/store/useHomeStore";
 import BottomNavbar from "@/components/BottomNavbar";
 import AvatarIcon from "@/components/AvatarIcon";
@@ -115,6 +116,17 @@ export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Collapsed by default
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  // Title reflects the active home tab; the "home" tab shows the bare site name.
+  useDocumentTitle(
+    activeTab === "search"
+      ? "Search"
+      : activeTab === "bookmarks"
+        ? "Bookmarks"
+        : activeTab === "profile"
+          ? "Profile"
+          : undefined
+  );
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);

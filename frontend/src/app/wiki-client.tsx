@@ -73,6 +73,7 @@ export default function WikiClient({
     );
   }, [initialMetadata, categorySlug]);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [readingProgressPct, setReadingProgressPct] = useState(0);
   const [editorLoaded, setEditorLoaded] = useState(false);
   const [toolbarContainer, setToolbarContainer] =
     useState<HTMLDivElement | null>(null);
@@ -90,6 +91,8 @@ export default function WikiClient({
   // Autosave to IndexedDB
   useEffect(() => {
     if (!isEditing) return;
+    // Respect the "Auto-save drafts" preference.
+    if (localStorage.getItem("wiki_editor_autosave") === "false") return;
     const saveToIndexedDB = async () => {
       try {
         const pageKey = dbPageId
@@ -539,22 +542,32 @@ export default function WikiClient({
 
     const handleScroll = () => {
       const headingElements = Array.from(container.querySelectorAll("h2, h3"));
-      if (headingElements.length === 0) return;
 
-      const mainRect = mainElement.getBoundingClientRect();
-      let currentActive = "";
-
-      for (const el of headingElements) {
-        const rect = el.getBoundingClientRect();
-        if (rect.top - mainRect.top < 150) {
-          currentActive = el.id;
-        } else {
-          break;
+      // TOC active-section tracking (only meaningful when headings exist).
+      if (headingElements.length > 0) {
+        const mainRect = mainElement.getBoundingClientRect();
+        let currentActive = "";
+        for (const el of headingElements) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top - mainRect.top < 150) {
+            currentActive = el.id;
+          } else {
+            break;
+          }
+        }
+        if (currentActive && currentActive !== activeSection) {
+          setActiveSection(currentActive);
         }
       }
 
-      if (currentActive && currentActive !== activeSection) {
-        setActiveSection(currentActive);
+      // Reading progress: how far the article body has scrolled past. Runs
+      // regardless of whether the article has headings.
+      if (localStorage.getItem("wiki_reading_progress") !== "false") {
+        const scrollable = mainElement.scrollHeight - mainElement.clientHeight;
+        const pct = scrollable > 0 ? Math.min(100, Math.max(0, (mainElement.scrollTop / scrollable) * 100)) : 0;
+        setReadingProgressPct(pct);
+      } else {
+        setReadingProgressPct(0);
       }
     };
 
@@ -589,6 +602,20 @@ export default function WikiClient({
           onClick={() => setRightSidebarOpen(false)}
           aria-hidden="true"
         />
+      )}
+
+      {/* Reading progress bar — fixed to the bottom of the viewport, shown only
+          when the preference is on. Driven by the <main> scroll position. */}
+      {localStorage.getItem("wiki_reading_progress") !== "false" && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[15000] h-1 w-full bg-base-200"
+          aria-hidden="true"
+        >
+          <div
+            className="h-full bg-primary transition-[width] duration-75 ease-linear"
+            style={{ width: `${readingProgressPct}%` }}
+          />
+        </div>
       )}
 
       {/* Main Content Wrapper */}

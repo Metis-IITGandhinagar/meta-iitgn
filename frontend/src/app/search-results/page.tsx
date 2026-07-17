@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiService } from "@/api";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   Search,
   Building2,
@@ -20,6 +21,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import { BeautifulSearchBox, BeautifulTabBar } from "@/components/SearchDesign";
+import { getSearchHistory, addSearchHistory, clearSearchHistory } from "@/lib/searchHistory";
 
 const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   Campus: Building2,
@@ -78,6 +80,8 @@ function SearchResultsContent() {
   const queryParam = searchParams?.get("query") || "";
   const categoryParam = searchParams?.get("category") || "All";
 
+  useDocumentTitle(queryParam ? `Search: ${queryParam}` : "Search");
+
   const [searchQuery, setSearchQuery] = useState(queryParam);
   const [category, setCategory] = useState(categoryParam);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -87,6 +91,15 @@ function SearchResultsContent() {
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [dynamicCategories, setDynamicCategories] = useState<string[]>(["All"]);
+  const [history, setHistory] = useState<string[]>([]);
+
+  useEffect(() => {
+    setHistory(getSearchHistory());
+  }, []);
+
+  const autoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
+  // "Open links in new tab" applies to internal search-result links.
+  const openInNewTab = localStorage.getItem("wiki_open_new_tab") === "true";
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -138,6 +151,8 @@ function SearchResultsContent() {
     e.preventDefault();
     const q = searchQuery.trim();
     if (!q) return;
+    addSearchHistory(q);
+    setHistory(getSearchHistory());
     router.push(`/search-results?query=${encodeURIComponent(q)}&category=${category}`);
   };
 
@@ -192,6 +207,7 @@ function SearchResultsContent() {
               onSubmit={handleSearchSubmit}
               placeholder="Search pages, people, news, categories…"
               variant="compact"
+              autoFocus={autoFocus}
             />
           </div>
         </div>
@@ -207,6 +223,34 @@ function SearchResultsContent() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28">
+        {history.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 mr-1">
+              Recent
+            </span>
+            {history.map((item) => (
+              <button
+                key={item}
+                onClick={() => {
+                  setSearchQuery(item);
+                  addSearchHistory(item);
+                }}
+                className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
+              >
+                {item}
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                clearSearchHistory();
+                setHistory([]);
+              }}
+              className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 hover:text-rose-500 transition-colors cursor-pointer ml-1"
+            >
+              Clear
+            </button>
+          </div>
+        )}
         <div className="flex items-center justify-between mb-4 select-none">
           <p className="text-[10px] font-black text-base-content/50 uppercase tracking-widest">
             {loading ? "Searching…" : `${total} result${total !== 1 ? "s" : ""} found`}
@@ -235,6 +279,8 @@ function SearchResultsContent() {
                   <Link
                     key={item.path}
                     href={item.path}
+                    target={openInNewTab ? "_blank" : undefined}
+                    rel={openInNewTab ? "noopener noreferrer" : undefined}
                     className="p-5 bg-base-100 border border-base-200 hover:border-primary/30 rounded-2xl flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md group text-left cursor-pointer"
                   >
                     <div>

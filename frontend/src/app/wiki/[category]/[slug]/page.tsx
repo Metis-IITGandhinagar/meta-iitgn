@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import WikiClient from "../../../wiki-client";
 import Link from "next/link";
 import { apiService } from "@/api";
+import { parseMarkdown } from "@/lib/utils";
 
 // Wiki modals reflect state in the URL (useSearchParams); keep this dynamic.
 export const dynamic = "force-dynamic";
@@ -14,6 +16,40 @@ interface ArticlePageProps {
     title?: string;
     edit?: string;
   }>;
+}
+
+// Fallback: turn a slug into a readable name (e.g. "hostel-5" -> "Hostel 5").
+function slugToTitle(slug: string): string {
+  return slug
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+export async function generateMetadata({ params, searchParams }: ArticlePageProps): Promise<Metadata> {
+  const { category, slug } = await params;
+  const { title } = await searchParams;
+  const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
+
+  if (slug === "new") {
+    return { title: `New ${displayCategory} Article | META IITGN` };
+  }
+
+  let name = title?.trim() || slugToTitle(slug);
+  try {
+    const dbArticle = await apiService.getPage(slug);
+    if (dbArticle?.content) {
+      const parsedTitle = parseMarkdown(dbArticle.content).title?.trim();
+      if (parsedTitle) name = parsedTitle;
+    }
+  } catch {
+    // Fall back to the slug-derived name.
+  }
+
+  return {
+    title: `${name} | META IITGN`,
+    description: `${name} — ${displayCategory} on the IIT Gandhinagar campus wiki.`,
+  };
 }
 
 export default async function ArticlePage({ params, searchParams }: ArticlePageProps) {

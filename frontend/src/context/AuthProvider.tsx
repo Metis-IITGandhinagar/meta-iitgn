@@ -10,7 +10,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<boolean | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTier, setActiveTier] = useState<"bronze" | "silver" | "gold">("bronze");
-  const [settingsTab, setSettingsTab] = useState<"appearance" | "layout" | "search" | "alerts" | null>(null);
+  const [settingsTab, setSettingsTab] = useState<"appearance" | "layout" | "search" | "editor" | "storage" | "performance" | "help" | null>(null);
   const [totalPagesCount, setTotalPagesCountState] = useState<number | null>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("wiki-total-pages-count");

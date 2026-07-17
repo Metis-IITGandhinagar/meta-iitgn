@@ -26,3 +26,8 @@ export const getUserById = async (userId: number) => {
   const response = await api.get(`/user/${userId}`);
   return response.data;
 };
+
+export const getUserBookmarks = async (userId: number) => {
+  const response = await api.get(`/user/${userId}/bookmarks`, { withCredentials: true });
+  return response.data;
+};

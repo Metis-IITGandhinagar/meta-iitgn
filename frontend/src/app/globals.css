@@ -114,6 +114,58 @@ body {
   font-family: var(--font-geist-sans), sans-serif;
 }
 
+/* Theme-aware text selection + caret.
+   Selection uses the theme's solid primary colour with its matching
+   primary-content text colour, so the highlight is bold and the selected
+   text stays readable in every theme. Falls back to the brand blue/white
+   before the theme variables resolve. */
+::selection {
+  background-color: var(--color-primary, var(--p, #3b82f6));
+  color: var(--color-primary-content, var(--pc, #ffffff));
+}
+
+::-moz-selection {
+  background-color: var(--color-primary, var(--p, #3b82f6));
+  color: var(--color-primary-content, var(--pc, #ffffff));
+}
+
+/* Caret uses the solid primary colour so it's easy to spot against the background. */
+:root {
+  caret-color: var(--color-primary, var(--p, #3b82f6));
+}
+
+/* Editable surfaces (Milkdown / BlockNote) inherit the same theme caret,
+   overriding any editor-default cursor colour. */
+.milkdown-container [contenteditable],
+.bn-editor,
+.bn-container [contenteditable] {
+  caret-color: var(--color-primary, var(--p, #3b82f6));
+}
+
+/* Editors (Milkdown / ProseMirror / BlockNote) style their own selection.
+   The Crepe theme applies `.milkdown .ProseMirror *::selection { background:
+   var(--crepe-color-selected) }`, which is mapped to base-300 (near-invisible)
+   and outranks a plain `::selection`. We match that specificity (and !important
+   the background, since Crepe uses the shorthand) so selection reads as the
+   theme primary colour inside the editor too. */
+.milkdown .ProseMirror ::selection,
+.milkdown .ProseMirror *::selection,
+.milkdown-container ::selection,
+.bn-editor ::selection,
+.bn-container ::selection {
+  background: var(--color-primary, var(--p, #3b82f6)) !important;
+  color: var(--color-primary-content, var(--pc, #ffffff)) !important;
+}
+
+.milkdown .ProseMirror ::-moz-selection,
+.milkdown .ProseMirror *::-moz-selection,
+.milkdown-container ::-moz-selection,
+.bn-editor ::-moz-selection,
+.bn-container ::-moz-selection {
+  background: var(--color-primary, var(--p, #3b82f6)) !important;
+  color: var(--color-primary-content, var(--pc, #ffffff)) !important;
+}
+
 /* Typography System mapping for global consistency */
 .font-sans {
   font-family: var(--font-geist-sans), sans-serif !important;
@@ -137,6 +189,20 @@ html[data-font-style="serif"] .font-style-sensitive {
 
 html[data-font-style="mono"] .font-style-sensitive {
   font-family: var(--font-geist-mono), monospace !important;
+}
+
+/* Interface font size (scales the whole UI). Editor text size is handled
+   separately inside the editor so it does not affect the rest of the app. */
+html[data-interface-font-size="small"] {
+  font-size: 14px;
+}
+
+html[data-interface-font-size="large"] {
+  font-size: 18px;
+}
+
+html[data-interface-font-size="normal"] {
+  font-size: 16px;
 }
 
 /* Eliminate empty space and padding inside milkdown editor */
@@ -271,54 +337,51 @@ html[data-font-style="mono"] .font-style-sensitive {
   /* Firefox */
 }
 
-/* Font Size scaling rule applied on wiki article text */
-html[data-font-size="small"] .milkdown-container,
-html[data-font-size="small"] .prose p {
-  font-size: inherit;
+/* Interface font style applies to the whole UI (chrome, lists, and the
+   read-only article/render) via <body>, so changing it visibly restyles the
+   interface. No !important here, so the live editor rules below (and any
+   per-element font utilities like .font-serif) can override it. */
+html[data-font-style="sans"] body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-html[data-font-size="small"] article {
-  font-size: 0.75rem !important;
+html[data-font-style="serif"] body {
+  font-family: var(--font-lora), Georgia, serif;
 }
 
-html[data-font-size="normal"] .milkdown-container,
-html[data-font-size="normal"] .prose p {
-  font-size: inherit;
+html[data-font-style="mono"] body {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-html[data-font-size="normal"] article {
-  font-size: 1rem !important;
+/* Editor typography — independent of the interface font. Only the *editing*
+   surface (.milkdown-editing) opts in; read-only renders inherit the interface
+   font like the rest of the article. Driven by data-editor-font-* attributes
+   set by the MilkdownEditor component. These beat the interface rules above via
+   higher specificity + !important, so the interface font never leaks in. Code
+   blocks keep their own monospaced font because we only set the .ProseMirror
+   root and let text inherit. */
+.milkdown-editing[data-editor-font-style="sans"] .ProseMirror {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
 }
 
-html[data-font-size="large"] .milkdown-container,
-html[data-font-size="large"] .prose p {
-  font-size: inherit;
+.milkdown-editing[data-editor-font-style="serif"] .ProseMirror {
+  font-family: var(--font-lora), Georgia, serif !important;
 }
 
-html[data-font-size="large"] article {
-  font-size: 1.3rem !important;
+.milkdown-editing[data-editor-font-style="mono"] .ProseMirror {
+  font-family: var(--font-geist-mono), ui-monospace, monospace !important;
 }
 
-/* Font Style rules applied on wiki article text */
-html[data-font-style="sans"] .milkdown-container,
-html[data-font-style="sans"] .prose,
-html[data-font-style="sans"] p,
-html[data-font-style="sans"] article {
-  font-family: var(--font-geist-sans), sans-serif !important;
+.milkdown-editing[data-editor-font-size="small"] .ProseMirror {
+  font-size: 14px !important;
 }
 
-html[data-font-style="serif"] .milkdown-container,
-html[data-font-style="serif"] .prose,
-html[data-font-style="serif"] p,
-html[data-font-style="serif"] article {
-  font-family: var(--font-lora), serif !important;
+.milkdown-editing[data-editor-font-size="normal"] .ProseMirror {
+  font-size: 16px !important;
 }
 
-html[data-font-style="mono"] .milkdown-container,
-html[data-font-style="mono"] .prose,
-html[data-font-style="mono"] p,
-html[data-font-style="mono"] article {
-  font-family: var(--font-geist-mono), monospace !important;
+.milkdown-editing[data-editor-font-size="large"] .ProseMirror {
+  font-size: 18px !important;
 }
 
 /* Make Milkdown editor theme-aware using daisyUI CSS variables */
@@ -345,6 +408,19 @@ html[data-font-style="mono"] article {
 .milkdown-container .editor {
   background-color: transparent !important;
   color: var(--color-base-content) !important;
+}
+
+/* Task-list checkboxes: the crepe theme fills the checkbox SVG with
+   --crepe-color-outline, which we remap to base-300 (near-background),
+   making the solid checked box invisible. Give the icons a legible fill. */
+.milkdown .milkdown-list-item-block .label-wrapper .label svg {
+  fill: var(--color-base-content) !important;
+  color: var(--color-base-content) !important;
+}
+
+.milkdown .milkdown-list-item-block .label-wrapper .label.checked svg {
+  fill: var(--color-primary) !important;
+  color: var(--color-primary) !important;
 }
 
 /* Sticky editor toolbar globally in edit mode (covers fixed top navbar) */
@@ -626,4 +702,89 @@ html[data-font-style="mono"] article {
     width: 16px !important;
     height: 16px !important;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Print: "Print Article" should output only the article content, not the app
+   chrome (navbar, sidebars, bottom nav, editor toolbar). The on-screen layout
+   uses fixed-height, overflow-hidden scroll shells, so we also neutralize those
+   so the article flows and paginates across pages instead of being clipped.
+   --------------------------------------------------------------------------- */
+@media print {
+  /* Hide everything, then reveal only the article body */
+  body * {
+    visibility: hidden !important;
+  }
+
+  main article,
+  main article * {
+    visibility: visible !important;
+  }
+
+  /* No ancestor should clip the content while it paginates */
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body * {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Anchor the article to the top-left of the printed page */
+  main article {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Remove app chrome from flow entirely so the article uses the full page
+     width (navbar, both sidebars, and the editor toolbar). Sidebars are <aside>
+     elements; the right InfoBox is in-flow on desktop and would otherwise
+     reserve ~320px and shrink the printout. */
+  header,
+  aside,
+  .editor-toolbar-container {
+    display: none !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduce motion: when the user disables interface animations in Settings ->
+   Performance, we set html[data-reduce-motion="true"] and neutralize all
+   transitions/animations for a faster, calmer interface.
+   --------------------------------------------------------------------------- */
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  transition-duration: 0.001ms !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Compact layout: when the user enables "Compact lists view" in Settings ->
+   Layout, tighten the spacing of the card/list grids so more items fit on
+   screen. Targets the reusable card grids across the app.
+   --------------------------------------------------------------------------- */
+html[data-compact="true"] .card-compact {
+  padding: 0.5rem !important;
+}
+
+/* Tighten the card grids (home feed, blogs, categories) so more items fit. */
+html[data-compact="true"] .card.grid,
+html[data-compact="true"] div.grid > .card {
+  gap: 0.5rem !important;
 }

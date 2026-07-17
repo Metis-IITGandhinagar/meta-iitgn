@@ -83,8 +83,8 @@ function SettingsModalTrigger() {
 import { DARK_THEMES } from "@/lib/constants";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  // Use NEXT_PUBLIC_GOOGLE_CLIENT_ID from environment, or a fallback for dev
-  const googleClientId = (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1098254429930-mockclientid.apps.googleusercontent.com") as string;
+  // Google OAuth client ID must be provided via NEXT_PUBLIC_GOOGLE_CLIENT_ID.
+  const googleClientId = (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "") as string;
 
   React.useEffect(() => {
     const savedTheme = localStorage.getItem("wiki_daisyui_theme") || "light";
@@ -97,13 +97,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
 
     const updateFontSettings = () => {
-      const size = localStorage.getItem("wiki_font_size") || "normal";
-      const style = localStorage.getItem("wiki_font_style") || "sans";
+      const size = localStorage.getItem("wiki_interface_font_size") || "normal";
+      const style = localStorage.getItem("wiki_interface_font_style") || "sans";
       const zoom = localStorage.getItem("wiki_zoom_level") || "100%";
-      
-      document.documentElement.setAttribute("data-font-size", size);
+      const animations = localStorage.getItem("wiki_animations") !== "false";
+      const compact = localStorage.getItem("wiki_compact_layout") === "true";
+
+      document.documentElement.setAttribute("data-interface-font-size", size);
       document.documentElement.setAttribute("data-font-style", style);
-      
+      document.documentElement.setAttribute("data-reduce-motion", animations ? "false" : "true");
+      document.documentElement.setAttribute("data-compact", compact ? "true" : "false");
+
       if (zoom === "90%") {
         document.documentElement.style.fontSize = "12px";
       } else if (zoom === "110%") {
@@ -116,6 +120,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     updateFontSettings();
     window.addEventListener("storage", updateFontSettings);
     window.addEventListener("wiki_settings_changed", updateFontSettings);
+
     return () => {
       window.removeEventListener("storage", updateFontSettings);
       window.removeEventListener("wiki_settings_changed", updateFontSettings);

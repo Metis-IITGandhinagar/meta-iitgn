@@ -17,7 +17,6 @@ export function parseMarkdown(markdown: string) {
   let rows: InfoboxRow[] = [
     { label: "Status", value: "Draft", type: "text" },
     { label: "Type", value: "Wiki Page", type: "text" },
-    { label: "Tags", value: ["Mock", "Test", "FastAPI"], type: "badge" },
   ];
   let contentMarkdown = markdown;
 

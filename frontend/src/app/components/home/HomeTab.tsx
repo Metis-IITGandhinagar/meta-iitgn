@@ -1023,30 +1023,6 @@ export default function HomeTab({
       ),
     },
 
-    // ── 14. Photo of the Week ─────────────────────────────────────────────────
-    {
-      id: "photo-of-week",
-      content: (
-        <HomeCard
-          title="Photo of the Week"
-          icon={<Camera className="h-4 w-4 text-warning" />}
-          accentColor="warning"
-        >
-          <div className="diff aspect-[16/9] rounded-xl overflow-hidden">
-            <div className="diff-item-1">
-              <img src="/homepage_bg.png" alt="Campus landscape" className="object-cover w-full h-full" />
-            </div>
-            <div className="diff-item-2">
-              <img src="/iitgn_campus.png" alt="Campus architecture" className="object-cover w-full h-full" />
-            </div>
-            <div className="diff-resizer" />
-          </div>
-          <p className="text-xs text-base-content/70 mt-3 leading-relaxed">
-            A fresh look at the campus skyline and the calm spaces that make the institute special.
-          </p>
-        </HomeCard>
-      ),
-    },
   ];
 
   // Sort the feed by the explicit display order above.
@@ -1063,7 +1039,7 @@ export default function HomeTab({
           @keyframes slide-up-fade { 0% { opacity: 0; transform: translateY(120px); } 100% { opacity: 1; transform: translateY(0); } }
           .animate-gradient-text { background-size: 200% auto; animation: gradient-x 6s ease infinite; }
           .hero-gradient-text {
-            background-image: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+            background-image: linear-gradient(100deg, rgba(255,255,255,0.97), rgba(255,255,255,0.55), rgba(226,232,240,0.9));
             background-size: 300% 100%;
             -webkit-background-clip: text;
             background-clip: text;

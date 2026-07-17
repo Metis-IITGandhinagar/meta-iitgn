@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { ArrowRight, BookOpen, PlusCircle, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
@@ -41,6 +42,7 @@ const BlogSkeleton = () => (
 
 export default function BlogGridPage() {
   const { user } = useAuth();
+  useDocumentTitle("Blog");
   const [blogs, setBlogs] = useState<BlogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

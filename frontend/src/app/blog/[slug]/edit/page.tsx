@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
 import Link from "next/link";
 import {
@@ -41,6 +42,8 @@ export default function BlogEditPage() {
   const contentRef = useRef<string>("");
 
   const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+
+  useDocumentTitle(isNew ? "New Blog Post" : title ? `Editing: ${title}` : "Edit Blog Post");
 
   // Sync theme
   useEffect(() => {

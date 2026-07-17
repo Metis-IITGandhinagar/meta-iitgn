@@ -62,6 +62,16 @@ export default function BookmarksTab({
   const [localBookmarks, setLocalBookmarks] = useState<BookmarkItem[]>([]);
   const [limit, setLimit] = useState(5);
   const [totalCount, setTotalCount] = useState(0);
+  // Compact layout preference (re-read on settings change).
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const syncCompact = () =>
+      setCompact(localStorage.getItem("wiki_compact_layout") === "true");
+    syncCompact();
+    window.addEventListener("wiki_settings_changed", syncCompact);
+    return () => window.removeEventListener("wiki_settings_changed", syncCompact);
+  }, []);
 
   const fetchLocalBookmarks = async (currentLimit: number) => {
     try {
@@ -174,7 +184,9 @@ export default function BookmarksTab({
             <div className="flex-1 overflow-y-auto no-scrollbar pb-10 w-full">
               {localBookmarks.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className={`grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 ${
+                    compact ? "gap-1.5" : "gap-3"
+                  }`}>
                     {localBookmarks.map((item) => {
                       const pagePath = getPagePath(item);
                       const isCopied = copiedId === item.id;

@@ -22,6 +22,7 @@ import {
   Bookmark,
   Trash2,
   ArrowRight,
+  LogIn,
   LogOut,
   Shuffle,
 } from "lucide-react";
@@ -52,31 +53,55 @@ export default function ProfileContent() {
     (!userIdParam || Number(userIdParam) === currentUser.user_id);
 
   const handleSaveReadme = async () => {
+    if (!targetUserId) return;
     setIsSavingReadme(true);
     try {
       const pageSlug = `profile-${targetUserId}`;
-      if (profileReadme === null) {
-        // Create new README page
-        await apiService.createPage({
-          title: pageSlug,
-          slug: pageSlug,
-          content: editReadmeContent,
-          metadata: { category: "profile" },
-        } as any);
-      } else {
-        // Update existing README page
+
+      // Try updating the existing README page first. If it doesn't exist yet
+      // (404), create it. Relying on `profileReadme === null` to decide is
+      // unreliable — an existing page with empty content also reads as null,
+      // which would trigger a create against an existing slug and silently
+      // produce a duplicate page (`profile-<id>-1`) that never gets read back.
+      try {
         await apiService.updatePage(pageSlug, {
           content: editReadmeContent,
         });
+      } catch (updateErr: any) {
+        const status = updateErr?.response?.status;
+        if (status === 404) {
+          await apiService.createPage({
+            title: pageSlug,
+            slug: pageSlug,
+            content: editReadmeContent,
+            metadata: { category: "profile" },
+          } as any);
+        } else {
+          throw updateErr;
+        }
       }
+
       setProfileReadme(editReadmeContent);
 
-      // Update memory context cache
-      if (profileCache[targetUserId!]) {
-        setProfileData(targetUserId!, {
-          ...profileCache[targetUserId!],
+      // Update in-memory context cache
+      if (profileCache[targetUserId]) {
+        setProfileData(targetUserId, {
+          ...profileCache[targetUserId],
           readme: editReadmeContent,
         });
+      }
+
+      // Keep the IndexedDB cache in sync so a reload doesn't flash stale README
+      try {
+        const cacheKey = `profile-data-${targetUserId}`;
+        const cached = await db.cachedpages.get(cacheKey);
+        if (cached && cached.content) {
+          const parsed = JSON.parse(cached.content);
+          parsed.readme = editReadmeContent;
+          await db.cachedpages.put({ ...cached, content: JSON.stringify(parsed) });
+        }
+      } catch (cacheErr) {
+        console.error("Error updating profile README cache:", cacheErr);
       }
 
       setIsEditingReadme(false);
@@ -96,12 +121,7 @@ export default function ProfileContent() {
   const [activeTab, setActiveTab] = useState<"overview" | "bookmarks">(
     "overview"
   );
-
-  useEffect(() => {
-    if (!authLoading && !currentUser) {
-      router.replace("/login");
-    }
-  }, [currentUser, authLoading, router]);
+  const [targetBookmarks, setTargetBookmarks] = useState<any[]>([]);
 
   useEffect(() => {
     if (!targetUserId) return;
@@ -113,6 +133,7 @@ export default function ProfileContent() {
       setProfileStats(cached.stats);
       setProfileReadme(cached.readme);
       setRecentActivity(cached.activity);
+      setTargetBookmarks(cached.bookmarks || []);
       setDataLoading(false);
       return;
     }
@@ -128,6 +149,7 @@ export default function ProfileContent() {
           setProfileStats(parsedCache.stats);
           setProfileReadme(parsedCache.readme);
           setRecentActivity(parsedCache.activity || []);
+          setTargetBookmarks(parsedCache.bookmarks || []);
           setDataLoading(false);
           // Store it in the memory context cache so next open reads from context immediately
           setProfileData(targetUserId, parsedCache);
@@ -189,7 +211,28 @@ export default function ProfileContent() {
         }
         setProfileReadme(readme);
 
-        const freshData = { user: targetUser, stats, readme, activity };
+        // Target user's bookmarks (only needed when viewing someone else's profile;
+        // your own bookmarks live in the reactive home store).
+        let otherBookmarks: any[] = [];
+        if (!isOwnProfile) {
+          try {
+            const bmRes = await apiService.getUserBookmarks(targetUserId);
+            if (Array.isArray(bmRes)) {
+              otherBookmarks = bmRes;
+              setTargetBookmarks(otherBookmarks);
+            }
+          } catch {
+            // Bookmarks simply won't render for this profile if the fetch fails.
+          }
+        }
+
+        const freshData = {
+          user: targetUser,
+          stats,
+          readme,
+          activity,
+          bookmarks: otherBookmarks,
+        };
 
         // Save to memory context cache
         setProfileData(targetUserId, freshData);
@@ -217,7 +260,7 @@ export default function ProfileContent() {
     fetchProfileData();
   }, [targetUserId, currentUser, userIdParam, profileCache, setProfileData]);
 
-  if (authLoading || !currentUser) {
+  if (authLoading) {
     return (
       <div className="mx-auto max-w-4xl space-y-6 animate-pulse">
         <div className="h-44 w-full bg-base-300 rounded-3xl" />
@@ -226,6 +269,27 @@ export default function ProfileContent() {
             <div key={i} className="h-24 bg-base-300 rounded-2xl" />
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-24 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <LogIn className="h-7 w-7" />
+        </span>
+        <div className="space-y-1">
+          <h1 className="font-display text-xl font-black tracking-tight text-base-content">
+            You&apos;re not signed in
+          </h1>
+          <p className="text-sm text-base-content/60">
+            Sign in to view your profile, contributions, and bookmarks.
+          </p>
+        </div>
+        <Link href="/login" className="btn btn-primary rounded-xl">
+          <LogIn className="h-4 w-4" /> Go to login
+        </Link>
       </div>
     );
   }
@@ -250,6 +314,9 @@ export default function ProfileContent() {
         ? "badge-secondary"
         : "badge-primary";
   const isOwner = targetUserId === currentUser?.user_id;
+  const displayBookmarks = isOwnProfile
+    ? bookmarks
+    : targetBookmarks ?? profileCache[targetUserId!]?.bookmarks ?? [];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-28">
@@ -325,7 +392,7 @@ export default function ProfileContent() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Heart className="h-3.5 w-3.5 text-error" />
-                        <span>{bookmarks.length} bookmarked pages</span>
+                        <span>{displayBookmarks.length} bookmarked pages</span>
                       </div>
                     </div>
                   </>
@@ -361,7 +428,7 @@ export default function ProfileContent() {
                   : "border-transparent text-base-content/50 hover:text-base-content"
               }`}
             >
-              {tab === "bookmarks" ? `Bookmarks (${bookmarks.length})` : tab}
+              {tab === "bookmarks" ? `Bookmarks (${displayBookmarks.length})` : tab}
             </button>
           ))}
         </div>
@@ -592,7 +659,7 @@ export default function ProfileContent() {
                 Saved Pages
               </h2>
               <p className="mt-0.5 text-xs text-base-content/55">
-                {bookmarks.length} bookmarks
+                {displayBookmarks.length} bookmarks
               </p>
             </div>
             <Link

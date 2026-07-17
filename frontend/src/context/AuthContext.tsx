@@ -38,8 +38,8 @@ interface AuthContextType {
   updateCategoryState: (updatedCat: Category) => void;
   activeTier: "bronze" | "silver" | "gold";
   setActiveTier: React.Dispatch<React.SetStateAction<"bronze" | "silver" | "gold">>;
-  settingsTab: "appearance" | "layout" | "search" | "alerts" | null;
-  setSettingsTab: React.Dispatch<React.SetStateAction<"appearance" | "layout" | "search" | "alerts" | null>>;
+  settingsTab: "appearance" | "layout" | "search" | "editor" | "storage" | "performance" | "help" | null;
+  setSettingsTab: React.Dispatch<React.SetStateAction<"appearance" | "layout" | "search" | "editor" | "storage" | "performance" | "help" | null>>;
   totalPagesCount: number | null;
   setTotalPagesCount: React.Dispatch<React.SetStateAction<number | null>>;
 }

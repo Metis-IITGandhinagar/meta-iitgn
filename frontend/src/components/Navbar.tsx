@@ -16,15 +16,16 @@ import {
   MoreVertical,
   Share2,
   Bookmark,
-  History,
   User,
   Settings,
   LogOut,
-  Download,
   Printer,
   AlertTriangle,
 } from "lucide-react";
 import Avatar from "@/components/Avatar";
+import ShareModal from "@/components/ShareModal";
+import { apiService } from "@/api";
+import { db } from "@/lib/db";
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -89,6 +90,8 @@ export default function Navbar({
   const router = useRouter();
   const { user, activeTier, setSettingsTab } = useAuth();
   const addBookmark = useHomeStore((s) => s.addBookmark);
+  const removeBookmark = useHomeStore((s) => s.removeBookmark);
+  const bookmarks = useHomeStore((s) => s.bookmarks);
   const pathname = usePathname();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
   const isWiki = ((segments[0] === "wiki" || segments[0] === "blog") && segments.length >= 2) || segments[0] === "search-results";
@@ -97,6 +100,10 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState(externalQuery || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareData, setShareData] = useState({ url: "", title: "" });
+  const [stats, setStats] = useState<any>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -127,6 +134,57 @@ export default function Navbar({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Track whether the currently-open article is already bookmarked so the kebab
+  // menu can show the correct action ("Bookmark" vs "Remove Bookmark") and a
+  // filled visual cue. Dexie is the source of truth; `bookmarks` from the store
+  // is a dependency so this re-syncs immediately after an add/remove.
+  useEffect(() => {
+    if (!isWikiArticlePage) {
+      setIsBookmarked(false);
+      return;
+    }
+    const slug = (pathname || "").replace(/\/$/, "").split("/").pop() || "";
+    if (!slug) {
+      setIsBookmarked(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const items = await db.bookmarks.toArray();
+        if (!cancelled) {
+          setIsBookmarked(items.some((b) => b.slug === slug));
+        }
+      } catch (err) {
+        console.error("Failed to check bookmark status:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, isWikiArticlePage, bookmarks]);
+
+  // Load the signed-in user's real contribution stats when the dropdown opens.
+  useEffect(() => {
+    if (!dropdownOpen || !user?.user_id || stats) {
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiService.getUserStats(user.user_id);
+        if (!cancelled && res?.success) {
+          setStats(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load user stats for navbar dropdown:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dropdownOpen, user?.user_id, stats]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,9 +291,6 @@ export default function Navbar({
                   name={user.name}
                   className="w-7 h-7 rounded-full shadow-inner object-cover"
                 />
-                <span className="text-sm font-bold text-base-content hidden sm:inline">
-                  {user.name}
-                </span>
                 <span
                   className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full hidden md:inline-block transition-colors duration-300 ${activeTierData.badgeBg}`}
                 >
@@ -275,7 +330,7 @@ export default function Navbar({
                     </div>
                   </div>
 
-                {/* Stats */}
+                {/* Stats — real contribution data from the user stats API */}
                 <div className="bg-base-200 border border-base-300 rounded-2xl p-3.5 mt-3.5">
                   <div className="grid grid-cols-3 text-center">
                     <div className="flex flex-col">
@@ -283,7 +338,7 @@ export default function Navbar({
                         Points
                       </span>
                       <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {user.points}
+                        {stats?.points ?? user.points}
                       </span>
                     </div>
                     <div className="flex flex-col border-l border-base-300">
@@ -291,52 +346,22 @@ export default function Navbar({
                         Edits
                       </span>
                       <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {activeTierData.edits}
+                        {stats ? stats.editsThisMonth : "—"}
                       </span>
                     </div>
                     <div className="flex flex-col border-l border-base-300">
                       <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
-                        Rank
+                        Streak
                       </span>
                       <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {activeTierData.rank}
+                        {stats ? `${stats.streak}d` : "—"}
                       </span>
                     </div>
                   </div>
-                  {/* Progress Bar */}
-                  <div className="w-full h-2 bg-base-300 rounded-full mt-3.5 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${activeTierData.progressBar}`}
-                      style={{ width: `${activeTierData.percent}%` }}
-                    />
-                  </div>
                 </div>
-
-                {/* Perks */}
-                <div className="mt-3 p-3 bg-blue-50/50 rounded-2xl border border-blue-100/30 text-[11px] leading-relaxed">
-                  <div className="flex items-center gap-1.5 text-blue-850 font-bold mb-0.5">
-                    <Sparkles className="h-3.5 w-3.5 text-blue-500 shrink-0 animate-pulse" />
-                    <span className="text-base-content">Contribution Value</span>
-                  </div>
-                  <p className="text-slate-600 font-medium">
-                    Current Perks:{" "}
-                    <span className="font-semibold text-slate-800">
-                      {activeTierData.benefits.join(", ")}
-                    </span>
-                  </p>
-                  {activeTierData.nextTier && (
-                    <p className="text-blue-700 font-semibold mt-1">
-                      💡 Contribute more to unlock{" "}
-                      <span className="underline">
-                        {activeTierData.nextTier} Perks
-                      </span>
-                    </p>
-                  )}
-                </div>
-
 
                 {/* Bottom Actions */}
-                <div className="border-t border-base-200 mt-4 pt-2.5 grid grid-cols-3 text-center">
+                <div className="border-t border-base-200 mt-4 pt-2.5 grid grid-cols-2 text-center">
                   <Link
                     href="/user/profile"
                     className="flex flex-col items-center gap-1 py-1 text-base-content/80 hover:text-primary hover:bg-base-200 rounded-xl transition-colors duration-150"
@@ -345,16 +370,6 @@ export default function Navbar({
                     <User className="h-5 w-5 text-base-content/50" />
                     <span className="text-[11px] font-bold">Profile</span>
                   </Link>
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      setSettingsTab("appearance");
-                    }}
-                    className="flex flex-col items-center gap-1 py-1 text-base-content/80 hover:text-primary hover:bg-base-200 rounded-xl transition-colors duration-150 cursor-pointer"
-                  >
-                    <Settings className="h-5 w-5 text-base-content/50" />
-                    <span className="text-[11px] font-bold">Settings</span>
-                  </button>
                   <Link
                     href="/logout"
                     onClick={() => setDropdownOpen(false)}
@@ -388,7 +403,15 @@ export default function Navbar({
                 <div className="absolute -right-2 md:right-0 top-10 mt-1 w-52 max-h-[calc(100vh-80px)] overflow-y-auto card card-bordered bg-base-100 shadow-[0_0_25px_rgba(0,0,0,0.15)] py-1 z-[100] select-none animate-in fade-in duration-200 rounded-xl no-scrollbar">
                   <button
                     onClick={() => {
-                      alert("Sharing link copied!");
+                      const cleanPath = pathname.replace(/\/$/, "");
+                      const title = (document.title || cleanPath.split("/").pop() || "Wiki Page")
+                        .replace(" - META IITGN", "")
+                        .trim();
+                      setShareData({
+                        url: `${window.location.origin}${cleanPath}`,
+                        title,
+                      });
+                      setShareOpen(true);
                       setMoreMenuOpen(false);
                     }}
                     className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none animate-none"
@@ -398,59 +421,50 @@ export default function Navbar({
                   </button>
                   <button
                     onClick={async () => {
+                      setMoreMenuOpen(false);
+
                       const cleanPath = pathname.replace(/\/$/, "");
                       const title = document.title || cleanPath.split("/").pop() || "Wiki Page";
                       const bookmarkSlug = cleanPath.split("/").pop() || "";
                       const category = cleanPath.split("/")[2] || "general";
                       const titleClean = title.replace(" - META IITGN", "").trim();
 
-                      if (!window.confirm(`Are you sure you want to bookmark "${titleClean}"?`)) {
-                        setMoreMenuOpen(false);
-                        return;
-                      }
-
-                      const res = await addBookmark({
-                        slug: bookmarkSlug,
-                        title: titleClean,
-                        category,
-                        user,
-                      });
-
-                      if (res.already) {
-                        alert("Page is already bookmarked!");
-                      } else if (res.ok) {
-                        alert("Page bookmarked successfully!");
+                      if (isBookmarked) {
+                        // Optimistically flip the cue; remove in the background.
+                        setIsBookmarked(false);
+                        try {
+                          const items = await db.bookmarks.toArray();
+                          const match = items.find((b) => b.slug === bookmarkSlug);
+                          if (match) {
+                            await removeBookmark(match.id);
+                          }
+                        } catch (err) {
+                          console.error("Failed to remove bookmark:", err);
+                          setIsBookmarked(true); // revert on failure
+                        }
                       } else {
-                        alert(res.error || "Failed to bookmark page");
+                        // Optimistically flip the cue; add in the background.
+                        setIsBookmarked(true);
+                        const res = await addBookmark({
+                          slug: bookmarkSlug,
+                          title: titleClean,
+                          category,
+                          user,
+                        });
+                        if (!res.ok && !res.already) {
+                          console.error("Failed to add bookmark:", res.error);
+                          setIsBookmarked(false); // revert on failure
+                        }
                       }
-                      setMoreMenuOpen(false);
                     }}
                     className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
                   >
-                    <Bookmark className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span>Bookmark Page</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Exporting to PDF...");
-                      setMoreMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
-                  >
-                    <Download className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span>Export PDF</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      window.dispatchEvent(
-                        new CustomEvent("show-wiki-revisions")
-                      );
-                      setMoreMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
-                  >
-                    <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span>Earlier Versions</span>
+                    <Bookmark
+                      className={`h-4.5 w-4.5 shrink-0 ${
+                        isBookmarked ? "text-primary fill-primary" : "text-slate-500"
+                      }`}
+                    />
+                    <span>{isBookmarked ? "Remove Bookmark" : "Bookmark Page"}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -489,6 +503,12 @@ export default function Navbar({
           )}
         </div>
       </div>
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={shareData.url}
+        title={shareData.title}
+      />
     </header>
   );
 }

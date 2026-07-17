@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Page Not Found | META IITGN",
+};
 
 export default async function ArticlePage() {
   return (

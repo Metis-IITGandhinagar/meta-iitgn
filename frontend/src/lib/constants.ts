@@ -211,6 +211,8 @@ export interface QuickPortalItem {
   };
 }
 
+// Static top-level navigation only. Category links are rendered dynamically in
+// the sidebar from the live categories API so they never drift from the data.
 export const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
     title: "NAVIGATION",
@@ -218,27 +220,6 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
       { name: "Main Page", path: "/", iconName: "Home" },
       { name: "All Categories", path: "/wiki/categories", iconName: "Shuffle" },
       { name: "Explore Blogs", path: "/blog", iconName: "BookOpen" },
-    ],
-  },
-  {
-    title: "ACADEMICS & CAREERS",
-    items: [
-      { name: "Departments", path: "/wiki/departments", iconName: "Building2" },
-      { name: "Faculty Profiles", path: "/wiki/faculty", iconName: "Users2" },
-      { name: "Research Labs", path: "/wiki/research", iconName: "FlaskConical" },
-      { name: "Placement Stats", path: "/wiki/placements", iconName: "TrendingUp" },
-      { name: "Courses Info", path: "/wiki/courses", iconName: "BookOpen" },
-    ],
-  },
-  {
-    title: "CAMPUS & POLICIES",
-    items: [
-      { name: "Hostels Guide", path: "/wiki/hostels", iconName: "Tent" },
-      { name: "Student Clubs", path: "/wiki/clubs", iconName: "Trophy" },
-      { name: "Institute Fests", path: "/wiki/fests", iconName: "Sparkles" },
-      { name: "Institute Policies", path: "/wiki/policies", iconName: "Shield" },
-      { name: "Academic Calendar", path: "/wiki/calendar", iconName: "Calendar" },
-      { name: "Campus Facilities", path: "/wiki/facilities", iconName: "MapPin" },
     ],
   },
 ];
@@ -328,7 +309,7 @@ export const QUICK_PORTALS: QuickPortalItem[] = [
 
 export const PROFILE_MENU_ITEMS = [
   { name: "My Profile", path: "/user/profile" },
-  { name: "My Contributions", path: "/user/contributions" },
+  { name: "My Contributions", path: "/user/profile" },
   { name: "Settings", path: "/user/settings" },
   { name: "Sign Out", path: "/user/signout", isDanger: true },
 ];

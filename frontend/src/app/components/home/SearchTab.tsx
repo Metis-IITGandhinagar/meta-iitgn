@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BeautifulSearchBox } from "@/components/SearchDesign";
+import { getSearchHistory, addSearchHistory, clearSearchHistory } from "@/lib/searchHistory";
 
 interface SearchTabProps {
   searchTabQuery: string;
@@ -15,12 +16,21 @@ export default function SearchTab({
   setSearchTabQuery,
 }: SearchTabProps) {
   const router = useRouter();
+  const [history, setHistory] = useState<string[]>([]);
+
+  useEffect(() => {
+    setHistory(getSearchHistory());
+  }, []);
 
   const handleSearch = (query: string) => {
     const q = query.trim();
     if (!q) return;
+    addSearchHistory(q);
+    setHistory(getSearchHistory());
     router.push(`/search-results?query=${encodeURIComponent(q)}`);
   };
+
+  const autoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
 
   return (
     <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-base-100 overflow-hidden select-none">
@@ -51,8 +61,36 @@ export default function SearchTab({
               handleSearch(searchTabQuery);
             }}
             placeholder="Pages, people, news, categories…"
+            autoFocus={autoFocus}
           />
         </div>
+
+        {/* Recent searches */}
+        {history.length > 0 && (
+          <div className="w-full max-w-2xl flex flex-wrap items-center justify-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 mr-1">
+              Recent
+            </span>
+            {history.map((item) => (
+              <button
+                key={item}
+                onClick={() => handleSearch(item)}
+                className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
+              >
+                {item}
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                clearSearchHistory();
+                setHistory([]);
+              }}
+              className="text-[10px] font-bold uppercase tracking-wider text-base-content/40 hover:text-rose-500 transition-colors cursor-pointer ml-1"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
       </div>
     </div>

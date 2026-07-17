@@ -7,6 +7,7 @@ export interface ProfileData {
   stats: any;
   readme: string | null;
   activity: any[];
+  bookmarks: any[];
 }
 
 interface ProfileContextType {

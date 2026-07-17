@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
 import { Calendar, User as UserIcon, Eye, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -44,6 +45,8 @@ export default function BlogDetailPage() {
   const [error, setError] = useState("");
 
   const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+
+  useDocumentTitle(blog?.title ?? (loading ? undefined : "Blog Post Not Found"));
 
   // Sync theme
   useEffect(() => {

@@ -12,6 +12,7 @@ interface GenericOverlayModalProps {
   maxWidthClass?: string;
   headerActions?: React.ReactNode;
   headerTrailing?: React.ReactNode;
+  defaultMaximized?: boolean;
   children: React.ReactNode;
 }
 
@@ -23,10 +24,11 @@ export default function GenericOverlayModal({
   maxWidthClass = "max-w-4xl",
   headerActions,
   headerTrailing,
+  defaultMaximized = false,
 }: GenericOverlayModalProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isMounted, setIsMounted] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(defaultMaximized);
   const [isDragging, setIsDragging] = useState(false);
 
   const dragRef = useRef<{

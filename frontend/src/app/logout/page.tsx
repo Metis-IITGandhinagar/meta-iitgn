@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LogOut, ChevronLeft, Loader2 } from "lucide-react";
 
 export default function LogoutPage() {
+  useDocumentTitle("Log Out");
   const router = useRouter();
   const { logout } = useAuth();
   const [loading, setLoading] = useState(false);

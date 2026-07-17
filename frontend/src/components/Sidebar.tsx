@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +17,7 @@ import {
   Calendar,
   Shield,
   TrendingUp,
+  GraduationCap,
   HelpCircle,
   LucideIcon,
   User,
@@ -42,6 +42,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Calendar,
   Shield,
   TrendingUp,
+  GraduationCap,
 };
 
 interface SidebarProps {
@@ -55,29 +56,7 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const pathname = usePathname();
-  const [maxItems, setMaxItems] = useState(5);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const height = window.innerHeight;
-      if (height < 650) {
-        setMaxItems(1);
-      } else if (height < 720) {
-        setMaxItems(2);
-      } else if (height < 820) {
-        setMaxItems(3);
-      } else if (height < 920) {
-        setMaxItems(4);
-      } else {
-        setMaxItems(5);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const { user } = useAuth();
+  const { user, categories } = useAuth();
 
   // Helper to render Lucide icons dynamically from their string names
   const renderIcon = (iconName: string, isActive: boolean) => {
@@ -130,7 +109,7 @@ export default function Sidebar({
         </div>
 
         {/* Navigation list area */}
-        <div className="flex-1 overflow-hidden p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.title} className="space-y-1.5">
               {/* Section Header */}
@@ -140,10 +119,7 @@ export default function Sidebar({
 
               {/* Section Items */}
               <div className="space-y-0.5">
-                {(section.title === "NAVIGATION"
-                  ? section.items
-                  : section.items.slice(0, maxItems)
-                ).map((item) => {
+                {section.items.map((item) => {
                   const isActive = pathname === item.path;
 
                   return (
@@ -171,6 +147,43 @@ export default function Sidebar({
             </div>
           ))}
 
+          {/* Categories — sourced dynamically from the live categories API so the
+              sidebar always reflects the current set of categories. */}
+          {categories.length > 0 && (
+            <div className="space-y-1.5">
+              <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/50 uppercase">
+                Categories
+              </h3>
+              <div className="space-y-0.5">
+                {categories.map((category) => {
+                  const path = `/wiki/${category.slug}`;
+                  const isActive = pathname === path;
+
+                  return (
+                    <Link
+                      key={category.category_id}
+                      href={path}
+                      onClick={() => {
+                        // Close sidebar on mobile after clicking a link
+                        if (window.innerWidth < 1024) {
+                          onClose();
+                        }
+                      }}
+                      className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-bold"
+                          : "text-base-content/75 hover:text-base-content hover:bg-base-200"
+                      }`}
+                    >
+                      {renderIcon(category.icon || "BookOpen", isActive)}
+                      <span className="truncate">{category.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Account/Profile Section */}
           {user ? (
             <div className="space-y-1 border-t border-base-200 pt-2">
@@ -179,19 +192,19 @@ export default function Sidebar({
               </h3>
               <div className="space-y-0.5">
                  <Link
-                  href="/user/contributions"
+                  href="/user/profile"
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/user/contributions"
+                    pathname === "/user/profile"
                       ? "bg-primary/10 text-primary font-bold"
                       : "text-base-content/75 hover:text-base-content hover:bg-base-200"
                   }`}
                 >
                   <History
                   className={`h-5 w-5 transition-colors duration-200 ${
-                    pathname === "/user/contributions"
+                    pathname === "/user/profile"
                       ? "text-primary"
                       : "text-base-content/50 group-hover:text-base-content/80"
                   }`}

@@ -298,3 +298,43 @@ export const getUserStats = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getUserBookmarks = async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.params.user_id);
+
+    const userObj = await prisma.users.findUnique({
+      where: { user_id: userId, deleted_at: null }
+    });
+    if (!userObj) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'USER_NOT_FOUND', message: 'User not found' }
+      });
+    }
+
+    const items = await prisma.bookmarks.findMany({
+      where: { user_id: userId },
+      include: { live_page: true }
+    });
+
+    return res.json(items.map((item: any) => {
+      let snippet = "";
+      if (item.live_page?.content) {
+        const clean = item.live_page.content.replace(/^---[\s\S]*?---/, "").trim();
+        snippet = clean.length > 150 ? clean.substring(0, 150) + "..." : clean;
+      }
+      return {
+        bookmark_id: item.bookmark_id,
+        id: String(item.live_page?.page_id),
+        title: item.live_page?.title,
+        category: (item.live_page?.metadata as any)?.category || "General",
+        slug: item.live_page?.slug,
+        description: snippet
+      };
+    }));
+  } catch (error: any) {
+    console.error('Error in getUserBookmarks:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};

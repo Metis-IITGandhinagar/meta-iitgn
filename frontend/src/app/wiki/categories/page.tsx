@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { BookOpen, ChevronRight, FolderPlus, PlusCircle, Search, Sparkles, Pencil, X, Pin, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, Loader2, GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
 import { Category } from "@/context/AuthContext";
 
@@ -31,6 +32,7 @@ interface CategoryFormInput {
 }
 
 export default function CategoriesPage() {
+  useDocumentTitle("Categories");
   const router = useRouter();
   const { user, categories, addCategoryState, updateCategoryState, activeTier } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");

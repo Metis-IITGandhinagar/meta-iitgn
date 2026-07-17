@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { apiService } from "@/api";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
 import WikiReadView from "@/components/article/WikiReadView";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PendingPagesOverlayProps {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export default function PendingPagesOverlay({
   hasMore,
   onLoadMore,
 }: PendingPagesOverlayProps) {
+  const { activeTier } = useAuth();
+  const canModerate = activeTier !== "bronze";
   const [activeReviewDraft, setActiveReviewDraft] = React.useState<any | null>(null);
   const [liveContent, setLiveContent] = React.useState<string>("");
   const [reviewLoading, setReviewLoading] = React.useState(false);
@@ -74,8 +77,9 @@ export default function PendingPagesOverlay({
             onClose={() => setActiveReviewDraft(null)}
             title={`Review: ${activeReviewDraft.title}`}
             maxWidthClass="max-w-6xl"
+            defaultMaximized
           >
-            <div className="flex flex-col h-[80vh] min-h-0">
+            <div className="flex flex-col flex-1 min-h-0">
               <p className="text-xs text-base-content/50 mb-3 font-semibold uppercase tracking-wider shrink-0">
                 Author:{" "}
                 {activeReviewDraft.editor?.name ||
@@ -83,8 +87,8 @@ export default function PendingPagesOverlay({
                   `User #${activeReviewDraft.editor_id}`}
               </p>
 
-              {/* Side-by-side read-mode panes */}
-              <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
+              {/* Two content columns side by side */}
+              <div className="flex-1 min-h-0 flex flex-row gap-4">
                 {/* Live version */}
                 <div className="flex-1 min-w-0 min-h-0 border border-base-200 rounded-2xl overflow-hidden bg-base-200/20">
                   {reviewLoading ? (
@@ -110,24 +114,33 @@ export default function PendingPagesOverlay({
 
               {/* Footer */}
               <footer className="pt-4 mt-2 border-t border-base-200 flex justify-end gap-3 shrink-0">
+                {!canModerate && (
+                  <p className="mr-auto self-center text-xs text-base-content/50 font-medium italic">
+                    You have view-only access. Only moderators can approve or reject.
+                  </p>
+                )}
                 <button
                   onClick={() => setActiveReviewDraft(null)}
                   className="btn btn-ghost btn-sm rounded-xl"
                 >
-                  Cancel
+                  Close
                 </button>
-                <button
-                  onClick={() => handleReviewAction(activeReviewDraft.pending_id, "reject")}
-                  className="btn btn-error btn-sm rounded-xl text-error-content"
-                >
-                  Reject Draft
-                </button>
-                <button
-                  onClick={() => handleReviewAction(activeReviewDraft.pending_id, "approve")}
-                  className="btn btn-success btn-sm rounded-xl text-success-content"
-                >
-                  Approve &amp; Publish
-                </button>
+                {canModerate && (
+                  <>
+                    <button
+                      onClick={() => handleReviewAction(activeReviewDraft.pending_id, "reject")}
+                      className="btn btn-error btn-sm rounded-xl text-error-content"
+                    >
+                      Reject Draft
+                    </button>
+                    <button
+                      onClick={() => handleReviewAction(activeReviewDraft.pending_id, "approve")}
+                      className="btn btn-success btn-sm rounded-xl text-success-content"
+                    >
+                      Approve &amp; Publish
+                    </button>
+                  </>
+                )}
               </footer>
             </div>
           </GenericOverlayModal>,

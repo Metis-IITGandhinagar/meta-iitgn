@@ -1,16 +1,21 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { X, Eye, Layout, Bell, ChevronLeft, Search, User, Shield, HelpCircle, HardDrive, Cpu, Maximize2, Minimize2 } from "lucide-react";
+import { X, Eye, Layout, ChevronLeft, Search, HelpCircle, HardDrive, Cpu, Maximize2, Minimize2, PenLine, Trash2, RotateCcw, Check } from "lucide-react";
 import { WIKI_THEMES, DARK_THEMES } from "@/lib/constants";
 import ProfilePopover from "@/components/ProfilePopover";
+import { db } from "@/lib/db";
+
+// Real build info shown in the Help & About tab.
+const APP_VERSION = "1.1.0";
+const REPO_URL = "https://github.com/Metis-IITGandhinagar/meta-iitgn";
 
 interface SettingsModalProps {
   onClose: () => void;
   initialTab?: TabType;
 }
 
-type TabType = "appearance" | "layout" | "search" | "alerts" | "account" | "language" | "storage" | "performance" | "help";
+type TabType = "appearance" | "editor" | "layout" | "search" | "storage" | "performance" | "help";
 
 export default function SettingsModal({ onClose, initialTab = "appearance" }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
@@ -19,21 +24,30 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
   // Mobile view navigation layer state: "list" shows settings categories, "details" shows the setting controls
   const [mobileView, setMobileView] = useState<"list" | "details">("list");
 
-  // User settings states (persisted to localStorage)
+  // Interface settings (applied to the whole UI, not the editor/article text)
   const [theme, setTheme] = useState("light");
-  const [fontSize, setFontSize] = useState("normal");
-  const [fontStyle, setFontStyle] = useState("sans");
+  const [interfaceFontStyle, setInterfaceFontStyle] = useState("sans");
   const [zoomLevel, setZoomLevel] = useState("100%");
   const [compactLayout, setCompactLayout] = useState(false);
-  const [enableSound, setEnableSound] = useState(true);
   const [readingProgress, setReadingProgress] = useState(true);
+
+  // Editor settings (independent of the interface font)
+  const [editorAutosave, setEditorAutosave] = useState(true);
+  const [editorSpellCheck, setEditorSpellCheck] = useState(true);
+  const [editorWordCount, setEditorWordCount] = useState(true);
+  const [editorFontStyle, setEditorFontStyle] = useState("serif");
+  const [editorFontSize, setEditorFontSize] = useState("normal");
 
   const [autoFocusSearch, setAutoFocusSearch] = useState(true);
   const [historyLimit, setHistoryLimit] = useState(10);
   const [openInNewTab, setOpenInNewTab] = useState(false);
 
-  const [emailDigest, setEmailDigest] = useState(true);
-  const [articleEditsAlert, setArticleEditsAlert] = useState(true);
+  // Performance: interface animations (persisted + applied globally via data-reduce-motion)
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+
+  // Storage: transient feedback for the clear/reset actions
+  const [cacheCleared, setCacheCleared] = useState(false);
+  const [settingsReset, setSettingsReset] = useState(false);
 
   const [isMounted, setIsMounted] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -107,33 +121,38 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
     setIsMounted(true);
     // Load settings from localStorage
     const savedTheme = localStorage.getItem("wiki_theme") || "light";
-    const savedFontSize = localStorage.getItem("wiki_font_size") || "normal";
-    const savedFontStyle = localStorage.getItem("wiki_font_style") || "sans";
+    const savedInterfaceFontStyle = localStorage.getItem("wiki_interface_font_style") || "sans";
     const savedZoom = localStorage.getItem("wiki_zoom_level") || "100%";
 
     const savedCompact = localStorage.getItem("wiki_compact_layout") === "true";
-    const savedSound = localStorage.getItem("wiki_enable_sound") !== "false";
     const savedProgress = localStorage.getItem("wiki_reading_progress") !== "false";
+
+    const savedEditorAutosave = localStorage.getItem("wiki_editor_autosave") !== "false";
+    const savedEditorSpellCheck = localStorage.getItem("wiki_editor_spellcheck") !== "false";
+    const savedEditorWordCount = localStorage.getItem("wiki_editor_word_count") !== "false";
+    const savedEditorFontStyle = localStorage.getItem("wiki_editor_font_style") || "serif";
+    const savedEditorFontSize = localStorage.getItem("wiki_editor_font_size") || "normal";
 
     const savedAutoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
     const savedHistoryLimit = Number(localStorage.getItem("wiki_history_limit") || "10");
     const savedNewTab = localStorage.getItem("wiki_open_new_tab") === "true";
 
-    const savedDigest = localStorage.getItem("wiki_email_digest") !== "false";
-    const savedEditsAlert = localStorage.getItem("wiki_article_edits_alert") !== "false";
+    const savedAnimations = localStorage.getItem("wiki_animations") !== "false";
 
     setTheme(savedTheme);
-    setFontSize(savedFontSize);
-    setFontStyle(savedFontStyle);
+    setInterfaceFontStyle(savedInterfaceFontStyle);
     setZoomLevel(savedZoom);
     setCompactLayout(savedCompact);
-    setEnableSound(savedSound);
     setReadingProgress(savedProgress);
+    setEditorAutosave(savedEditorAutosave);
+    setEditorSpellCheck(savedEditorSpellCheck);
+    setEditorWordCount(savedEditorWordCount);
+    setEditorFontStyle(savedEditorFontStyle);
+    setEditorFontSize(savedEditorFontSize);
     setAutoFocusSearch(savedAutoFocus);
     setHistoryLimit(savedHistoryLimit);
     setOpenInNewTab(savedNewTab);
-    setEmailDigest(savedDigest);
-    setArticleEditsAlert(savedEditsAlert);
+    setAnimationsEnabled(savedAnimations);
 
     if (initialTab) {
       setActiveTab(initialTab);
@@ -169,15 +188,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
     window.dispatchEvent(new Event("wiki_settings_changed"));
   };
 
-  const handleSaveFontSize = (size: string) => {
-    setFontSize(size);
-    localStorage.setItem("wiki_font_size", size);
-    window.dispatchEvent(new Event("wiki_settings_changed"));
-  };
-
-  const handleSaveFontStyle = (style: string) => {
-    setFontStyle(style);
-    localStorage.setItem("wiki_font_style", style);
+  const handleSaveInterfaceFontStyle = (style: string) => {
+    setInterfaceFontStyle(style);
+    localStorage.setItem("wiki_interface_font_style", style);
     window.dispatchEvent(new Event("wiki_settings_changed"));
   };
 
@@ -190,16 +203,42 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
   const handleSaveCompact = (val: boolean) => {
     setCompactLayout(val);
     localStorage.setItem("wiki_compact_layout", val ? "true" : "false");
-  };
-
-  const handleSaveSound = (val: boolean) => {
-    setEnableSound(val);
-    localStorage.setItem("wiki_enable_sound", val ? "true" : "false");
+    window.dispatchEvent(new Event("wiki_settings_changed"));
   };
 
   const handleSaveProgress = (val: boolean) => {
     setReadingProgress(val);
     localStorage.setItem("wiki_reading_progress", val ? "true" : "false");
+  };
+
+  const handleSaveEditorAutosave = (val: boolean) => {
+    setEditorAutosave(val);
+    localStorage.setItem("wiki_editor_autosave", val ? "true" : "false");
+    window.dispatchEvent(new Event("wiki_settings_changed"));
+  };
+
+  const handleSaveEditorSpellCheck = (val: boolean) => {
+    setEditorSpellCheck(val);
+    localStorage.setItem("wiki_editor_spellcheck", val ? "true" : "false");
+    window.dispatchEvent(new Event("wiki_settings_changed"));
+  };
+
+  const handleSaveEditorWordCount = (val: boolean) => {
+    setEditorWordCount(val);
+    localStorage.setItem("wiki_editor_word_count", val ? "true" : "false");
+    window.dispatchEvent(new Event("wiki_settings_changed"));
+  };
+
+  const handleSaveEditorFontStyle = (style: string) => {
+    setEditorFontStyle(style);
+    localStorage.setItem("wiki_editor_font_style", style);
+    window.dispatchEvent(new Event("wiki_settings_changed"));
+  };
+
+  const handleSaveEditorFontSize = (size: string) => {
+    setEditorFontSize(size);
+    localStorage.setItem("wiki_editor_font_size", size);
+    window.dispatchEvent(new Event("wiki_settings_changed"));
   };
 
   const handleSaveAutoFocus = (val: boolean) => {
@@ -217,14 +256,53 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
     localStorage.setItem("wiki_open_new_tab", val ? "true" : "false");
   };
 
-  const handleSaveDigest = (val: boolean) => {
-    setEmailDigest(val);
-    localStorage.setItem("wiki_email_digest", val ? "true" : "false");
+  const handleSaveAnimations = (val: boolean) => {
+    setAnimationsEnabled(val);
+    localStorage.setItem("wiki_animations", val ? "true" : "false");
+    // Disable transitions/animations globally when turned off.
+    document.documentElement.setAttribute("data-reduce-motion", val ? "false" : "true");
+    window.dispatchEvent(new Event("wiki_settings_changed"));
   };
 
-  const handleSaveEditsAlert = (val: boolean) => {
-    setArticleEditsAlert(val);
-    localStorage.setItem("wiki_article_edits_alert", val ? "true" : "false");
+  // Clear the offline (Dexie / IndexedDB) content cache. This wipes downloaded
+  // articles, bookmarks and other cached collections so they are re-fetched.
+  const handleClearCache = async () => {
+    try {
+      await Promise.all([
+        db.bookmarks.clear(),
+        db.news.clear(),
+        db.pendingpages.clear(),
+        db.updatedpages.clear(),
+        db.cachedpages.clear(),
+        db.featured.clear(),
+        db.popular.clear(),
+        db.events.clear(),
+        db.messmenu.clear(),
+        db.transport.clear(),
+        db.meta.clear(),
+      ]);
+      localStorage.removeItem("syncCheck");
+    } catch (e) {
+      console.error("Failed to clear offline cache:", e);
+    }
+    setCacheCleared(true);
+    setTimeout(() => setCacheCleared(false), 2000);
+  };
+
+  // Reset every locally-stored preference (theme, fonts, layout, etc.) back to
+  // defaults, then reload so the fresh values are applied everywhere.
+  const handleResetSettings = () => {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      // Only touch preference keys; leave auth/session caches untouched.
+      if (key && key.startsWith("wiki_")) keys.push(key);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+    setSettingsReset(true);
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
   };
 
   // Helper Switch Component matching the application's clean design system
@@ -313,12 +391,10 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
               {/* Navigation Tabs */}
               <ul className="menu bg-base-100 px-4 py-0 gap-1.5 flex-1 grid grid-cols-1 w-full overflow-y-auto">
                 {[
-                  { id: "appearance", label: "Appearance", desc: "Theme, font styles, colors", icon: Eye },
+                  { id: "appearance", label: "Interface", desc: "Theme & interface font", icon: Eye },
+                  { id: "editor", label: "Editor", desc: "Writing & draft preferences", icon: PenLine },
                   { id: "layout", label: "Layout & Reading", desc: "List styling & reading bar", icon: Layout },
                   { id: "search", label: "Search Preferences", desc: "Behavior & history limit", icon: Search },
-                  { id: "alerts", label: "Notifications", desc: "Digest & bookmark alerts", icon: Bell },
-                  { id: "account", label: "Account & Security", desc: "Session settings & roles", icon: User },
-                  { id: "language", label: "Language", desc: "Translation & locale", icon: Shield },
                   { id: "storage", label: "Cache & Offline", desc: "Manage offline storage", icon: HardDrive },
                   { id: "performance", label: "Performance", desc: "Accelerators & animations", icon: Cpu },
                   { id: "help", label: "Help & About", desc: "View documentation & source", icon: HelpCircle },
@@ -363,53 +439,25 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
             {activeTab === "appearance" && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 <div className="space-y-1">
-                  <h4 className="text-[13px] font-bold text-base-content">Appearance Settings</h4>
-                  <p className="text-[11px] text-base-content/60">Configure visual themes, sizing scaling, and colors.</p>
+                  <h4 className="text-[13px] font-bold text-base-content">Interface Settings</h4>
+                  <p className="text-[11px] text-base-content/60">Configure theme and the interface font used across the app.</p>
                 </div>
 
                 <div className="space-y-4 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  {/* Font Size */}
+                  {/* Interface Font Style */}
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-base-content block">Article Font Size</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { id: "small", label: "Small" },
-                        { id: "normal", label: "Standard" },
-                        { id: "large", label: "Large" }
-                      ].map((f) => {
-                        const isSel = fontSize === f.id;
-                        return (
-                          <button
-                            key={f.id}
-                            onClick={() => handleSaveFontSize(f.id)}
-                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
-                              ? "bg-primary/10 border-primary text-primary font-bold"
-                              : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
-                              }`}
-                          >
-                            {f.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="border-t border-base-200 my-1" />
-
-                  {/* Font Style */}
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-base-content block">Article Font Style</label>
+                    <label className="text-[12px] font-semibold text-base-content block">Interface Font Style</label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
                         { id: "sans", label: "Sans-Serif" },
                         { id: "serif", label: "Serif" },
                         { id: "mono", label: "Monospace" }
                       ].map((fontItem) => {
-                        const isSel = fontStyle === fontItem.id;
+                        const isSel = interfaceFontStyle === fontItem.id;
                         return (
                           <button
                             key={fontItem.id}
-                            onClick={() => handleSaveFontStyle(fontItem.id)}
+                            onClick={() => handleSaveInterfaceFontStyle(fontItem.id)}
                             className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
                               ? "bg-primary/10 border-primary text-primary font-bold"
                               : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
@@ -491,6 +539,102 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
               </div>
             )}
 
+            {/* Tab: Editor Settings */}
+            {activeTab === "editor" && (
+              <div className="space-y-5 animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <h4 className="text-[13px] font-bold text-base-content">Editor Settings</h4>
+                  <p className="text-[11px] text-base-content/60">Configure the editor typography and writing experience. These are independent of the interface font.</p>
+                </div>
+
+                <div className="space-y-4 bg-base-200/40 p-4 rounded-xl border border-base-200">
+                  {/* Editor Font Size */}
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-base-content block">Editor Font Size</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: "small", label: "Small" },
+                        { id: "normal", label: "Standard" },
+                        { id: "large", label: "Large" }
+                      ].map((f) => {
+                        const isSel = editorFontSize === f.id;
+                        return (
+                          <button
+                            key={f.id}
+                            onClick={() => handleSaveEditorFontSize(f.id)}
+                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
+                              ? "bg-primary/10 border-primary text-primary font-bold"
+                              : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
+                              }`}
+                          >
+                            {f.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-base-200 my-1" />
+
+                  {/* Editor Font Style */}
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-base-content block">Editor Font Style</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: "sans", label: "Sans-Serif" },
+                        { id: "serif", label: "Serif" },
+                        { id: "mono", label: "Monospace" }
+                      ].map((fontItem) => {
+                        const isSel = editorFontStyle === fontItem.id;
+                        return (
+                          <button
+                            key={fontItem.id}
+                            onClick={() => handleSaveEditorFontStyle(fontItem.id)}
+                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
+                              ? "bg-primary/10 border-primary text-primary font-bold"
+                              : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
+                              }`}
+                          >
+                            {fontItem.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-base-300/60 my-1" />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Auto-save drafts</span>
+                      <span className="text-[10px] text-base-content/50 block">Periodically save your work while editing.</span>
+                    </div>
+                    <Switch checked={editorAutosave} onChange={handleSaveEditorAutosave} />
+                  </div>
+
+                  <div className="border-t border-base-300/60 my-1" />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Spell check</span>
+                      <span className="text-[10px] text-base-content/50 block">Highlight misspelled words while typing.</span>
+                    </div>
+                    <Switch checked={editorSpellCheck} onChange={handleSaveEditorSpellCheck} />
+                  </div>
+
+                  <div className="border-t border-base-300/60 my-1" />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Show word count</span>
+                      <span className="text-[10px] text-base-content/50 block">Display a live word and character count while editing.</span>
+                    </div>
+                    <Switch checked={editorWordCount} onChange={handleSaveEditorWordCount} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Tab: Layout Preferences */}
             {activeTab === "layout" && (
               <div className="space-y-5 animate-in fade-in duration-200">
@@ -518,15 +662,6 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                     <Switch checked={readingProgress} onChange={handleSaveProgress} />
                   </div>
 
-                  <div className="border-t border-base-300/60 my-1" />
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Enable micro sound effects</span>
-                      <span className="text-[10px] text-base-content/50 block">Play subtle mechanical sounds on clicks.</span>
-                    </div>
-                    <Switch checked={enableSound} onChange={handleSaveSound} />
-                  </div>
                 </div>
               </div>
             )}
@@ -580,119 +715,48 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
               </div>
             )}
 
-            {/* Tab: Alerts & Notifications */}
-            {activeTab === "alerts" && (
-              <div className="space-y-5 animate-in fade-in duration-200">
-                <div className="space-y-1">
-                  <h4 className="text-[13px] font-bold text-base-content">Weekly Summaries & Digests</h4>
-                  <p className="text-[11px] text-base-content/50">Set up alert schedules for edits on bookmarked articles.</p>
-                </div>
-
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Weekly highlights email</span>
-                      <span className="text-[10px] text-base-content/50 block">Weekly edits summary and ranking updates.</span>
-                    </div>
-                    <Switch checked={emailDigest} onChange={handleSaveDigest} />
-                  </div>
-
-                  <div className="border-t border-base-300/60 my-1" />
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Bookmarked page edit alerts</span>
-                      <span className="text-[10px] text-base-content/50 block">Get instant alerts when bookmarked articles are updated.</span>
-                    </div>
-                    <Switch checked={articleEditsAlert} onChange={handleSaveEditsAlert} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Account & Security */}
-            {activeTab === "account" && (
-              <div className="space-y-5 animate-in fade-in duration-200">
-                <div className="space-y-1">
-                  <h4 className="text-[13px] font-bold text-base-content">Account & Security</h4>
-                  <p className="text-[11px] text-base-content/50">Configure login sessions, API tokens, and access roles.</p>
-                </div>
-
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Remember active session</span>
-                      <span className="text-[10px] text-base-content/50 block">Keep you signed in on this browser for 30 days.</span>
-                    </div>
-                    <Switch checked={true} onChange={() => { }} />
-                  </div>
-                  <div className="border-t border-base-300/60 my-1" />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Two-Factor authentication</span>
-                      <span className="text-[10px] text-base-content/50 block">Request verification codes when logging in.</span>
-                    </div>
-                    <Switch checked={false} onChange={() => { }} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Language */}
-            {activeTab === "language" && (
-              <div className="space-y-5 animate-in fade-in duration-200">
-                <div className="space-y-1">
-                  <h4 className="text-[13px] font-bold text-base-content">Language & Translation</h4>
-                  <p className="text-[11px] text-base-content/50">Select language preferences for the portal content.</p>
-                </div>
-
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Default language</span>
-                      <span className="text-[10px] text-base-content/50 block">Pick language for general interface buttons.</span>
-                    </div>
-                    <select className="h-8 px-2 bg-base-100 border border-base-300 rounded-lg text-xs font-semibold text-base-content/85 focus:outline-none cursor-pointer">
-                      <option value="en">English (US)</option>
-                      <option value="hi">Hindi (हिन्दी)</option>
-                      <option value="es">Spanish</option>
-                    </select>
-                  </div>
-                  <div className="border-t border-base-300/60 my-1" />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Auto-translate articles</span>
-                      <span className="text-[10px] text-base-content/50 block">Translate external resources dynamically.</span>
-                    </div>
-                    <Switch checked={false} onChange={() => { }} />
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Tab: Cache & Offline */}
             {activeTab === "storage" && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 <div className="space-y-1">
                   <h4 className="text-[13px] font-bold text-base-content">Cache & Offline Storage</h4>
-                  <p className="text-[11px] text-base-content/50">Manage downloaded articles and saved browser cache space.</p>
+                  <p className="text-[11px] text-base-content/50">Clear downloaded content or reset your local preferences.</p>
                 </div>
 
                 <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Save bookmarked pages offline</span>
-                      <span className="text-[10px] text-base-content/50 block">Downloads bookmarks for reading without internet.</span>
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Clear offline content cache</span>
+                      <span className="text-[10px] text-base-content/50 block">Remove downloaded articles, bookmarks &amp; cached data. They re-download when next viewed.</span>
                     </div>
-                    <Switch checked={true} onChange={() => { }} />
+                    <button
+                      onClick={handleClearCache}
+                      className={`btn btn-outline btn-xs font-semibold cursor-pointer shrink-0 ${cacheCleared ? "btn-success" : "btn-error"}`}
+                    >
+                      {cacheCleared ? (
+                        <><Check className="w-3.5 h-3.5" /> Cleared</>
+                      ) : (
+                        <><Trash2 className="w-3.5 h-3.5" /> Clear Cache</>
+                      )}
+                    </button>
                   </div>
                   <div className="border-t border-base-300/60 my-1" />
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Clear browser settings cache</span>
-                      <span className="text-[10px] text-base-content/50 block">Wipe out configuration settings history.</span>
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Reset all settings</span>
+                      <span className="text-[10px] text-base-content/50 block">Restore theme, fonts, layout and every preference to their defaults.</span>
                     </div>
-                    <button className="btn btn-error btn-outline btn-xs font-semibold cursor-pointer">Clear Cache</button>
+                    <button
+                      onClick={handleResetSettings}
+                      disabled={settingsReset}
+                      className="btn btn-error btn-outline btn-xs font-semibold cursor-pointer shrink-0"
+                    >
+                      {settingsReset ? (
+                        <><Check className="w-3.5 h-3.5" /> Resetting…</>
+                      ) : (
+                        <><RotateCcw className="w-3.5 h-3.5" /> Reset</>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -710,17 +774,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-base-content/85 block text-[12px]">Enable interface animations</span>
-                      <span className="text-[10px] text-base-content/50 block">Disable transitions to boost rendering speed.</span>
+                      <span className="text-[10px] text-base-content/50 block">Turn off transitions and motion effects for a faster, calmer interface.</span>
                     </div>
-                    <Switch checked={true} onChange={() => { }} />
-                  </div>
-                  <div className="border-t border-base-300/60 my-1" />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Hardware acceleration</span>
-                      <span className="text-[10px] text-base-content/50 block">Leverage GPU computing for loading articles.</span>
-                    </div>
-                    <Switch checked={true} onChange={() => { }} />
+                    <Switch checked={animationsEnabled} onChange={handleSaveAnimations} />
                   </div>
                 </div>
               </div>
@@ -746,7 +802,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <div className="flex items-center justify-between pb-2 border-b border-base-300/50">
                     <div>
                       <span className="font-semibold text-base-content/85 block text-[12px]">Software Build</span>
-                      <span className="text-[10px] text-base-content/50 block">v1.12.4-stable</span>
+                      <span className="text-[10px] text-base-content/50 block">v{APP_VERSION}</span>
                     </div>
                   </div>
 
@@ -759,12 +815,13 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="flex items-center justify-between py-1.5">
                     <div>
-                      <span className="font-semibold text-base-content/85 block text-[12px]">Resources & Licenses</span>
-                      <span className="text-[10px] text-base-content/50 block">Read system instructions and project code rules.</span>
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Source & Issues</span>
+                      <span className="text-[10px] text-base-content/50 block">View the project repository and report issues.</span>
                     </div>
                     <div className="flex gap-2">
-                      <a href="https://github.com" target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Docs</a>
-                      <a href="https://github.com" target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">License</a>
+                      <a href={`${REPO_URL}#readme`} target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Docs</a>
+                      <a href={`${REPO_URL}/wiki`} target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Wiki</a>
+                      <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Issues</a>
                     </div>
                   </div>
                 </div>

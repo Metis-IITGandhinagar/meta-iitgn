@@ -45,7 +45,8 @@ const DraftSkeleton = () => (
 );
 
 export default function PendingChangesView({ setShowPendingChanges, pageId }: PendingChangesViewProps) {
-  const { user } = useAuth();
+  const { user, activeTier } = useAuth();
+  const canModerate = activeTier !== "bronze";
   const router = useRouter();
   const [drafts, setDrafts] = useState<PendingDraft[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,13 +247,15 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
             onClose={() => setActiveReviewDraft(null)}
             title={`Review: ${activeReviewDraft.title}`}
             maxWidthClass="max-w-6xl"
+            defaultMaximized
           >
-            <div className="flex flex-col h-[80vh] min-h-0">
+            <div className="flex flex-col flex-1 min-h-0">
               <p className="text-xs text-base-content/50 mb-3 font-semibold uppercase tracking-wider shrink-0">
                 Compare live content with proposal. Author: {activeReviewDraft.users?.name || `User #${activeReviewDraft.editor_id}`}
               </p>
 
-              <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
+              {/* Two content columns side by side */}
+              <div className="flex-1 min-h-0 flex flex-row gap-4">
                 <div className="flex-1 min-w-0 min-h-0 border border-base-200 rounded-2xl overflow-hidden bg-base-200/20">
                   {reviewLoading ? (
                     <div className="flex-1 flex flex-col gap-2.5 p-4 animate-pulse">
@@ -275,24 +278,33 @@ export default function PendingChangesView({ setShowPendingChanges, pageId }: Pe
               </div>
 
               <footer className="pt-4 mt-2 border-t border-base-200 flex justify-end gap-3 shrink-0">
+                {!canModerate && (
+                  <p className="mr-auto self-center text-xs text-base-content/50 font-medium italic">
+                    You have view-only access. Only moderators can approve or reject.
+                  </p>
+                )}
                 <button
                   onClick={() => setActiveReviewDraft(null)}
                   className="btn btn-ghost btn-sm rounded-xl"
                 >
-                  Cancel
+                  Close
                 </button>
-                <button
-                  onClick={() => handleReview(activeReviewDraft.pending_id, "reject")}
-                  className="btn btn-error btn-sm rounded-xl text-error-content"
-                >
-                  Reject Draft
-                </button>
-                <button
-                  onClick={() => handleReview(activeReviewDraft.pending_id, "approve")}
-                  className="btn btn-success btn-sm rounded-xl text-success-content"
-                >
-                  Approve & Publish
-                </button>
+                {canModerate && (
+                  <>
+                    <button
+                      onClick={() => handleReview(activeReviewDraft.pending_id, "reject")}
+                      className="btn btn-error btn-sm rounded-xl text-error-content"
+                    >
+                      Reject Draft
+                    </button>
+                    <button
+                      onClick={() => handleReview(activeReviewDraft.pending_id, "approve")}
+                      className="btn btn-success btn-sm rounded-xl text-success-content"
+                    >
+                      Approve & Publish
+                    </button>
+                  </>
+                )}
               </footer>
             </div>
           </GenericOverlayModal>,
