@@ -304,7 +304,7 @@ export default function Navbar({
               {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div
-                  className={`absolute ${isWiki ? "-right-10" : "right-0"} top-12 mt-2 w-80 sm:w-88 card card-bordered bg-base-100 shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
+                  className={`absolute right-0  top-12 mt-2 w-80 sm:w-88 card card-bordered bg-base-100 shadow-xl p-4  z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
                 >
                   {/* Header info */}
                   <div className="flex items-center gap-3 pb-3 border-b border-base-200">

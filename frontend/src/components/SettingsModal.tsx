@@ -311,7 +311,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
       type="checkbox"
       checked={checked}
       onChange={(e) => onChange(e.target.checked)}
-      className="toggle toggle-primary toggle-sm cursor-pointer"
+      className="toggle toggle-primary toggle-sm cursor-pointer shrink-0"
     />
   );
 
@@ -330,7 +330,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
         } ${
           isMaximized
             ? "w-full h-full max-w-none max-h-none sm:w-screen sm:h-screen sm:max-h-none sm:rounded-none sm:border-0"
-            : "w-full h-full max-w-5xl sm:h-[min(680px,calc(100vh-2rem))] sm:min-h-0 sm:max-h-[calc(100vh-2rem)] sm:rounded-lg sm:border sm:border-base-200"
+            : "w-full h-full max-w-5xl sm:h-[min(680px,calc(100vh-2rem))] sm:min-h-0 md:h-[min(620px,calc(100vh-2rem))] lg:h-[min(680px,calc(100vh-2rem))] sm:max-h-[calc(100vh-2rem)] sm:rounded-lg sm:border sm:border-base-200 md:max-w-2xl lg:max-w-5xl"
         }`}
       >
         {/* Unified Settings Header - using theme color, not too dark */}
@@ -385,11 +385,11 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
         {/* Content Body Row */}
         <div className="flex flex-1 min-h-0 overflow-hidden w-full">
           {/* Left Panel: Navigation Categories list */}
-          <div className={`w-full sm:w-[280px] bg-base-100 border-r border-base-200 flex flex-col justify-between shrink-0 select-none overflow-hidden ${mobileView === "details" ? "hidden sm:flex" : "flex"
+          <div className={`w-full sm:w-56 md:w-60 lg:w-[280px] bg-base-100 border-r border-base-200 flex flex-col justify-between shrink-0 select-none overflow-hidden ${mobileView === "details" ? "hidden sm:flex" : "flex"
             }`}>
             <div className="flex flex-col gap-6 h-full overflow-hidden pt-4">
               {/* Navigation Tabs */}
-              <ul className="menu bg-base-100 px-4 py-0 gap-1.5 flex-1 grid grid-cols-1 w-full overflow-y-auto">
+              <ul className="menu bg-base-100 px-3 md:px-4 py-0 gap-1.5 flex-1 grid grid-cols-1 w-full overflow-y-auto">
                 {[
                   { id: "appearance", label: "Interface", desc: "Theme & interface font", icon: Eye },
                   { id: "editor", label: "Editor", desc: "Writing & draft preferences", icon: PenLine },
@@ -408,15 +408,15 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                           setActiveTab(tab.id as TabType);
                           setMobileView("details");
                         }}
-                        className={`flex items-start gap-3 p-2.5 rounded-lg transition-all duration-200 cursor-pointer w-full text-left ${isAct
+                        className={`flex items-start gap-2.5 md:gap-3 p-2 md:p-2.5 rounded-lg transition-all duration-200 cursor-pointer w-full text-left ${isAct
                           ? "bg-primary! text-primary-content!"
                           : "text-base-content hover:bg-base-200 bg-transparent"
                           }`}
                       >
-                        <IconComponent className={`h-4.5 w-4.5 mt-0.5 transition-colors duration-200 ${isAct ? "text-primary-content" : "text-base-content/70"}`} />
+                        <IconComponent className={`h-4.5 w-4.5 mt-0.5 shrink-0 transition-colors duration-200 ${isAct ? "text-primary-content" : "text-base-content/70"}`} />
                         <div className="min-w-0 flex-1">
                           <span className="block truncate text-[12.5px] leading-tight font-bold">{tab.label}</span>
-                          <span className={`block text-[11px] font-medium leading-normal mt-0.5 ${isAct ? "text-primary-content/90" : "text-base-content/70"}`}>
+                          <span className={`block truncate md:whitespace-normal text-[11px] font-medium leading-normal mt-0.5 ${isAct ? "text-primary-content/90" : "text-base-content/70"}`}>
                             {tab.desc}
                           </span>
                         </div>
@@ -433,7 +433,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
             }`}>
 
             {/* Active Category Settings Content */}
-            <div className="flex-1 p-6 overflow-y-auto min-h-0 space-y-6 bg-base-100">
+            <div className="flex-1 p-4 md:p-5 lg:p-6 overflow-y-auto min-h-0 space-y-6 bg-base-100">
 
             {/* Tab: Appearance */}
             {activeTab === "appearance" && (
@@ -443,7 +443,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <p className="text-[11px] text-base-content/60">Configure theme and the interface font used across the app.</p>
                 </div>
 
-                <div className="space-y-4 bg-base-200/40 p-4 rounded-xl border border-base-200">
+                <div className="space-y-4 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
                   {/* Interface Font Style */}
                   <div className="space-y-2">
                     <label className="text-[12px] font-semibold text-base-content block">Interface Font Style</label>
@@ -458,7 +458,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                           <button
                             key={fontItem.id}
                             onClick={() => handleSaveInterfaceFontStyle(fontItem.id)}
-                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
+                            className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg text-[11px] md:text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
                               ? "bg-primary/10 border-primary text-primary font-bold"
                               : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
                               }`}
@@ -486,7 +486,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                           <button
                             key={z.id}
                             onClick={() => handleSaveZoomLevel(z.id)}
-                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
+                            className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg text-[11px] md:text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
                               ? "bg-primary/10 border-primary text-primary font-bold"
                               : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
                               }`}
@@ -503,7 +503,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   {/* Theme Mode */}
                   <div className="space-y-2">
                     <label className="text-[12px] font-semibold text-base-content block">Interface Theme</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
                       {WIKI_THEMES.map((t) => {
                         const isSel = theme === t.id;
                         return (
@@ -547,7 +547,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <p className="text-[11px] text-base-content/60">Configure the editor typography and writing experience. These are independent of the interface font.</p>
                 </div>
 
-                <div className="space-y-4 bg-base-200/40 p-4 rounded-xl border border-base-200">
+                <div className="space-y-4 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
                   {/* Editor Font Size */}
                   <div className="space-y-2">
                     <label className="text-[12px] font-semibold text-base-content block">Editor Font Size</label>
@@ -562,7 +562,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                           <button
                             key={f.id}
                             onClick={() => handleSaveEditorFontSize(f.id)}
-                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
+                            className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg text-[11px] md:text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
                               ? "bg-primary/10 border-primary text-primary font-bold"
                               : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
                               }`}
@@ -590,7 +590,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                           <button
                             key={fontItem.id}
                             onClick={() => handleSaveEditorFontStyle(fontItem.id)}
-                            className={`flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
+                            className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg text-[11px] md:text-xs font-semibold border transition-all duration-150 cursor-pointer active:scale-95 ${isSel
                               ? "bg-primary/10 border-primary text-primary font-bold"
                               : "bg-base-100 text-base-content border-base-300 hover:bg-base-200/60"
                               }`}
@@ -604,8 +604,8 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="border-t border-base-300/60 my-1" />
 
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Auto-save drafts</span>
                       <span className="text-[10px] text-base-content/50 block">Periodically save your work while editing.</span>
                     </div>
@@ -614,8 +614,8 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="border-t border-base-300/60 my-1" />
 
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Spell check</span>
                       <span className="text-[10px] text-base-content/50 block">Highlight misspelled words while typing.</span>
                     </div>
@@ -624,8 +624,8 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="border-t border-base-300/60 my-1" />
 
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Show word count</span>
                       <span className="text-[10px] text-base-content/50 block">Display a live word and character count while editing.</span>
                     </div>
@@ -643,9 +643,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <p className="text-[11px] text-base-content/50">Configure presentation structure and micro-interactions.</p>
                 </div>
 
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="space-y-3 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Compact lists view</span>
                       <span className="text-[10px] text-base-content/50 block">Removes card gaps to display more content items.</span>
                     </div>
@@ -654,8 +654,8 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="border-t border-base-300/60 my-1" />
 
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Show article reading progress bar</span>
                       <span className="text-[10px] text-base-content/50 block">Render a thin visual scrolling progress bar on top.</span>
                     </div>
@@ -674,9 +674,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <p className="text-[11px] text-base-content/50">Customize lookup defaults and query indexing preferences.</p>
                 </div>
 
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="space-y-3 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Auto-focus search box</span>
                       <span className="text-[10px] text-base-content/50 block">Focus search queries automatically on page load.</span>
                     </div>
@@ -685,8 +685,8 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="border-t border-base-300/60 my-1" />
 
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Open links in new tab</span>
                       <span className="text-[10px] text-base-content/50 block">Default click redirection target will use _blank tab.</span>
                     </div>
@@ -695,15 +695,15 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
                   <div className="border-t border-base-300/60 my-1" />
 
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Search history limit</span>
                       <span className="text-[10px] text-base-content/50 block">Select local query caching length.</span>
                     </div>
                     <select
                       value={historyLimit}
                       onChange={(e) => handleSaveHistoryLimit(Number(e.target.value))}
-                      className="select select-bordered select-xs h-8 px-2 bg-base-100 border-base-300 text-xs font-semibold text-base-content/85 cursor-pointer"
+                      className="select select-bordered select-xs h-8 px-2 bg-base-100 border-base-300 text-xs font-semibold text-base-content/85 cursor-pointer shrink-0"
                     >
                       <option value={5}>5 items</option>
                       <option value={10}>10 items</option>
@@ -723,9 +723,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <p className="text-[11px] text-base-content/50">Clear downloaded content or reset your local preferences.</p>
                 </div>
 
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                <div className="space-y-3 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
+                  <div className="flex items-center justify-between gap-3 flex-wrap md:flex-nowrap">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Clear offline content cache</span>
                       <span className="text-[10px] text-base-content/50 block">Remove downloaded articles, bookmarks &amp; cached data. They re-download when next viewed.</span>
                     </div>
@@ -741,8 +741,8 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                     </button>
                   </div>
                   <div className="border-t border-base-300/60 my-1" />
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                  <div className="flex items-center justify-between gap-3 flex-wrap md:flex-nowrap">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Reset all settings</span>
                       <span className="text-[10px] text-base-content/50 block">Restore theme, fonts, layout and every preference to their defaults.</span>
                     </div>
@@ -770,9 +770,9 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <p className="text-[11px] text-base-content/50">Manage rendering preferences for maximum system speed.</p>
                 </div>
 
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="space-y-3 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Enable interface animations</span>
                       <span className="text-[10px] text-base-content/50 block">Turn off transitions and motion effects for a faster, calmer interface.</span>
                     </div>
@@ -798,7 +798,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                   <span className="block text-xs font-bold text-base-content/60 mt-2">META IITGN</span>
                 </div>
 
-                <div className="space-y-3 bg-base-200/40 p-4 rounded-xl border border-base-200">
+                <div className="space-y-3 bg-base-200/40 p-3.5 md:p-4 rounded-xl border border-base-200">
                   <div className="flex items-center justify-between pb-2 border-b border-base-300/50">
                     <div>
                       <span className="font-semibold text-base-content/85 block text-[12px]">Software Build</span>
@@ -813,12 +813,12 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between py-1.5">
-                    <div>
+                  <div className="flex items-center justify-between py-1.5 gap-3 flex-wrap md:flex-nowrap">
+                    <div className="min-w-0">
                       <span className="font-semibold text-base-content/85 block text-[12px]">Source & Issues</span>
                       <span className="text-[10px] text-base-content/50 block">View the project repository and report issues.</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap shrink-0">
                       <a href={`${REPO_URL}#readme`} target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Docs</a>
                       <a href={`${REPO_URL}/wiki`} target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Wiki</a>
                       <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer" className="btn btn-outline btn-xs font-semibold text-primary">Issues</a>

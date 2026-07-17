@@ -108,7 +108,7 @@ export default function BlogGridPage() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0 mb-1">
-            {user && (
+            {(user?.role === "admin" || user?.role === "moderator") && (
               <Link
                 href="/blog/new/edit"
                 className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-primary-content"

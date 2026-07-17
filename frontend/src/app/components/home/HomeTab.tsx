@@ -1173,7 +1173,7 @@ export default function HomeTab({
         />
 
         {/* ── Statistics Strip ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
           <div className="stat bg-base-200/60 border border-base-300 rounded-2xl place-items-center py-4">
             <div className="stat-figure text-primary"><BookOpen className="h-5 w-5" /></div>
             <div className="stat-title text-[9px] font-bold uppercase tracking-wider">Total Articles</div>
