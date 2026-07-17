@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { BeautifulSearchBox, BeautifulTabBar } from "@/components/SearchDesign";
 import { getSearchHistory, addSearchHistory, clearSearchHistory } from "@/lib/searchHistory";
+import Avatar from "@/components/Avatar";
 
 const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   Campus: Building2,
@@ -294,7 +295,13 @@ function SearchResultsContent() {
                           <span className="badge badge-warning badge-xs">Pending</span>
                         )}
                       </div>
-                      <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug">
+                      <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug flex items-center gap-2.5">
+                        {item.type === "profile" && (
+                          <Avatar
+                            name={item.title}
+                            className="h-7 w-7 rounded-full object-cover ring-1 ring-base-300 shrink-0"
+                          />
+                        )}
                         {highlightText(item.title, queryParam)}
                       </h4>
                       <p className="text-xs text-base-content/50 leading-relaxed mt-2 line-clamp-3">

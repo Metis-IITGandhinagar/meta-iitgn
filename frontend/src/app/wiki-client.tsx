@@ -177,6 +177,11 @@ export default function WikiClient({
   const messMenuProp = useMemo(() => ({ content: markdown }), [markdown]);
   const transportProp = useMemo(() => ({ content: markdown }), [markdown]);
 
+  // Reader "auto fold" preference — sections start collapsed on load.
+  const autoFold =
+    typeof window !== "undefined" &&
+    localStorage.getItem("wiki_auto_fold") === "true";
+
   const [rightWidth, setRightWidth] = useState(320);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
@@ -761,6 +766,8 @@ export default function WikiClient({
                 readOnly={!isEditing}
                 onLoaded={() => setEditorLoaded(true)}
                 toolbarContainer={toolbarContainer}
+                enableFolding
+                autoFold={autoFold}
               />
             )}
           </article>

@@ -30,6 +30,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
   const [zoomLevel, setZoomLevel] = useState("100%");
   const [compactLayout, setCompactLayout] = useState(false);
   const [readingProgress, setReadingProgress] = useState(true);
+  const [autoFold, setAutoFold] = useState(false);
 
   // Editor settings (independent of the interface font)
   const [editorAutosave, setEditorAutosave] = useState(true);
@@ -126,6 +127,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
 
     const savedCompact = localStorage.getItem("wiki_compact_layout") === "true";
     const savedProgress = localStorage.getItem("wiki_reading_progress") !== "false";
+    const savedAutoFold = localStorage.getItem("wiki_auto_fold") === "true";
 
     const savedEditorAutosave = localStorage.getItem("wiki_editor_autosave") !== "false";
     const savedEditorSpellCheck = localStorage.getItem("wiki_editor_spellcheck") !== "false";
@@ -144,6 +146,7 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
     setZoomLevel(savedZoom);
     setCompactLayout(savedCompact);
     setReadingProgress(savedProgress);
+    setAutoFold(savedAutoFold);
     setEditorAutosave(savedEditorAutosave);
     setEditorSpellCheck(savedEditorSpellCheck);
     setEditorWordCount(savedEditorWordCount);
@@ -209,6 +212,12 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
   const handleSaveProgress = (val: boolean) => {
     setReadingProgress(val);
     localStorage.setItem("wiki_reading_progress", val ? "true" : "false");
+  };
+
+  const handleSaveAutoFold = (val: boolean) => {
+    setAutoFold(val);
+    localStorage.setItem("wiki_auto_fold", val ? "true" : "false");
+    window.dispatchEvent(new Event("wiki_settings_changed"));
   };
 
   const handleSaveEditorAutosave = (val: boolean) => {
@@ -660,6 +669,16 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
                       <span className="text-[10px] text-base-content/50 block">Render a thin visual scrolling progress bar on top.</span>
                     </div>
                     <Switch checked={readingProgress} onChange={handleSaveProgress} />
+                  </div>
+
+                  <div className="border-t border-base-300/60 my-1" />
+
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <span className="font-semibold text-base-content/85 block text-[12px]">Auto-fold article sections</span>
+                      <span className="text-[10px] text-base-content/50 block">Start each heading section collapsed in the reader.</span>
+                    </div>
+                    <Switch checked={autoFold} onChange={handleSaveAutoFold} />
                   </div>
 
                 </div>
