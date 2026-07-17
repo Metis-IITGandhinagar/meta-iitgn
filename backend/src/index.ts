@@ -9,12 +9,14 @@ import MediaRouter from "./routes/media.js"
 import BookmarksRouter from "./routes/bookmarks.js"
 import BlogRouter from "./routes/blogs.js"
 import CollegeInfoRouter from "./routes/collegeinfo.js"
+import AuditLogRouter from "./routes/auditLogs.js";
 
 const router = Router();
 
 // Users routes
 router.use("/users", UserRouter);
 router.use("/user", UserRouter);
+router.use("/audit-logs", AuditLogRouter);
 
 // Pages routes
 router.use("/pages",PageRouter);

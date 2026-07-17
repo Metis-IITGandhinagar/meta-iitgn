@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Calendar, Video, Pencil, Trash2, X, Check, Loader2 } from "lucide-react";
 import { apiService, NewsItem } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 interface NewsDetailClientProps {
   initialNewsItem: NewsItem;
@@ -23,6 +24,7 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
   const [editTitle, setEditTitle] = useState(newsItem.title);
   const [editContent, setEditContent] = useState(newsItem.content);
   const [editVideoUrl, setEditVideoUrl] = useState(newsItem.video_url || "");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -72,8 +74,11 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
     }
   };
 
-  const handleDeleteNews = async () => {
-    if (!window.confirm("Are you sure you want to delete this news article? This action cannot be undone.")) return;
+  const handleDeleteNews = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteNews = async () => {
     setIsDeleting(true);
     try {
       await apiService.deleteNews(newsItem.slug);
@@ -250,6 +255,17 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteNews}
+        title="Delete News Article"
+        message="Are you sure you want to delete this news article? This action is permanent and cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </main>
   );
 }

@@ -182,18 +182,30 @@ export default function TransportOverlay({
     setError(null);
     try {
       const content = buildTransportContent(header, lines);
-      await apiService.submitDraft({
-        page_id: pageId,
-        title: pageTitle,
-        content,
-        metadata: pageMetadata,
-        editor_id: user?.user_id ?? 0,
-        base_version: baseVersion,
-      });
-      setEditing(false);
-      setSuccess("Changes submitted for review. A moderator will publish them after approval.");
+      const isStaff = user?.role === "admin" || user?.role === "moderator";
+      
+      if (isStaff) {
+        await apiService.updatePage("campus-transport", {
+          title: pageTitle,
+          content,
+          metadata: pageMetadata,
+        });
+        setEditing(false);
+        setSuccess("Transport schedule updated successfully!");
+      } else {
+        await apiService.submitDraft({
+          page_id: pageId,
+          title: pageTitle,
+          content,
+          metadata: pageMetadata,
+          editor_id: user?.user_id ?? 0,
+          base_version: baseVersion,
+        });
+        setEditing(false);
+        setSuccess("Changes submitted for review. A moderator will publish them after approval.");
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || "Failed to submit schedule for review");
+      setError(err?.response?.data?.error || err?.message || "Failed to save schedule");
     } finally {
       setSaving(false);
     }

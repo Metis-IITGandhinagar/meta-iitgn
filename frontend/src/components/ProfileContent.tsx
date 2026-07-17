@@ -25,6 +25,7 @@ import {
   LogIn,
   LogOut,
   Shuffle,
+  Settings,
 } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import { shuffleAvatarSeed } from "@/lib/avatar";
@@ -34,6 +35,7 @@ import { db } from "@/lib/db";
 import { useHomeStore } from "@/store/useHomeStore";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/context/ProfileContext";
+import AdminDashboardOverlay from "@/app/components/home/overlays/AdminDashboardOverlay";
 
 export default function ProfileContent() {
   const { user: currentUser, loading: authLoading } = useAuth();
@@ -42,6 +44,7 @@ export default function ProfileContent() {
   const { bookmarks, removeBookmark } = useHomeStore();
   const { profileCache, setProfileData } = useProfile();
   const [isSavingReadme,setIsSavingReadme]=useState<boolean>(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   // Profile README edit overlay states & handlers
   const [isEditingReadme, setIsEditingReadme] = useState(false);
@@ -402,12 +405,20 @@ export default function ProfileContent() {
 
             {/* Actions */}
             {isOwner && !dataLoading && (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {currentUser?.role === "admin" && (
+                  <button
+                    onClick={() => setShowDashboard(true)}
+                    className="btn btn-outline btn-sm gap-1 text-primary hover:bg-primary/5 cursor-pointer rounded-xl font-bold"
+                  >
+                    <Settings className="h-4 w-4" /> Admin Panel
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     router.push("/logout");
                   }}
-                  className="btn btn-ghost btn-sm gap-1 text-error/80 hover:text-error"
+                  className="btn btn-ghost btn-sm gap-1 text-error/80 hover:text-error cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" /> Sign out
                 </button>
@@ -758,6 +769,9 @@ export default function ProfileContent() {
             </footer>
           </div>
         </GenericOverlayModal>
+      )}
+      {showDashboard && (
+        <AdminDashboardOverlay setShowDashboard={setShowDashboard} />
       )}
     </div>
   );

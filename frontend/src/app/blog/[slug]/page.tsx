@@ -6,9 +6,12 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
-import { Calendar, User as UserIcon, Eye, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Calendar, User as UserIcon, Eye, Pencil, Trash2, ArrowLeft, History, FileText } from "lucide-react";
 import dynamic from "next/dynamic";
 import BottomNavbar from "@/components/BottomNavbar";
+import BlogRevisionsView from "@/app/components/blog/BlogRevisionsView";
+import BlogPendingChangesView from "@/app/components/blog/BlogPendingChangesView";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 const BlockNoteReader = dynamic(
   () => import("@/components/blog/BlockNoteReader"),
@@ -31,6 +34,7 @@ interface BlogData {
   view_count: number;
   original_author_id: number;
   original_author: BlogAuthor;
+  version?: number | null;
 }
 
 export default function BlogDetailPage() {
@@ -45,6 +49,9 @@ export default function BlogDetailPage() {
   const [error, setError] = useState("");
 
   const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+  const [showRevisions, setShowRevisions] = useState(false);
+  const [showPendingChanges, setShowPendingChanges] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useDocumentTitle(blog?.title ?? (loading ? undefined : "Blog Post Not Found"));
 
@@ -76,10 +83,12 @@ export default function BlogDetailPage() {
     fetchBlog();
   }, [slug]);
 
-  const handleDelete = async () => {
-    if (!blog || deleting) return;
-    if (!confirm("Are you sure you want to delete this blog post?")) return;
+  const triggerDelete = () => {
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!blog || deleting) return;
     try {
       setDeleting(true);
       const res = await apiService.deleteBlog(blog.slug);
@@ -127,15 +136,30 @@ export default function BlogDetailPage() {
 
   const isAuthor = user?.user_id === blog.original_author_id;
   const isAdminOrMod = user?.role === "admin" || user?.role === "moderator";
-  const canEdit = isAuthor || isAdminOrMod;
+  const canEdit = !!user;
+  const canDelete = isAuthor || isAdminOrMod;
 
   const tabs = [
-    canEdit && {
+    canDelete && {
       id: "delete",
       label: "Delete Post",
       icon: Trash2,
-      onClick: handleDelete,
+      onClick: triggerDelete,
       colorClass: "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
+    },
+    canEdit && {
+      id: "revisions",
+      label: "History",
+      icon: History,
+      onClick: () => setShowRevisions(true),
+      colorClass: "bg-base-200 text-base-content hover:bg-base-300",
+    },
+    canEdit && {
+      id: "changes",
+      label: "Pending Drafts",
+      icon: FileText,
+      onClick: () => setShowPendingChanges(true),
+      colorClass: "bg-base-200 text-base-content hover:bg-base-300",
     },
     canEdit && {
       id: "edit",
@@ -174,6 +198,11 @@ export default function BlogDetailPage() {
                 <Eye className="h-4 w-4" />
                 {blog.view_count} views
               </span>
+              {blog.version !== undefined && blog.version !== null && (
+                <span className="badge badge-sm font-bold bg-neutral/20 text-base-content/80 border border-base-300 normal-case tracking-normal">
+                  v{blog.version}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -189,6 +218,30 @@ export default function BlogDetailPage() {
       {canEdit && tabs.length > 0 && (
         <BottomNavbar tabs={tabs} activeTab={deleting ? "delete" : undefined} />
       )}
+
+      {showRevisions && (
+        <BlogRevisionsView setShowRevisions={setShowRevisions} slug={blog.slug} />
+      )}
+
+      {showPendingChanges && (
+        <BlogPendingChangesView
+          setShowPendingChanges={setShowPendingChanges}
+          blogId={blog.blog_id}
+          slug={blog.slug}
+          title={blog.title}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Delete Blog Post"
+        message="Are you sure you want to delete this blog post? This action is permanent and cannot be undone."
+        confirmText="Delete"
+        cancelText="Keep Post"
+        type="danger"
+      />
     </main>
   );
 }

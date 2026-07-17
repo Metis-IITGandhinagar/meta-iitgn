@@ -6,70 +6,49 @@ import GenericOverlayModal from "@/components/GenericOverlayModal";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import { parseMarkdown } from "@/lib/utils";
 import { PanelRight, Check, X } from "lucide-react";
+
 import dynamic from "next/dynamic";
 
-const MilkdownEditor = dynamic<any>(() => import("@/components/article/milkdown-editor"), { ssr: false });
+const BlockNoteReader = dynamic<any>(
+  () => import("@/components/blog/BlockNoteReader"),
+  { ssr: false }
+);
 
-interface RevisionsViewProps {
+interface BlogRevisionsViewProps {
   setShowRevisions: (show: boolean) => void;
   slug: string;
 }
 
-const PreviewWikiInfoBox = ({ infobox }: { infobox: any }) => {
+const PreviewBlogInfoBox = ({ revision }: { revision: any }) => {
   return (
-    <div className="w-80 border-l border-base-200 bg-base-100 flex flex-col shrink-0 h-full overflow-y-auto no-scrollbar select-none">
-      {/* Infobox Image */}
-      <div className="w-full relative bg-base-200/50 border-b border-base-200 flex items-center justify-center overflow-hidden shrink-0 p-1">
-        <div className="w-full h-48 relative overflow-hidden">
-          {infobox.image ? (
-            <img
-              src={infobox.image}
-              alt={infobox.imageAlt || "Infobox image"}
-              className="w-full h-full object-cover rounded-xl"
-            />
-          ) : (
-            <div className="text-base-content/30 text-xs font-medium absolute inset-0 flex items-center justify-center bg-base-200/50 rounded-xl">No Image</div>
+    <div className="w-80 border-l border-base-200 bg-base-100 flex flex-col shrink-0 h-full overflow-y-auto no-scrollbar p-6 space-y-6 select-none">
+      <div>
+        <h4 className="text-xs font-black text-primary uppercase tracking-wider mb-4">Blog Metadata</h4>
+        <div className="space-y-4">
+          <div>
+            <span className="text-[10px] text-base-content/50 uppercase font-black tracking-wider block">Title</span>
+            <span className="text-sm font-bold text-base-content block mt-0.5">{revision.title || "Untitled Blog"}</span>
+          </div>
+          {revision.description && (
+            <div>
+              <span className="text-[10px] text-base-content/50 uppercase font-black tracking-wider block">Description</span>
+              <span className="text-xs text-base-content/75 block mt-0.5 leading-relaxed italic">{revision.description}</span>
+            </div>
           )}
+          <div>
+            <span className="text-[10px] text-base-content/50 uppercase font-black tracking-wider block">Author</span>
+            <span className="text-xs font-bold text-base-content block mt-0.5">{revision.creator?.name || `User #${revision.created_by_user_id}`}</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-base-content/50 uppercase font-black tracking-wider block">Created At</span>
+            <span className="text-xs font-semibold text-base-content/75 block mt-0.5">{new Date(revision.created_at).toLocaleString()}</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-base-content/50 uppercase font-black tracking-wider block">Version</span>
+            <span className="badge badge-sm font-bold bg-neutral/20 text-base-content/85 mt-1">v{revision.version || 1}</span>
+          </div>
         </div>
-      </div>
-      {/* Description */}
-      {infobox.description && (
-        <div className="p-4 border-b border-base-200 bg-base-200/20 text-xs italic text-base-content/70 text-center font-medium leading-relaxed">
-          {infobox.description}
-        </div>
-      )}
-      {/* Rows */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-        <table className="w-full text-left text-xs border-collapse">
-          <tbody>
-            {infobox.rows && infobox.rows.map((row: any, idx: number) => (
-              <tr key={idx} className="border-b border-base-200 last:border-b-0 hover:bg-base-200/20 transition-colors">
-                <td className="py-2.5 font-bold text-base-content/60 w-1/3 valign-middle leading-snug">
-                  {row.label}
-                </td>
-                <td className="py-2.5 pl-3 font-semibold text-base-content/85 valign-middle leading-relaxed">
-                  {row.type === "badge" ? (
-                    <span className="badge badge-sm font-extrabold uppercase bg-primary/10 text-primary border border-primary/20">
-                      {row.value}
-                    </span>
-                  ) : Array.isArray(row.value) ? (
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                      {row.value.map((v: string, i: number) => (
-                        <span key={i} className="badge badge-sm bg-neutral/15 text-base-content/80 font-bold border border-base-200">
-                          {v}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    row.value
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );
@@ -77,10 +56,11 @@ const PreviewWikiInfoBox = ({ infobox }: { infobox: any }) => {
 
 interface RevisionRecord {
   revision_id: number;
-  page_id: number;
+  blog_id: number;
   created_by_user_id: number;
   commit_message: string | null;
   title: string | null;
+  description: string | null;
   slug: string;
   content: string | null;
   original_author_id: number;
@@ -94,7 +74,7 @@ interface RevisionRecord {
   };
 }
 
-export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewProps) {
+export default function BlogRevisionsView({ setShowRevisions, slug }: BlogRevisionsViewProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [revisions, setRevisions] = useState<RevisionRecord[]>([]);
@@ -110,6 +90,7 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
   const [selectedRevision, setSelectedRevision] = useState<RevisionRecord | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const checkMobile = () => {
@@ -119,6 +100,13 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
+
+    if (typeof window !== "undefined") {
+      const isDark = document.documentElement.classList.contains("dark") || 
+                     document.documentElement.getAttribute("data-theme") === "dark";
+      setEditorTheme(isDark ? "dark" : "light");
+    }
+
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
@@ -134,7 +122,7 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
     }
     setError(null);
     try {
-      const res = await apiService.getPageRevisions(slug, { page: pageNum, limit });
+      const res = await apiService.getBlogRevisions(slug, { page: pageNum, limit });
       if (res && res.success) {
         if (append) {
           setRevisions((prev) => [...prev, ...res.revisions]);
@@ -144,7 +132,7 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
         setHasMore(res.hasMore);
       }
     } catch (err: any) {
-      console.error("Error loading page revisions:", err);
+      console.error("Error loading blog revisions:", err);
       setError(err.response?.data?.error || err.message || "Failed to load revisions.");
     } finally {
       setLoading(false);
@@ -173,14 +161,14 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
     if (revisionToRestore === null) return;
     try {
       setRevertingId(revisionToRestore);
-      const res = await apiService.revertPage(slug, revisionToRestore);
+      const res = await apiService.revertBlog(slug, revisionToRestore);
       if (res && res.success) {
-        alert("Page reverted successfully!");
+        alert("Blog post reverted successfully!");
         setShowRevisions(false);
         window.location.reload();
       }
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to revert page.");
+      alert(err.response?.data?.error || err.message || "Failed to revert blog post.");
     } finally {
       setRevertingId(null);
       setRevisionToRestore(null);
@@ -189,7 +177,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
 
   const closeModal = () => {
     setShowRevisions(false);
-    router.back();
   };
 
   const formatDate = (dateString: string) => {
@@ -219,11 +206,11 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
 
   return (
     <>
-      <GenericOverlayModal isOpen={true} onClose={closeModal} title="Recent Page Revisions">
+      <GenericOverlayModal isOpen={true} onClose={closeModal} title="Recent Blog Revisions">
       <div className="max-w-3xl mx-auto space-y-6 w-full">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-serif font-black text-base-content tracking-tight">Recent Page Revisions</h2>
-          <p className="text-xs text-base-content/50 font-semibold uppercase tracking-wider">Track and restore past edits for this article</p>
+          <h2 className="text-2xl font-serif font-black text-base-content tracking-tight">Recent Blog Revisions</h2>
+          <p className="text-xs text-base-content/50 font-semibold uppercase tracking-wider">Track and restore past versions for this blog post</p>
         </div>
 
         {loading ? (
@@ -243,7 +230,7 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
           </div>
         ) : revisions.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-base-300 bg-base-100 rounded-2xl">
-            <p className="text-base-content/60 font-medium">No revision history found for this page.</p>
+            <p className="text-base-content/60 font-medium">No revision history found for this blog post.</p>
           </div>
         ) : (
           <div className="space-y-4 pt-4 pb-12">
@@ -328,8 +315,8 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
           setRevisionToRestore(null);
         }}
         onConfirm={confirmRestore}
-        title="Revert Wiki Article"
-        message="Are you sure you want to revert this live article to this previous version? This will overwrite the current live version (a backup will be saved)."
+        title="Revert Blog Post"
+        message="Are you sure you want to revert the live blog post to this previous version? This will overwrite the current live version (a backup will be saved)."
         confirmText="Revert"
         cancelText="Cancel"
         type="warning"
@@ -351,21 +338,19 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
             <h3 className="text-2xl font-serif font-black text-base-content mb-6">
               {selectedRevision.title || "Untitled Version"}
             </h3>
-            <div className="prose max-w-none">
-              <MilkdownEditor
-                key={selectedRevision.revision_id}
-                initialMarkdown={parseMarkdown(selectedRevision.content || "").contentMarkdown}
-                readOnly={true}
-                onMarkdownChange={() => {}}
+            <div className="bg-base-100">
+              <BlockNoteReader
+                contentJson={selectedRevision.content}
+                theme={editorTheme}
               />
             </div>
           </div>
 
-          {/* Right pane: Sidebar (Infobox) */}
+          {/* Right pane: Sidebar */}
           {sidebarOpen && (
             <div className="w-full lg:w-80 h-[35vh] lg:h-full shrink-0 border-t lg:border-t-0 lg:border-l border-base-200">
-              <PreviewWikiInfoBox
-                infobox={parseMarkdown(selectedRevision.content || "").infobox}
+              <PreviewBlogInfoBox
+                revision={selectedRevision}
               />
             </div>
           )}
@@ -380,7 +365,7 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
                 }`}
               >
                 <PanelRight className="h-4 w-4" />
-                <span>{sidebarOpen ? "Hide InfoBox" : "Show InfoBox"}</span>
+                <span>{sidebarOpen ? "Hide Details" : "Show Details"}</span>
               </button>
             </div>
 

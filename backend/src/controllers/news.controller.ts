@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { invalidateSyncCache } from './page.controller.js';
+import { updateSyncMetadata } from '../utils/syncMetadata.js';
 
 /**
  * GET /news
@@ -114,13 +115,17 @@ export const createNews = async (req: Request, res: Response) => {
       counter++;
     }
 
-    const newsPage = await prisma.news.create({
-      data: {
-        title,
-        slug,
-        content,
-        video_url: video_url || null,
-      },
+    const newsPage = await prisma.$transaction(async (tx) => {
+      const page = await tx.news.create({
+        data: {
+          title,
+          slug,
+          content,
+          video_url: video_url || null,
+        },
+      });
+      await updateSyncMetadata('news', 1, tx);
+      return page;
     });
 
     invalidateSyncCache('news');
@@ -157,14 +162,18 @@ export const updateNews = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'News article not found' });
     }
 
-    const updatedNews = await prisma.news.update({
-      where: { news_id: newsPage.news_id },
-      data: {
-        title: title !== undefined ? title : newsPage.title,
-        content: content !== undefined ? content : newsPage.content,
-        video_url: video_url !== undefined ? video_url : newsPage.video_url,
-        updated_at: new Date(),
-      },
+    const updatedNews = await prisma.$transaction(async (tx) => {
+      const page = await tx.news.update({
+        where: { news_id: newsPage.news_id },
+        data: {
+          title: title !== undefined ? title : newsPage.title,
+          content: content !== undefined ? content : newsPage.content,
+          video_url: video_url !== undefined ? video_url : newsPage.video_url,
+          updated_at: new Date(),
+        },
+      });
+      await updateSyncMetadata('news', 0, tx);
+      return page;
     });
 
     invalidateSyncCache('news');
@@ -200,11 +209,14 @@ export const deleteNews = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'News article not found' });
     }
 
-    await prisma.news.update({
-      where: { news_id: newsPage.news_id },
-      data: {
-        deleted_at: new Date(),
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.news.update({
+        where: { news_id: newsPage.news_id },
+        data: {
+          deleted_at: new Date(),
+        },
+      });
+      await updateSyncMetadata('news', -1, tx);
     });
 
     invalidateSyncCache('news');

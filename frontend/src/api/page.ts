@@ -87,3 +87,13 @@ export const incrementPageViewCount = async (slug: string) => {
     // Silent fail — view tracking should not block UX
   }
 };
+
+export const getPageRevisions = async (slug: string, params: { page?: number; limit?: number } = {}) => {
+  const response = await api.get(`/pages/${slug}/revisions`, { params });
+  return response.data;
+};
+
+export const revertPage = async (slug: string, revisionId: number) => {
+  const response = await api.post(`/pages/${slug}/revisions/${revisionId}/revert`, {}, { withCredentials: true });
+  return response.data;
+};

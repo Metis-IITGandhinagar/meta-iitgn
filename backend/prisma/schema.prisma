@@ -46,6 +46,10 @@ model users {
   audit_logs              audit_logs[]
   blogs_authored          blogs[]                 @relation("BlogOriginalAuthor")
   blogs_updated           blogs[]                 @relation("BlogUpdater")
+  pending_blogs_edited    pending_blogs[]         @relation("BlogEditor")
+  pending_blogs_reviewed  pending_blogs[]         @relation("BlogReviewer")
+  revision_blogs_authored revision_blogs[]        @relation("RevisionBlogOriginalAuthor")
+  revision_blogs_created  revision_blogs[]        @relation("RevisionBlogCreator")
 }
 
 model live_pages {
@@ -269,10 +273,66 @@ model blogs {
   updated_by         Int?
   deleted_at         DateTime?
   view_count         Int       @default(0)
+  version            Int?      @default(1)
 
   // Relations
   original_author    users     @relation("BlogOriginalAuthor", fields: [original_author_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
   updater            users?    @relation("BlogUpdater", fields: [updated_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 
+  pending_blogs      pending_blogs[]
+  revision_blogs     revision_blogs[]
+
   @@index([slug], name: "blogs_index_0")
 }
+
+model pending_blogs {
+  pending_id  Int             @id @default(autoincrement())
+  blog_id     Int?
+  title       String?
+  description String?
+  slug        String?
+  content     String?
+  status      pending_status? @default(draft)
+  editor_id   Int
+  created_at  DateTime?       @default(now())
+  version     Int?            @default(1)
+  reviewer_id Int?
+
+  // Relations
+  editor      users           @relation("BlogEditor", fields: [editor_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  reviewer    users?          @relation("BlogReviewer", fields: [reviewer_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  live_blog   blogs?          @relation(fields: [blog_id], references: [blog_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([status], name: "pending_blogs_index_0")
+}
+
+model revision_blogs {
+  revision_id        Int       @id @default(autoincrement())
+  blog_id            Int
+  created_by_user_id Int
+  commit_message     String?
+  title              String?
+  description        String?
+  slug               String
+  content            String?
+  original_author_id Int
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @default(now()) @updatedAt
+  updated_by         Int?
+  deleted_at         DateTime?
+  version            Int?
+
+  // Relations
+  original_author    users     @relation("RevisionBlogOriginalAuthor", fields: [original_author_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  creator            users     @relation("RevisionBlogCreator", fields: [created_by_user_id], references: [user_id], onDelete: NoAction)
+  live_blog          blogs     @relation(fields: [blog_id], references: [blog_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model sync_metadata {
+  key          String   @id
+  last_updated DateTime @updatedAt
+  count        Int
+}
+
+
+

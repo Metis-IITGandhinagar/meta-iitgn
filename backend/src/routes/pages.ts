@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getPage, getRecentNewPages, getRecentUpdatedPages, searchPages, getPageStats,
   createPage, updatePage, deletePage, getPageCount, getSyncCheck, getPageForEdit,
-  getPageById, getPopularPages, incrementViewCount
+  getPageById, getPopularPages, incrementViewCount, getPageRevisions, revertPageToRevision
 } from "../controllers/page.controller.js";
 import { checkAuth, protect, checkAuthOptional } from "../middlewares/auth.js";
 import featuredRouter from "./featured.js";
@@ -27,6 +27,10 @@ router.get("/search", searchPages);
 
 // Page by ID
 router.get("/id/:page_id", getPageById);
+
+// Revisions & Revert
+router.get("/:slug/revisions", getPageRevisions);
+router.post("/:slug/revisions/:revision_id/revert", checkAuth, protect("admin", "moderator"), revertPageToRevision);
 
 // View tracking
 router.post("/:slug/view", incrementViewCount);

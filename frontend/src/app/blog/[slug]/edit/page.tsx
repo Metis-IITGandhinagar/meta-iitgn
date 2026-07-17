@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import BottomNavbar from "@/components/BottomNavbar";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 // Dynamically import BlockNoteEditor to disable SSR
 const BlockNoteEditor = dynamic(
@@ -35,6 +36,7 @@ export default function BlogEditPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   // BlockNote integration states
   const [initialContent, setInitialContent] = useState<string | undefined>(undefined);
@@ -71,13 +73,7 @@ export default function BlogEditPage() {
           setTitle(res.blog.title);
           setDescription(res.blog.description || "");
 
-          // Check permissions
-          const isAuthor = res.blog.original_author_id === user?.user_id;
-          const isAdminOrMod = user?.role === "admin" || user?.role === "moderator";
-          if (!isAuthor && !isAdminOrMod) {
-            router.push(`/blog/${slug}`);
-            return;
-          }
+
 
           if (res.blog.content) {
             setInitialContent(res.blog.content);
@@ -95,12 +91,19 @@ export default function BlogEditPage() {
     fetchBlog();
   }, [slug, isNew, user, router]);
 
-  // Auth Protection
+  // Auth Protection & New Blog validation
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
+    if (!authLoading) {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      const isStaff = user.role === "admin" || user.role === "moderator";
+      if (isNew && !isStaff) {
+        router.push("/blog");
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, isNew]);
 
   if (loading || authLoading) {
     return (
@@ -156,12 +159,22 @@ export default function BlogEditPage() {
       if (isNew) {
         const res = await apiService.createBlog(payload);
         if (res && res.success) {
-          router.push(`/blog/${res.blog.slug}`);
+          if (res.is_draft) {
+            alert("Your blog post has been submitted to admins for approval!");
+            router.push("/blog");
+          } else {
+            router.push(`/blog/${res.blog.slug}`);
+          }
         }
       } else {
         const res = await apiService.updateBlog(slug, payload);
         if (res && res.success) {
-          router.push(`/blog/${res.blog.slug}`);
+          if (res.is_draft) {
+            alert("Your edits have been submitted to admins for review!");
+            router.push(`/blog/${slug}`);
+          } else {
+            router.push(`/blog/${res.blog.slug}`);
+          }
         }
       }
     } catch (err: any) {
@@ -172,21 +185,21 @@ export default function BlogEditPage() {
     }
   };
 
+  const isStaff = user?.role === "admin" || user?.role === "moderator";
+
   const tabs = [
     {
       id: "cancel",
       label: "Cancel",
       icon: X,
       onClick: () => {
-        if (confirm("Are you sure you want to discard your changes?")) {
-          router.push(isNew ? "/blog" : `/blog/${slug}`);
-        }
+        setShowDiscardConfirm(true);
       },
       colorClass: "bg-error text-error-content hover:bg-error/90",
     },
     {
       id: "save",
-      label: saving ? "Publishing..." : "Publish Blog",
+      label: saving ? (isStaff ? "Publishing..." : "Submitting...") : (isStaff ? "Publish Blog" : "Submit for Review"),
       icon: Check,
       onClick: handleSave,
       colorClass: "bg-success text-success-content hover:bg-success/90",
@@ -293,6 +306,17 @@ export default function BlogEditPage() {
 
       {/* Floating Action Bar */}
       <BottomNavbar tabs={tabs} activeTab={saving ? "save" : undefined} />
+
+      <ConfirmationModal
+        isOpen={showDiscardConfirm}
+        onClose={() => setShowDiscardConfirm(false)}
+        onConfirm={() => router.push(isNew ? "/blog" : `/blog/${slug}`)}
+        title="Discard Changes"
+        message="Are you sure you want to discard your changes? Any unsaved edits will be permanently lost."
+        confirmText="Discard"
+        cancelText="Keep Editing"
+        type="danger"
+      />
     </main>
   );
 }

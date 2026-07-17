@@ -20,8 +20,10 @@ import {
   HelpCircle,
   Trash2,
   Pencil,
+  FileText,
 } from "lucide-react";
 import BottomNavbar from "@/components/BottomNavbar";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 // Subcomponents
 import RevisionsView from "./components/wiki/RevisionsView";
@@ -57,7 +59,7 @@ export default function WikiClient({
   initialMetadata,
   version,
 }: WikiClientProps) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
@@ -72,6 +74,30 @@ export default function WikiClient({
       currentSlug?.startsWith("profile-") || categorySlug === "profile"
     );
   }, [initialMetadata, categorySlug]);
+
+  const isStaff = user?.role === "admin" || user?.role === "moderator";
+  const isSelfProfile = isProfile && (
+    (typeof window !== "undefined" && window.location.pathname.split("/").pop() === `profile-${user?.user_id}`) ||
+    initialMetadata?.slug === `profile-${user?.user_id}`
+  );
+
+  if (!authLoading && !dbPageId && !isStaff && !isSelfProfile) {
+    return (
+      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-base-100 mt-16 text-center select-none">
+        <div className="max-w-4xl mx-auto py-20 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 bg-error/10 text-error rounded-2xl flex items-center justify-center font-black">
+            ✕
+          </div>
+          <h1 className="text-3xl font-display font-black tracking-tight text-base-content">Access Denied</h1>
+          <p className="text-base-content/65 max-w-md">Only administrators and moderators are allowed to create new articles.</p>
+          <button onClick={() => router.back()} className="btn btn-primary rounded-xl font-bold mt-4">
+            Go Back
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   const [activeSection, setActiveSection] = useState<string>("");
   const [readingProgressPct, setReadingProgressPct] = useState(0);
   const [editorLoaded, setEditorLoaded] = useState(false);
@@ -151,6 +177,8 @@ export default function WikiClient({
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showRevisions, setShowRevisions] = useState(false);
   const [showPendingChanges, setShowPendingChanges] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showHelpConfirm, setShowHelpConfirm] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [showMessEditor, setShowMessEditor] = useState(false);
   const [showTransportEditor, setShowTransportEditor] = useState(false);
@@ -388,14 +416,11 @@ export default function WikiClient({
     return normalized;
   };
 
-  const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this article? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
     try {
       let currentSlug = initialMetadata?.slug;
       if (!currentSlug && typeof window !== "undefined") {
@@ -461,27 +486,53 @@ export default function WikiClient({
         location: locationRow?.value || "",
       };
 
-      const payload = {
-        page_id: dbPageId || null,
-        title: parsed.title || "Untitled Page",
-        content:
-          resolvedContentOverride !== undefined
-            ? resolvedContentOverride
-            : markdownRef.current,
-        metadata,
-        editor_id: user?.user_id || 0,
-        base_version:
-          resolvedVersionOverride !== undefined
-            ? resolvedVersionOverride
-            : versionId,
-      };
+      const isStaff = user?.role === "admin" || user?.role === "moderator";
+      const isSelfProfile = currentSlug === `profile-${user?.user_id}`;
+      const contentVal = resolvedContentOverride !== undefined
+        ? resolvedContentOverride
+        : markdownRef.current;
 
-      await apiService.submitDraft(payload);
+      if (isStaff || isSelfProfile) {
+        if (dbPageId) {
+          const res = await apiService.updatePage(currentSlug || "", {
+            title: parsed.title || "Untitled Page",
+            content: contentVal,
+            metadata,
+          });
+          alert("Page updated successfully!");
+          setIsEditing(false);
+          router.push(`/wiki/page/${res.slug}`);
+          router.refresh();
+        } else {
+          const res = await apiService.createPage({
+            title: parsed.title || "Untitled Page",
+            content: contentVal,
+            metadata,
+          });
+          alert("Page created and published successfully!");
+          setIsEditing(false);
+          router.push(`/wiki/page/${res.slug}`);
+          router.refresh();
+        }
+      } else {
+        const payload = {
+          page_id: dbPageId || null,
+          title: parsed.title || "Untitled Page",
+          content: contentVal,
+          metadata,
+          editor_id: user?.user_id || 0,
+          base_version:
+            resolvedVersionOverride !== undefined
+              ? resolvedVersionOverride
+              : versionId,
+        };
 
-      alert("Proposed changes submitted for review successfully!");
-      setIsEditing(false);
-      setConflictData(null);
-      router.refresh();
+        await apiService.submitDraft(payload);
+        alert("Proposed changes submitted for review successfully!");
+        setIsEditing(false);
+        setConflictData(null);
+        router.refresh();
+      }
     } catch (error: any) {
       if (error.response?.status === 409) {
         const data = error.response.data;
@@ -675,15 +726,7 @@ export default function WikiClient({
                     label: "Help",
                     icon: HelpCircle,
                     onClick: () => {
-                      const proceed = window.confirm(
-                        "You are being redirected to an external site (Markdown Guide) for formatting help. Do you want to continue?"
-                      );
-                      if (proceed) {
-                        window.open(
-                          "https://www.markdownguide.org/basic-syntax/",
-                          "_blank"
-                        );
-                      }
+                      setShowHelpConfirm(true);
                     },
                   },
                   {
@@ -732,9 +775,21 @@ export default function WikiClient({
                         "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
                     },
                   {
-                    id: "changes",
-                    label: "Changes",
+                    id: "revisions",
+                    label: "History",
                     icon: History,
+                    onClick: () => {
+                      setShowRevisions(true);
+                      setShowPendingChanges(false);
+                      window.dispatchEvent(
+                        new CustomEvent("show-wiki-revisions")
+                      );
+                    },
+                  },
+                  {
+                    id: "changes",
+                    label: "Pending Drafts",
+                    icon: FileText,
                     onClick: () => {
                       setShowPendingChanges(true);
                       setShowRevisions(false);
@@ -953,15 +1008,42 @@ export default function WikiClient({
 
       {/* Wiki overlays for revisions and pending approvals */}
       {showRevisions && (
-        <RevisionsView setShowRevisions={setShowRevisions} />
+        <RevisionsView
+          setShowRevisions={setShowRevisions}
+          slug={initialMetadata?.slug || (typeof window !== "undefined" ? window.location.pathname.split("/").pop() || "" : "")}
+        />
       )}
 
       {showPendingChanges && (
         <PendingChangesView
           setShowPendingChanges={setShowPendingChanges}
           pageId={dbPageId}
+          slug={initialMetadata?.slug || (typeof window !== "undefined" ? window.location.pathname.split("/").pop() || "" : "")}
+          title={parsed.title || ""}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Delete Wiki Article"
+        message="Are you sure you want to delete this wiki article? This action is permanent and cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={showHelpConfirm}
+        onClose={() => setShowHelpConfirm(false)}
+        onConfirm={() => window.open("https://www.markdownguide.org/basic-syntax/", "_blank")}
+        title="External Redirection"
+        message="You are being redirected to an external website (Markdown Guide) for formatting help. Do you want to continue?"
+        confirmText="Continue"
+        cancelText="Stay Here"
+        type="info"
+      />
     </>
   );
 }

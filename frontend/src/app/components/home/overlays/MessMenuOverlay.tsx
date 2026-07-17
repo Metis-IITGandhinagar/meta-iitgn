@@ -222,19 +222,30 @@ export default function MessMenuOverlay({
     setError(null);
     try {
       const content = buildContent(header, days);
-      // Submit as a review draft — mess menu changes are not applied directly.
-      await apiService.submitDraft({
-        page_id: pageId,
-        title: pageTitle,
-        content,
-        metadata: pageMetadata,
-        editor_id: user?.user_id ?? 0,
-        base_version: baseVersion,
-      });
-      setEditing(false);
-      setSuccess("Changes submitted for review. A moderator will publish them after approval.");
+      const isStaff = user?.role === "admin" || user?.role === "moderator";
+      
+      if (isStaff) {
+        await apiService.updatePage("mess-menu", {
+          title: pageTitle,
+          content,
+          metadata: pageMetadata,
+        });
+        setEditing(false);
+        setSuccess("Mess menu updated successfully!");
+      } else {
+        await apiService.submitDraft({
+          page_id: pageId,
+          title: pageTitle,
+          content,
+          metadata: pageMetadata,
+          editor_id: user?.user_id ?? 0,
+          base_version: baseVersion,
+        });
+        setEditing(false);
+        setSuccess("Changes submitted for review. A moderator will publish them after approval.");
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || "Failed to submit menu for review");
+      setError(err?.response?.data?.error || err?.message || "Failed to save menu");
     } finally {
       setSaving(false);
     }

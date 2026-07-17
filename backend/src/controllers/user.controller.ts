@@ -67,15 +67,89 @@ export const devBypass = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const usersList = await prisma.users.findMany({
-      where: { deleted_at: null },
-      orderBy: { created_at: 'desc' },
-      take: 20,
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const [usersList, total] = await Promise.all([
+      prisma.users.findMany({
+        where: { deleted_at: null },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.users.count({
+        where: { deleted_at: null },
+      }),
+    ]);
+
+    const hasMore = skip + usersList.length < total;
+
+    return res.json({
+      success: true,
+      users: usersList,
+      total,
+      hasMore,
     });
-    return res.json(usersList);
   } catch (error: any) {
     console.error('Error in getUsers:', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+};
+
+export const getUsersCount = async (req: Request, res: Response) => {
+  try {
+    const count = await prisma.users.count({
+      where: { deleted_at: null },
+    });
+    return res.json({ success: true, count });
+  } catch (error: any) {
+    console.error('Error in getUsersCount:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+};
+
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+    const userIdToUpdate = parseInt(String(req.params.user_id), 10);
+    const { role } = req.body;
+    const adminUser = req.user;
+
+    if (!role || !['admin', 'moderator', 'normal'].includes(role)) {
+      return res.status(400).json({ success: false, error: 'Invalid user role specified.' });
+    }
+
+    const targetUser = await prisma.users.findUnique({
+      where: { user_id: userIdToUpdate, deleted_at: null },
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ success: false, error: 'User not found.' });
+    }
+
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const updated = await tx.users.update({
+        where: { user_id: userIdToUpdate },
+        data: { role },
+      });
+
+      await tx.audit_logs.create({
+        data: {
+          actor_id: adminUser.user_id,
+          action: `Change role of user ${targetUser.name} (#${targetUser.user_id}) from ${targetUser.role} to ${role}`,
+          table_name: 'users',
+          record_id: targetUser.user_id,
+          ip_address: req.ip || null,
+        },
+      });
+
+      return updated;
+    });
+
+    return res.json({ success: true, user: updatedUser });
+  } catch (error: any) {
+    console.error('Error in updateUserRole:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
   }
 };
 

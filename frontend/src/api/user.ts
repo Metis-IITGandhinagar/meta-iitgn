@@ -7,8 +7,23 @@ export interface UserCreateInput {
   role?: string;
 }
 
-export const getUsers = async () => {
-  const response = await api.get('/user');
+export const getUsers = async (params: { page?: number; limit?: number } = {}) => {
+  const response = await api.get('/user', { params, withCredentials: true });
+  return response.data;
+};
+
+export const getUsersCount = async () => {
+  const response = await api.get('/user/count', { withCredentials: true });
+  return response.data;
+};
+
+export const updateUserRole = async (userId: number, role: 'admin' | 'moderator' | 'normal') => {
+  const response = await api.put(`/user/${userId}/role`, { role }, { withCredentials: true });
+  return response.data;
+};
+
+export const getAuditLogs = async (params: { page?: number; limit?: number } = {}) => {
+  const response = await api.get('/audit-logs', { params, withCredentials: true });
   return response.data;
 };
 

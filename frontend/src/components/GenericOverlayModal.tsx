@@ -13,6 +13,7 @@ interface GenericOverlayModalProps {
   headerActions?: React.ReactNode;
   headerTrailing?: React.ReactNode;
   defaultMaximized?: boolean;
+  paddingClass?: string;
   children: React.ReactNode;
 }
 
@@ -25,6 +26,7 @@ export default function GenericOverlayModal({
   headerActions,
   headerTrailing,
   defaultMaximized = false,
+  paddingClass = "p-6",
 }: GenericOverlayModalProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isMounted, setIsMounted] = useState(false);
@@ -185,7 +187,7 @@ export default function GenericOverlayModal({
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-base-100 flex flex-col p-6 w-full text-base-content select-text">
+        <div className={`flex-1 min-h-0 overflow-y-auto overscroll-contain bg-base-100 flex flex-col w-full text-base-content select-text ${paddingClass}`}>
           {children}
         </div>
       </div>
