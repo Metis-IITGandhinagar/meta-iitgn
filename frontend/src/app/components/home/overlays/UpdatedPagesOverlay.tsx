@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
 
 interface UpdatedPagesOverlayProps {
@@ -21,8 +21,6 @@ export default function UpdatedPagesOverlay({
   hasMore,
   onLoadMore,
 }: UpdatedPagesOverlayProps) {
-  const router = useRouter();
-
   if (!isOpen) return null;
 
   return (
@@ -40,19 +38,17 @@ export default function UpdatedPagesOverlay({
         ) : (
           <div className="space-y-4">
             {updatedPages.map((page) => (
-              <div
+              <Link
                 key={page.page_id}
-                onClick={() => {
-                  onClose();
-                  router.push(`/wiki/campus/${page.slug}`);
-                }}
-                className="p-5 border border-base-300 bg-base-100 rounded-2xl shadow-xs hover:shadow-md hover:border-primary transition-all duration-150 cursor-pointer text-left"
+                href={`/wiki/${(page.metadata as any)?.category || "campus"}/${page.slug}`}
+                onClick={onClose}
+                className="block p-5 border border-base-300 bg-base-100 rounded-2xl shadow-xs hover:shadow-md hover:border-primary transition-all duration-150 cursor-pointer text-left"
               >
                 <h4 className="text-base font-bold text-primary">{page.title}</h4>
                 <p className="text-[10px] text-base-content/50 font-semibold mt-1">
                   Updated: {getRelativeTime(page.updated_at)} ({new Date(page.updated_at).toLocaleString()})
                 </p>
-              </div>
+              </Link>
             ))}
 
             {hasMore && (

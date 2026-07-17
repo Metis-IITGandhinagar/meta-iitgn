@@ -217,7 +217,7 @@ export default function NewsOverlay({
                     key={item.slug || idx}
                     type="button"
                     onClick={() => setSelectedNews(item)}
-                    className="card card-bordered p-5 border-base-300 bg-base-100 shadow-xs hover:shadow-md hover:border-primary transition-all duration-150 cursor-pointer text-left animate-in fade-in w-full"
+                    className="p-5 border border-base-300 bg-base-100 rounded-2xl shadow-xs hover:shadow-md hover:border-primary transition-all duration-150 cursor-pointer text-left animate-in fade-in w-full"
                   >
                     <h4 className="text-base font-bold text-primary">{item.title}</h4>
                     <p className="text-xs text-base-content/60 mt-1 line-clamp-2">

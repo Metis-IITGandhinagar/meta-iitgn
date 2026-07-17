@@ -225,10 +225,15 @@ export const listPendingDrafts = async (req: Request, res: Response) => {
 export const reviewDraft = async (req: Request, res: Response) => {
   try {
     const pending_id = parseInt(req.params.pending_id as string, 10);
-    const { reviewer_id, action } = req.body;
+    const { action } = req.body;
 
-    if (reviewer_id === undefined || reviewer_id === null || !action) {
-      return res.status(400).json({ error: 'reviewer_id and action are required' });
+    // Reviewer identity is taken from the authenticated session, never the
+    // client body, so a reviewer cannot attribute a review to (or frame)
+    // another user in the audit log or the public "Reviewed by" display.
+    const reviewer_id = req.user.user_id;
+
+    if (!action) {
+      return res.status(400).json({ error: 'action is required' });
     }
 
     if (action !== 'approve' && action !== 'reject') {

@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Trash2, Tag } from "lucide-react";
 import { EditableCell } from "@/components/article/editable-cell";
 import { InfoboxData } from "@/lib/types";
 import { apiService } from "@/api";
+import { useAuth } from "@/hooks/useAuth";
+import type { Category } from "@/context/AuthContext";
 
 interface WikiInfoBoxProps {
   rightSidebarOpen: boolean;
@@ -28,6 +30,117 @@ interface WikiInfoBoxProps {
   handleRightDoubleClick: () => void;
 }
 
+/**
+ * Category selector for the infobox "Category" row. It acts like a dropdown you
+ * can also type into, but only lets you commit a value that matches one of the
+ * real categories (typed free-text is reverted on blur/close).
+ */
+function CategoryCombobox({
+  value,
+  onChange,
+  categories,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  categories: Category[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value || "");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setQuery(value || "");
+  }, [value]);
+
+  const normalized = (s: string) => s.toLowerCase().trim();
+  const filtered = categories.filter(
+    (c) =>
+      !query ||
+      normalized(c.name).includes(normalized(query)) ||
+      normalized(c.slug).includes(normalized(query))
+  );
+  const isValid = categories.some(
+    (c) =>
+      normalized(c.name) === normalized(query) ||
+      normalized(c.slug) === normalized(query)
+  );
+
+  const select = (cat: Category) => {
+    onChange(cat.name);
+    setQuery(cat.name);
+    setOpen(false);
+  };
+
+  // Only allow committing a real category — revert stray text on close/blur.
+  const revertIfInvalid = () => {
+    if (!isValid) setQuery(value || "");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setOpen(true);
+      setActiveIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (open && filtered[activeIndex]) select(filtered[activeIndex]);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+      revertIfInvalid();
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+          setActiveIndex(0);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(revertIfInvalid, 120)}
+        onKeyDown={handleKeyDown}
+        placeholder="Select category"
+        className="w-full border border-base-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary font-normal bg-transparent resize-none"
+      />
+      {open && (
+        <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-lg border border-base-300 bg-base-100 shadow-lg no-scrollbar">
+          {filtered.length === 0 ? (
+            <li className="px-3 py-2 text-xs text-base-content/40">
+              No matching categories
+            </li>
+          ) : (
+            filtered.map((cat, idx) => (
+              <li
+                key={cat.category_id}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  select(cat);
+                }}
+                onMouseEnter={() => setActiveIndex(idx)}
+                className={`px-3 py-2 text-xs cursor-pointer ${
+                  idx === activeIndex
+                    ? "bg-primary/10 text-primary"
+                    : "text-base-content hover:bg-base-200"
+                }`}
+              >
+                {cat.name}
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function WikiInfoBox({
   rightSidebarOpen,
   setRightSidebarOpen,
@@ -41,6 +154,7 @@ export default function WikiInfoBox({
   startResizeRight,
   handleRightDoubleClick,
 }: WikiInfoBoxProps) {
+  const { categories } = useAuth();
   return (
     <>
       {/* Resize Handle - desktop only, sits on the left edge of the right sidebar */}
@@ -241,6 +355,7 @@ export default function WikiInfoBox({
               <tbody>
                 {parsed.infobox.rows.map((row, index) => {
                   const isLast = index === parsed.infobox.rows.length - 1;
+                  const isCategory = row.label?.toLowerCase() === "category";
                   return (
                     <tr
                       key={index}
@@ -271,7 +386,21 @@ export default function WikiInfoBox({
                       <td className="py-3 align-top font-semibold text-base-content">
                         {isEditing ? (
                           <div className="flex gap-2 items-center w-full">
-                            <EditableCell
+                            {isCategory ? (
+                              <CategoryCombobox
+                                value={Array.isArray(row.value) ? row.value.join(", ") : (row.value as string)}
+                                categories={categories}
+                                onChange={(newVal) => {
+                                  const newRows = [...parsed.infobox.rows];
+                                  newRows[index] = { ...row, value: newVal };
+                                  handleInfoboxChange({
+                                    ...parsed.infobox,
+                                    rows: newRows,
+                                  });
+                                }}
+                              />
+                            ) : (
+                              <EditableCell
                               initialValue={Array.isArray(row.value) ? row.value.join(", ") : (row.value as string)}
                               onChange={(newVal) => {
                                 const isBadgeType = row.type === "badge";
@@ -293,6 +422,9 @@ export default function WikiInfoBox({
                               className="w-full border border-base-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary font-normal bg-transparent resize-none"
                               as={row.type === "badge" ? "textarea" : "input"}
                             />
+                            )}
+                            {!isCategory && (
+                              <>
                             <button
                               onMouseDown={(e) => {
                                 e.preventDefault(); // Prevent input from losing focus
@@ -340,6 +472,8 @@ export default function WikiInfoBox({
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
+                              </>
+                            )}
                           </div>
                         ) : row.type === "badge" && Array.isArray(row.value) ? (
                           <div className="flex flex-wrap gap-1">

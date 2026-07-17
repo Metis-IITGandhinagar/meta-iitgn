@@ -384,9 +384,9 @@ export default function CategoriesPage() {
               onClick={() => {
                 router.push(`/wiki/${cat.slug}`);
               }}
-              className={`card card-compact card-bordered relative flex flex-col justify-between p-4 md:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${cat.is_pinned
+              className={`card card-compact card-border relative flex flex-col justify-between p-4 md:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${cat.is_pinned
                   ? "bg-primary/10 border-2 border-primary hover:border-primary/80"
-                  : "bg-base-100 border-base-200 hover:border-primary/40"
+                  : "bg-base-100 border border-base-200 hover:border-primary"
                 }`}
             >
               {/* Overlay Link to make the whole card clickable */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Search, Plus, Trash2, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
@@ -20,6 +21,7 @@ export default function FeaturedEditOverlay({
   const { activeTier, user } = useAuth();
   const isGold = activeTier === "gold" || user?.role === "admin" || user?.role === "moderator";
 
+  const router = useRouter();
   const featuredPages = useHomeStore((s) => s.featuredPages);
   const setFeaturedPages = useHomeStore((s) => s.setFeaturedPages);
 
@@ -164,7 +166,7 @@ export default function FeaturedEditOverlay({
                     type="button"
                     disabled={busyId === `add-${r.slug}`}
                     onClick={() => handleAdd(r)}
-                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-base-200 bg-base-100 px-3 py-2.5 text-left hover:border-primary/40 hover:bg-primary/5 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-base-300 bg-base-100 px-3 py-2.5 text-left shadow-xs hover:border-primary hover:bg-primary/5 transition-all duration-150 disabled:opacity-50 cursor-pointer"
                   >
                     <span className="min-w-0">
                       <span className="block text-sm font-bold text-base-content truncate">
@@ -206,7 +208,8 @@ export default function FeaturedEditOverlay({
             featuredPages.map((f: any) => (
               <div
                 key={f.id}
-                className="flex items-center gap-3 rounded-xl border border-base-200 bg-base-100 p-2.5"
+                onClick={() => router.push(`/wiki/page/${f.slug}`)}
+                className="flex items-center gap-3 rounded-xl border border-base-300 bg-base-100 p-2.5 shadow-xs hover:border-primary transition-all duration-150 cursor-pointer"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -215,11 +218,9 @@ export default function FeaturedEditOverlay({
                   className="w-14 h-14 object-cover rounded-lg shrink-0 bg-base-200"
                 />
                 <div className="flex-1 min-w-0">
-                  <Link href={`/wiki/page/${f.slug}`}>
-                    <span className="text-sm font-bold text-base-content hover:text-primary transition-colors cursor-pointer block truncate">
-                      {f.title}
-                    </span>
-                  </Link>
+                  <span className="text-sm font-bold text-base-content hover:text-primary transition-colors block truncate">
+                    {f.title}
+                  </span>
                   <p className="text-[10px] uppercase tracking-wider text-base-content/50 truncate">
                     {f.tag || "Featured"}
                     {f.location ? ` · ${f.location}` : ""}
@@ -229,7 +230,10 @@ export default function FeaturedEditOverlay({
                   <button
                     type="button"
                     disabled={busyId === `remove-${f.featured_id}`}
-                    onClick={() => handleRemove(f.featured_id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemove(f.featured_id);
+                    }}
                     className="btn btn-ghost btn-sm btn-square text-error hover:bg-error/10 shrink-0 cursor-pointer"
                     aria-label={`Remove ${f.title}`}
                     title="Remove from featured"

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { parseMarkdown, stringifyMarkdown } from "@/lib/utils";
-import { InfoboxData } from "@/lib/types";
+import { InfoboxData, InfoboxRow } from "@/lib/types";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -423,7 +423,9 @@ export default function WikiClient({
       return "policies";
     if (normalized === "academic calendar" || normalized === "calendar")
       return "calendar";
-    return normalized;
+    // Fallback for any category not in the hardcoded list above: kebab-case the
+    // name so multi-word categories like "All Pages" become "all-pages".
+    return normalized.replace(/\s+/g, "-");
   };
 
   const handleDelete = () => {
@@ -502,11 +504,26 @@ export default function WikiClient({
         ? resolvedContentOverride
         : markdownRef.current;
 
+      // Drop empty key-info rows so they aren't persisted (e.g. unused
+      // optional fields added on a new page).
+      const parsedForSave = parseMarkdown(contentVal);
+      const cleanedRows = (parsedForSave.infobox.rows as InfoboxRow[]).filter(
+        (r) => {
+          if (Array.isArray(r.value)) return r.value.length > 0;
+          return (r.value ?? "").toString().trim() !== "";
+        }
+      );
+      const cleanedContent = stringifyMarkdown(
+        parsedForSave.contentMarkdown,
+        { ...parsedForSave.infobox, rows: cleanedRows },
+        parsedForSave.title
+      );
+
       if (isStaff || isSelfProfile) {
         if (dbPageId) {
           const res = await apiService.updatePage(currentSlug || "", {
             title: parsed.title || "Untitled Page",
-            content: contentVal,
+            content: cleanedContent,
             metadata,
           });
           alert("Page updated successfully!");
@@ -516,7 +533,7 @@ export default function WikiClient({
         } else {
           const res = await apiService.createPage({
             title: parsed.title || "Untitled Page",
-            content: contentVal,
+            content: cleanedContent,
             metadata,
           });
           alert("Page created and published successfully!");
@@ -528,7 +545,7 @@ export default function WikiClient({
         const payload = {
           page_id: dbPageId || null,
           title: parsed.title || "Untitled Page",
-          content: contentVal,
+          content: cleanedContent,
           metadata,
           editor_id: user?.user_id || 0,
           base_version:
