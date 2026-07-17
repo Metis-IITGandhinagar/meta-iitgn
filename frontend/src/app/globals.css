@@ -129,17 +129,41 @@ body {
   color: var(--color-primary-content, var(--pc, #ffffff));
 }
 
-/* Caret uses the solid primary colour so it's easy to spot against the background. */
+/* Caret uses the text colour so it's always visible against the background. */
 :root {
-  caret-color: var(--color-primary, var(--p, #3b82f6));
+  caret-color: var(--color-base-content, var(--bc, #1f2937));
 }
 
-/* Editable surfaces (Milkdown / BlockNote) inherit the same theme caret,
-   overriding any editor-default cursor colour. */
+/* Editable surfaces (Milkdown / BlockNote) follow the theme's
+   color-scheme for the caret instead of a fixed colour. daisyUI sets
+   color-scheme per theme (light -> dark caret, dark -> light caret), so
+   `auto` always yields a strong, theme-matching contrast even in themes
+   whose text colour (base-content) is itself a pale grey. !important so
+   it beats editor-internal caret rules (e.g. CodeMirror). */
+.milkdown-container,
 .milkdown-container [contenteditable],
+.milkdown-container .ProseMirror,
+.milkdown .milkdown-code-block .cm-editor,
 .bn-editor,
 .bn-container [contenteditable] {
-  caret-color: var(--color-primary, var(--p, #3b82f6));
+  caret-color: auto !important;
+}
+
+/* Milkdown code blocks (CodeMirror) and image captions set their caret via
+   --crepe-color-outline, which we remap to base-300 (near-invisible on the
+   light code background). Force those carets to follow the theme too. */
+.milkdown .milkdown-code-block .cm-editor .cm-content,
+.milkdown .milkdown-code-block .cm-editor .cm-scroller,
+.milkdown .milkdown-code-block .cm-panel input,
+.milkdown .milkdown-code-block .tools input,
+.milkdown .milkdown-image-block input {
+  caret-color: auto !important;
+}
+
+/* The collaborative/virtual cursor colour derives from --crepe-color-outline
+   as well; point it at the text colour so it stays legible. */
+.milkdown .ProseMirror-focused {
+  --prosemirror-virtual-cursor-color: var(--color-base-content, var(--bc, #1f2937));
 }
 
 /* Editors (Milkdown / ProseMirror / BlockNote) style their own selection.

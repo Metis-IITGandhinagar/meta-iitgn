@@ -538,6 +538,9 @@ export const getPage = async (req: Request, res: Response) => {
         original_author: {
           select: { name: true },
         },
+        updater: {
+          select: { name: true },
+        },
       },
     });
 
@@ -545,6 +548,7 @@ export const getPage = async (req: Request, res: Response) => {
       return res.json({
         ...livePage,
         users: { name: livePage.original_author?.name },
+        updater: { name: livePage.updater?.name ?? null },
       });
     }
 
@@ -758,6 +762,16 @@ export const updatePage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Page not found' });
     }
 
+    // Block direct edits while a pending proposal is open for this page.
+    const openPending = await prisma.pending_pages.findFirst({
+      where: { page_id: livePage.page_id, status: { in: ['draft', 'in_review'] } },
+    });
+    if (openPending) {
+      return res.status(409).json({
+        error: 'A pending edit proposal is already open for this page. Review or reject it before making direct changes.',
+      });
+    }
+
     const userObj = await prisma.users.findUnique({
       where: { user_id: editorId }
     });
@@ -777,6 +791,26 @@ export const updatePage = async (req: Request, res: Response) => {
     const currentVersion = livePage.version !== null ? livePage.version : 1;
 
     const updatedPage = await prisma.$transaction(async (tx) => {
+      // Snapshot the current live state into revision history.
+      await tx.revision_pages.create({
+        data: {
+          page_id: livePage.page_id,
+          created_by_user_id:
+            livePage.updated_by !== null ? livePage.updated_by : livePage.original_author_id,
+          commit_message: 'Backup prior to direct edit',
+          title: livePage.title,
+          slug: livePage.slug,
+          content: livePage.content,
+          metadata: livePage.metadata || {},
+          original_author_id: livePage.original_author_id,
+          contributors: livePage.contributors || [],
+          version: livePage.version,
+          created_at: livePage.created_at,
+          updated_at: livePage.updated_at,
+          deleted_at: livePage.deleted_at,
+        },
+      });
+
       const page = await tx.live_pages.update({
         where: { page_id: livePage.page_id },
         data: {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import GenericOverlayModal from "@/components/GenericOverlayModal";
 import WikiReadView from "@/components/article/WikiReadView";
 import { apiService } from "../../../api";
@@ -29,6 +30,10 @@ interface PendingDraft {
   users?: {
     name: string;
   } | null;
+  reviewer?: {
+    name: string;
+  } | null;
+  reviewer_id?: number | null;
 }
 
 const DraftSkeleton = () => (
@@ -144,7 +149,12 @@ export default function PendingChangesView({
       setDrafts((prev) =>
         prev.map((d) =>
           d.pending_id === pendingId
-            ? { ...d, status: action === "approve" ? "approved" : "rejected" }
+            ? {
+                ...d,
+                status: action === "approve" ? "approved" : "rejected",
+                reviewer: { name: user?.name ?? "Reviewer" },
+                reviewer_id: user?.user_id ?? null,
+              }
             : d
         )
       );
@@ -168,10 +178,10 @@ export default function PendingChangesView({
   const isNewPageProposal = !!activeReviewDraft && !activeReviewDraft.page_id;
 
   return (
-    <GenericOverlayModal isOpen={true} onClose={closeModal} title="Pending Approval">
+    <GenericOverlayModal isOpen={true} onClose={closeModal} title="Community Changes">
       <div className="max-w-3xl mx-auto space-y-6 w-full">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-serif font-black text-base-content tracking-tight">Pending Approval</h2>
+          <h2 className="text-2xl font-serif font-black text-base-content tracking-tight">Community Changes</h2>
           <p className="text-xs text-base-content/50 font-semibold uppercase tracking-wider">Review proposed community revisions before publishing</p>
         </div>
 
@@ -224,29 +234,48 @@ export default function PendingChangesView({
                       </p>
 
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-base-200 border-dashed">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-base-content/80">{authorName}</span>
-                          <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                          <Link
+                            href={`/user/profile?userId=${pending.editor_id}`}
+                            className="text-xs font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {authorName}
+                          </Link>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md bg-primary/10 text-primary">
                             {pending.page_id ? "Edit Proposal" : "New Page Proposal"}
                           </span>
                           {pending.version !== null && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-neutral/20 text-base-content/80 border border-base-300">
-                              v{pending.version}
-                            </span>
+                            <span className="text-xs text-base-content/50">Version {pending.version}</span>
                           )}
                           {pending.status === "approved" && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-success">
+                              <span className="h-1.5 w-1.5 rounded-full bg-success" />
                               Approved
                             </span>
                           )}
                           {pending.status === "rejected" && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-error/10 text-error border border-error/20">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-error">
+                              <span className="h-1.5 w-1.5 rounded-full bg-error" />
                               Rejected
                             </span>
                           )}
                           {pending.status === "in_review" && (
-                            <span className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-warning">
+                              <span className="h-1.5 w-1.5 rounded-full bg-warning" />
                               Pending Review
+                            </span>
+                          )}
+                          {(pending.status === "approved" || pending.status === "rejected") && pending.reviewer?.name && (
+                            <span className="text-xs text-base-content/50">
+                              Reviewed by{" "}
+                              <Link
+                                href={`/user/profile?userId=${pending.reviewer_id}`}
+                                className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {pending.reviewer.name}
+                              </Link>
                             </span>
                           )}
                         </div>

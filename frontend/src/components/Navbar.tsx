@@ -13,6 +13,7 @@ import {
   Award,
   Users2,
   ChevronLeft,
+  History,
   MoreVertical,
   Share2,
   Bookmark,
@@ -485,6 +486,16 @@ export default function Navbar({
                   >
                     <Settings className="h-4.5 w-4.5 text-slate-500 shrink-0" />
                     <span>Page Settings</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent("show-wiki-revisions"));
+                      setMoreMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                  >
+                    <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
+                    <span>History</span>
                   </button>
                   <div className="border-t border-base-200 my-1" />
                   <button

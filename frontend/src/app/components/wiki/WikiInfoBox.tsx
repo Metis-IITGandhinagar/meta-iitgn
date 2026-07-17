@@ -14,6 +14,7 @@ interface WikiInfoBoxProps {
   isEditing: boolean;
   parsed: {
     infobox: InfoboxData;
+    contentMarkdown?: string;
     toc: Array<{
       id: string;
       title: string;

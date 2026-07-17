@@ -103,7 +103,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [revertingId, setRevertingId] = useState<number | null>(null);
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
   const [revisionToRestore, setRevisionToRestore] = useState<number | null>(null);
 
@@ -172,7 +171,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
   const confirmRestore = async () => {
     if (revisionToRestore === null) return;
     try {
-      setRevertingId(revisionToRestore);
       const res = await apiService.revertPage(slug, revisionToRestore);
       if (res && res.success) {
         alert("Page reverted successfully!");
@@ -182,7 +180,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
     } catch (err: any) {
       alert(err.response?.data?.error || err.message || "Failed to revert page.");
     } finally {
-      setRevertingId(null);
       setRevisionToRestore(null);
     }
   };
@@ -203,17 +200,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
       });
     } catch {
       return "Unknown time";
-    }
-  };
-
-  const getBadgeStyle = (role: string) => {
-    switch (role?.toLowerCase()) {
-      case "admin":
-        return "bg-primary/10 text-primary border border-primary/20";
-      case "moderator":
-        return "bg-warning/10 text-warning border border-warning/20";
-      default:
-        return "bg-neutral/20 text-base-content/85 border border-base-300";
     }
   };
 
@@ -251,7 +237,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
               const authorName = revision.creator?.name || `User #${revision.created_by_user_id}`;
               const initials = authorName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase() || "U";
               const timeString = formatDate(revision.created_at);
-              const badgeStyle = getBadgeStyle(revision.creator?.role || "normal");
 
               return (
                 <div
@@ -275,30 +260,15 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
                       </p>
 
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-base-200 border-dashed">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                           <span className="text-xs font-semibold text-base-content/80">{authorName}</span>
-                          <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${badgeStyle}`}>
-                            {revision.creator?.role || "Contributor"}
+                          <span className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md bg-primary/10 text-primary">
+                            Page Revision
                           </span>
                           {revision.version !== null && (
-                            <span className="text-[9px] font-bold bg-base-200 px-2 py-0.5 rounded-md text-base-content/60">
-                              v{revision.version}
-                            </span>
+                            <span className="text-xs text-base-content/50">Version {revision.version}</span>
                           )}
                         </div>
-
-                        {isAdminOrMod && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRestore(revision.revision_id);
-                            }}
-                            disabled={revertingId !== null}
-                            className="text-xs font-extrabold text-primary hover:text-blue-700 disabled:text-gray-400 transition-colors cursor-pointer duration-150"
-                          >
-                            {revertingId === revision.revision_id ? "Restoring..." : "Restore Version"}
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -320,20 +290,6 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
           </div>
         )}
       </div>
-
-      <ConfirmationModal
-        isOpen={showRestoreConfirm}
-        onClose={() => {
-          setShowRestoreConfirm(false);
-          setRevisionToRestore(null);
-        }}
-        onConfirm={confirmRestore}
-        title="Revert Wiki Article"
-        message="Are you sure you want to revert this live article to this previous version? This will overwrite the current live version (a backup will be saved)."
-        confirmText="Revert"
-        cancelText="Cancel"
-        type="warning"
-      />
 
     </GenericOverlayModal>
 
@@ -407,6 +363,20 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
         </div>
       </GenericOverlayModal>
     )}
+
+      <ConfirmationModal
+        isOpen={showRestoreConfirm}
+        onClose={() => {
+          setShowRestoreConfirm(false);
+          setRevisionToRestore(null);
+        }}
+        onConfirm={confirmRestore}
+        title="Revert Wiki Article"
+        message="Are you sure you want to revert this live article to this previous version? This will overwrite the current live version (a backup will be saved)."
+        confirmText="Revert"
+        cancelText="Cancel"
+        type="warning"
+      />
     </>
   );
 }

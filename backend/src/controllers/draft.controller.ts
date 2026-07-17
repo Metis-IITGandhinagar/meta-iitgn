@@ -194,6 +194,9 @@ export const listPendingDrafts = async (req: Request, res: Response) => {
         editor: {
           select: { name: true },
         },
+        reviewer: {
+          select: { name: true },
+        },
       },
       orderBy: {
         created_at: 'desc',

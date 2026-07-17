@@ -98,6 +98,9 @@ Write your content here...`;
   let dbPageId: number | undefined = undefined;
   let version: number | undefined = undefined;
   let initialMetadata: any = undefined;
+  let updatedAt: string | undefined = undefined;
+  let updatedByName: string | null = null;
+  let contributors: any = undefined;
 
   try {
     const dbArticle = await apiService.getPage(slug);
@@ -106,6 +109,9 @@ Write your content here...`;
       dbPageId = dbArticle.page_id;
       version = dbArticle.version;
       initialMetadata = dbArticle.metadata;
+      updatedAt = dbArticle.updated_at;
+      updatedByName = dbArticle.updater?.name ?? null;
+      contributors = dbArticle.contributors;
 
       // Count a view for genuine article reads (skip edit mode / non-DB pages).
       if (dbPageId && edit !== "true") {
@@ -139,6 +145,9 @@ Write your content here...`;
       dbPageId={dbPageId}
       version={version}
       initialMetadata={initialMetadata}
+      updatedAt={updatedAt}
+      updatedByName={updatedByName}
+      contributors={contributors}
       defaultEditing={edit === "true"}
     />
   );

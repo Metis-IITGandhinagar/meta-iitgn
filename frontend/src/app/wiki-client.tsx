@@ -14,13 +14,12 @@ import {
   Edit3,
   Check,
   X,
-  History,
   PanelRight,
   PlusCircle,
   HelpCircle,
   Trash2,
   Pencil,
-  FileText,
+  FileClock,
 } from "lucide-react";
 import BottomNavbar from "@/components/BottomNavbar";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -49,6 +48,9 @@ interface WikiClientProps {
   version?: number;
   categorySlug?: string;
   initialMetadata?: any;
+  updatedAt?: string;
+  updatedByName?: string | null;
+  contributors?: any;
 }
 
 export default function WikiClient({
@@ -58,6 +60,9 @@ export default function WikiClient({
   categorySlug,
   initialMetadata,
   version,
+  updatedAt,
+  updatedByName,
+  contributors,
 }: WikiClientProps) {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -643,6 +648,48 @@ export default function WikiClient({
     }
   };
 
+  // Page stats shown below the article body (logged-in users only).
+  const contentStats = useMemo(() => {
+    const content = (parsed.contentMarkdown || "").replace(
+      /^---\n[\s\S]*?\n---\n?/,
+      ""
+    );
+    const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+    const chars = content.length;
+    return {
+      words,
+      chars,
+      readingMin: words > 0 ? Math.max(1, Math.round(words / 200)) : 0,
+    };
+  }, [parsed.contentMarkdown]);
+
+  const relativeTime = useMemo(() => {
+    if (!updatedAt) return null;
+    const then = new Date(updatedAt).getTime();
+    if (isNaN(then)) return null;
+    const days = Math.floor((Date.now() - then) / 86400000);
+    if (days < 1) return "today";
+    if (days < 30) return `${days}d ago`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}mo ago`;
+    return `${Math.floor(days / 365)}y ago`;
+  }, [updatedAt]);
+
+  const isStale = useMemo(() => {
+    if (!updatedAt) return false;
+    const then = new Date(updatedAt).getTime();
+    if (isNaN(then)) return false;
+    return (Date.now() - then) / 86400000 > 180;
+  }, [updatedAt]);
+
+  const contributorList = useMemo(() => {
+    if (Array.isArray(contributors)) return contributors as string[];
+    if (contributors && typeof contributors === "object") {
+      return Object.values(contributors) as string[];
+    }
+    return [];
+  }, [contributors]);
+
 
   return (
     <>
@@ -717,6 +764,55 @@ export default function WikiClient({
               />
             )}
           </article>
+
+          {/* Page stats — visible to logged-in users only, below the article body */}
+          {user && (
+            <section className="w-full max-w-5xl mx-auto mt-4 mb-12">
+              <div className="rounded-2xl border border-base-200 bg-base-100 px-5 py-4">
+                <h4 className="text-[10px] font-bold text-base-content/50 tracking-wider mb-3 uppercase">
+                  Page Stats
+                </h4>
+                <div className="flex flex-wrap gap-x-8 gap-y-2 text-xs text-base-content/70">
+                  <span>
+                    <span className="font-semibold text-base-content">{contentStats.words}</span> words
+                  </span>
+                  <span>
+                    <span className="font-semibold text-base-content">{contentStats.chars}</span> characters
+                  </span>
+                  {contentStats.readingMin > 0 && (
+                    <span>
+                      <span className="font-semibold text-base-content">~{contentStats.readingMin} min</span> read
+                    </span>
+                  )}
+                  {versionId != null && (
+                    <span>
+                      version <span className="font-semibold text-base-content">v{versionId}</span>
+                    </span>
+                  )}
+                  {relativeTime && (
+                    <span className="flex items-center gap-1.5">
+                      updated <span className="font-semibold text-base-content">{relativeTime}</span>
+                      {updatedByName ? `by ${updatedByName}` : ""}
+                      {isStale && (
+                        <span className="text-[9px] uppercase font-bold text-warning border border-warning/30 rounded px-1 py-0.5">
+                          Stale
+                        </span>
+                      )}
+                    </span>
+                  )}
+                  {contributorList.length > 0 && (
+                    <span className="min-w-0">
+                      contributors:{" "}
+                      <span className="font-semibold text-base-content truncate">
+                        {contributorList.join(", ")}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Material Design 3 Bottom Navigation Bar */}
           <BottomNavbar
             tabs={(isEditing
@@ -775,21 +871,9 @@ export default function WikiClient({
                         "bg-error/10 text-error border border-error/20 hover:bg-error/20 hover:text-error",
                     },
                   {
-                    id: "revisions",
-                    label: "History",
-                    icon: History,
-                    onClick: () => {
-                      setShowRevisions(true);
-                      setShowPendingChanges(false);
-                      window.dispatchEvent(
-                        new CustomEvent("show-wiki-revisions")
-                      );
-                    },
-                  },
-                  {
                     id: "changes",
                     label: "Pending Drafts",
-                    icon: FileText,
+                    icon: FileClock,
                     onClick: () => {
                       setShowPendingChanges(true);
                       setShowRevisions(false);
