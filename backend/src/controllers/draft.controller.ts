@@ -4,6 +4,7 @@ import { invalidateCategoriesCache } from './category.controller.js';
 import { invalidateStatsCache, invalidateSearchCache, invalidateSyncCache } from './page.controller.js';
 import { recomputeUserPoints } from '../utils/points.js';
 import { processAndMarkMediaUsed } from '../utils/cleanup.js';
+import { updateSyncMetadata } from '../utils/syncMetadata.js';
 
 /**
  * POST /drafts
@@ -44,17 +45,21 @@ export const submitDraft = async (req: Request, res: Response) => {
           });
         }
 
-        const updatedDraft = await prisma.pending_pages.update({
-          where: { pending_id: activeDraft.pending_id },
-          data: {
-            title,
-            content,
-            metadata: metadata || activeDraft.metadata || {},
-            video_url: video_url !== undefined ? video_url : activeDraft.video_url,
-            editor_id,
-            version: currentVersion + 1,
-            status: 'in_review'
-          }
+        const updatedDraft = await prisma.$transaction(async (tx) => {
+          const draft = await tx.pending_pages.update({
+            where: { pending_id: activeDraft.pending_id },
+            data: {
+              title,
+              content,
+              metadata: metadata || activeDraft.metadata || {},
+              video_url: video_url !== undefined ? video_url : activeDraft.video_url,
+              editor_id,
+              version: currentVersion + 1,
+              status: 'in_review'
+            }
+          });
+          await updateSyncMetadata('pendingpages', 0, tx);
+          return draft;
         });
         await processAndMarkMediaUsed(content, (metadata as any)?.image);
         invalidateSyncCache('pendingpages');
@@ -79,17 +84,21 @@ export const submitDraft = async (req: Request, res: Response) => {
           }
         }
 
-        const newDraft = await prisma.pending_pages.create({
-          data: {
-            page_id: Number(page_id),
-            title,
-            content,
-            metadata: metadata || {},
-            video_url,
-            editor_id,
-            version: versionVal + 1,
-            status: 'in_review'
-          }
+        const newDraft = await prisma.$transaction(async (tx) => {
+          const draft = await tx.pending_pages.create({
+            data: {
+              page_id: Number(page_id),
+              title,
+              content,
+              metadata: metadata || {},
+              video_url,
+              editor_id,
+              version: versionVal + 1,
+              status: 'in_review'
+            }
+          });
+          await updateSyncMetadata('pendingpages', 1, tx);
+          return draft;
         });
         await processAndMarkMediaUsed(content, (metadata as any)?.image);
         invalidateSyncCache('pendingpages');
@@ -119,33 +128,41 @@ export const submitDraft = async (req: Request, res: Response) => {
           });
         }
 
-        const updatedDraft = await prisma.pending_pages.update({
-          where: { pending_id: existingDraft.pending_id },
-          data: {
-            content,
-            metadata: metadata || existingDraft.metadata || {},
-            video_url: video_url !== undefined ? video_url : existingDraft.video_url,
-            editor_id,
-            version: currentVersion + 1,
-            status: 'in_review'
-          }
+        const updatedDraft = await prisma.$transaction(async (tx) => {
+          const draft = await tx.pending_pages.update({
+            where: { pending_id: existingDraft.pending_id },
+            data: {
+              content,
+              metadata: metadata || existingDraft.metadata || {},
+              video_url: video_url !== undefined ? video_url : existingDraft.video_url,
+              editor_id,
+              version: currentVersion + 1,
+              status: 'in_review'
+            }
+          });
+          await updateSyncMetadata('pendingpages', 0, tx);
+          return draft;
         });
         await processAndMarkMediaUsed(content, (metadata as any)?.image);
         invalidateSyncCache('pendingpages');
         return res.status(200).json(updatedDraft);
       }
 
-      const newDraft = await prisma.pending_pages.create({
-        data: {
-          page_id: null,
-          title,
-          content,
-          metadata: metadata || {},
-          video_url,
-          editor_id,
-          version: 1,
-          status: 'in_review'
-        }
+      const newDraft = await prisma.$transaction(async (tx) => {
+        const draft = await tx.pending_pages.create({
+          data: {
+            page_id: null,
+            title,
+            content,
+            metadata: metadata || {},
+            video_url,
+            editor_id,
+            version: 1,
+            status: 'in_review'
+          }
+        });
+        await updateSyncMetadata('pendingpages', 1, tx);
+        return draft;
       });
       await processAndMarkMediaUsed(content, (metadata as any)?.image);
       invalidateSyncCache('pendingpages');
@@ -216,12 +233,16 @@ export const reviewDraft = async (req: Request, res: Response) => {
     }
 
     if (action === 'reject') {
-      const updatedDraft = await prisma.pending_pages.update({
-        where: { pending_id },
-        data: {
-          status: 'rejected',
-          reviewer_id,
-        },
+      const updatedDraft = await prisma.$transaction(async (tx) => {
+        const draft = await tx.pending_pages.update({
+          where: { pending_id },
+          data: {
+            status: 'rejected',
+            reviewer_id,
+          },
+        });
+        await updateSyncMetadata('pendingpages', 0, tx);
+        return draft;
       });
       return res.json({ message: 'Draft rejected', data: updatedDraft });
     }
@@ -322,6 +343,18 @@ export const reviewDraft = async (req: Request, res: Response) => {
             ip_address: '127.0.0.1',
           },
         });
+
+        await updateSyncMetadata('updatedpages', 1, tx);
+        await updateSyncMetadata('popular', 1, tx);
+        await updateSyncMetadata('pendingpages', 0, tx);
+        if (slug === 'mess-menu') {
+          await updateSyncMetadata('messmenu', 1, tx);
+        } else if (slug === 'campus-transport') {
+          await updateSyncMetadata('transport', 1, tx);
+        }
+        if (metaCategory === 'featured' || meta?.featured === true) {
+          await updateSyncMetadata('featured', 1, tx);
+        }
 
         return { message: 'Draft approved and published.', data: newLivePage };
       } else {
@@ -453,6 +486,34 @@ export const reviewDraft = async (req: Request, res: Response) => {
             ip_address: '127.0.0.1',
           },
         });
+
+        await updateSyncMetadata('updatedpages', 0, tx);
+        await updateSyncMetadata('popular', 0, tx);
+        await updateSyncMetadata('pendingpages', 0, tx);
+        const pageSlug = updatedLivePage.slug;
+        if (pageSlug === 'mess-menu') {
+          await updateSyncMetadata('messmenu', 0, tx);
+        } else if (pageSlug === 'campus-transport') {
+          await updateSyncMetadata('transport', 0, tx);
+        }
+
+        if (metaCategory === 'featured' || upMeta?.featured === true) {
+          const existingFeatured = await tx.featured_pages.findFirst({
+            where: { page_id: updatedLivePage.page_id }
+          });
+          if (existingFeatured) {
+            await updateSyncMetadata('featured', 0, tx);
+          } else {
+            await updateSyncMetadata('featured', 1, tx);
+          }
+        } else {
+          const existingFeatured = await tx.featured_pages.findFirst({
+            where: { page_id: updatedLivePage.page_id }
+          });
+          if (existingFeatured) {
+            await updateSyncMetadata('featured', -1, tx);
+          }
+        }
 
         return { message: 'Draft approved and published.', data: updatedLivePage };
       }

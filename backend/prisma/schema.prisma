@@ -328,3 +328,11 @@ model revision_blogs {
   live_blog          blogs     @relation(fields: [blog_id], references: [blog_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+model sync_metadata {
+  key          String   @id
+  last_updated DateTime @updatedAt
+  count        Int
+}
+
+
+

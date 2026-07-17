@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { invalidateCategoriesCache } from './category.controller.js';
 import { processAndMarkMediaUsed } from '../utils/cleanup.js';
+import { updateSyncMetadata } from '../utils/syncMetadata.js';
 
 let statsCache: { totalPages: number } | null = null;
 
@@ -671,33 +672,46 @@ export const createPage = async (req: Request, res: Response) => {
     });
     const creatorName = userObj?.name || 'Unknown';
 
-    const newPage = await prisma.live_pages.create({
-      data: {
-        title,
-        slug,
-        content: content || null,
-        metadata: metadata || {},
-        video_url: video_url || null,
-        original_author_id: creatorId,
-        contributors: [creatorName],
-        version: 1,
-      },
-    });
-
-    // Auto-feature if category is "Featured" or "featured"
-    const meta = metadata as any;
-    const metaCategory = String(meta?.category || '').toLowerCase();
-    if (metaCategory === 'featured' || meta?.featured === true) {
-      await prisma.featured_pages.create({
+    const newPage = await prisma.$transaction(async (tx) => {
+      const page = await tx.live_pages.create({
         data: {
-          page_id: newPage.page_id,
-          tag: meta?.tag || 'Featured Story',
-          location: meta?.location || '',
-          description: meta?.description || title,
-          order: 0
-        }
+          title,
+          slug,
+          content: content || null,
+          metadata: metadata || {},
+          video_url: video_url || null,
+          original_author_id: creatorId,
+          contributors: [creatorName],
+          version: 1,
+        },
       });
-    }
+
+      // Auto-feature if category is "Featured" or "featured"
+      const meta = metadata as any;
+      const metaCategory = String(meta?.category || '').toLowerCase();
+      if (metaCategory === 'featured' || meta?.featured === true) {
+        await tx.featured_pages.create({
+          data: {
+            page_id: page.page_id,
+            tag: meta?.tag || 'Featured Story',
+            location: meta?.location || '',
+            description: meta?.description || title,
+            order: 0
+          }
+        });
+        await updateSyncMetadata('featured', 1, tx);
+      }
+
+      await updateSyncMetadata('updatedpages', 1, tx);
+      await updateSyncMetadata('popular', 1, tx);
+      if (slug === 'mess-menu') {
+        await updateSyncMetadata('messmenu', 1, tx);
+      } else if (slug === 'campus-transport') {
+        await updateSyncMetadata('transport', 1, tx);
+      }
+
+      return page;
+    });
 
     await processAndMarkMediaUsed(content, (metadata as any)?.image);
 
@@ -762,57 +776,72 @@ export const updatePage = async (req: Request, res: Response) => {
 
     const currentVersion = livePage.version !== null ? livePage.version : 1;
 
-    const updatedPage = await prisma.live_pages.update({
-      where: { page_id: livePage.page_id },
-      data: {
-        title: title !== undefined ? title : livePage.title,
-        content: content !== undefined ? content : livePage.content,
-        metadata: metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata,
-        video_url: video_url !== undefined ? video_url : livePage.video_url,
-        contributors,
-        version: currentVersion + 1,
-        updated_by: editorId,
-        updated_at: new Date(),
-      },
-    });
+    const updatedPage = await prisma.$transaction(async (tx) => {
+      const page = await tx.live_pages.update({
+        where: { page_id: livePage.page_id },
+        data: {
+          title: title !== undefined ? title : livePage.title,
+          content: content !== undefined ? content : livePage.content,
+          metadata: metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata,
+          video_url: video_url !== undefined ? video_url : livePage.video_url,
+          contributors,
+          version: currentVersion + 1,
+          updated_by: editorId,
+          updated_at: new Date(),
+        },
+      });
 
-    // Auto-feature / Update feature if category is "Featured" or "featured"
-    const upMeta = updatedPage.metadata as any;
-    const metaCategory = String(upMeta?.category || '').toLowerCase();
-    if (metaCategory === 'featured' || upMeta?.featured === true) {
-      const existingFeatured = await prisma.featured_pages.findFirst({
-        where: { page_id: livePage.page_id }
-      });
-      if (existingFeatured) {
-        await prisma.featured_pages.update({
-          where: { featured_id: existingFeatured.featured_id },
-          data: {
-            tag: upMeta?.tag || 'Featured Story',
-            location: upMeta?.location || '',
-            description: upMeta?.description || updatedPage.title,
-          }
+      // Auto-feature / Update feature if category is "Featured" or "featured"
+      const upMeta = page.metadata as any;
+      const metaCategory = String(upMeta?.category || '').toLowerCase();
+      if (metaCategory === 'featured' || upMeta?.featured === true) {
+        const existingFeatured = await tx.featured_pages.findFirst({
+          where: { page_id: livePage.page_id }
         });
+        if (existingFeatured) {
+          await tx.featured_pages.update({
+            where: { featured_id: existingFeatured.featured_id },
+            data: {
+              tag: upMeta?.tag || 'Featured Story',
+              location: upMeta?.location || '',
+              description: upMeta?.description || page.title,
+            }
+          });
+          await updateSyncMetadata('featured', 0, tx);
+        } else {
+          await tx.featured_pages.create({
+            data: {
+              page_id: livePage.page_id,
+              tag: upMeta?.tag || 'Featured Story',
+              location: upMeta?.location || '',
+              description: upMeta?.description || page.title,
+              order: 0
+            }
+          });
+          await updateSyncMetadata('featured', 1, tx);
+        }
       } else {
-        await prisma.featured_pages.create({
-          data: {
-            page_id: livePage.page_id,
-            tag: upMeta?.tag || 'Featured Story',
-            location: upMeta?.location || '',
-            description: upMeta?.description || updatedPage.title,
-            order: 0
-          }
+        const existingFeatured = await tx.featured_pages.findFirst({
+          where: { page_id: livePage.page_id }
         });
+        if (existingFeatured) {
+          await tx.featured_pages.delete({
+            where: { featured_id: existingFeatured.featured_id }
+          });
+          await updateSyncMetadata('featured', -1, tx);
+        }
       }
-    } else {
-      const existingFeatured = await prisma.featured_pages.findFirst({
-        where: { page_id: livePage.page_id }
-      });
-      if (existingFeatured) {
-        await prisma.featured_pages.delete({
-          where: { featured_id: existingFeatured.featured_id }
-        });
+
+      await updateSyncMetadata('updatedpages', 0, tx);
+      await updateSyncMetadata('popular', 0, tx);
+      if (slug === 'mess-menu') {
+        await updateSyncMetadata('messmenu', 0, tx);
+      } else if (slug === 'campus-transport') {
+        await updateSyncMetadata('transport', 0, tx);
       }
-    }
+
+      return page;
+    });
 
     await processAndMarkMediaUsed(
       content !== undefined ? content : livePage.content,
@@ -851,11 +880,31 @@ export const deletePage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Page not found' });
     }
 
-    await prisma.live_pages.update({
-      where: { page_id: livePage.page_id },
-      data: {
-        deleted_at: new Date(),
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.live_pages.update({
+        where: { page_id: livePage.page_id },
+        data: {
+          deleted_at: new Date(),
+        },
+      });
+
+      const existingFeatured = await tx.featured_pages.findFirst({
+        where: { page_id: livePage.page_id }
+      });
+      if (existingFeatured) {
+        await tx.featured_pages.delete({
+          where: { featured_id: existingFeatured.featured_id }
+        });
+        await updateSyncMetadata('featured', -1, tx);
+      }
+
+      await updateSyncMetadata('updatedpages', -1, tx);
+      await updateSyncMetadata('popular', -1, tx);
+      if (slug === 'mess-menu') {
+        await updateSyncMetadata('messmenu', -1, tx);
+      } else if (slug === 'campus-transport') {
+        await updateSyncMetadata('transport', -1, tx);
+      }
     });
 
     invalidateCategoriesCache();
@@ -880,45 +929,23 @@ export const deletePage = async (req: Request, res: Response) => {
  */
 export const getSyncCheck = async (req: Request, res: Response) => {
   try {
-    // 1. news last updated
-    if (!syncCheckCache.news) {
-      const newsItems = await prisma.news.findMany({
-        where: { deleted_at: null },
-        select: { updated_at: true }
-      });
-      
-      const news_last_updated = newsItems.length > 0 ? Math.max(...newsItems.map((p: any) => p.updated_at.getTime())) : 0;
-      syncCheckCache.news = { last_updated: news_last_updated, count: newsItems.length };
+    const metadataRows = await prisma.sync_metadata.findMany();
+    const metadataMap = new Map<string, { last_updated: Date; count: number }>();
+    for (const row of metadataRows) {
+      metadataMap.set(row.key, { last_updated: row.last_updated, count: row.count });
     }
 
+    const formatMeta = (key: string) => {
+      const row = metadataMap.get(key);
+      return {
+        last_updated: row ? row.last_updated.getTime() : 0,
+        count: row ? row.count : 0
+      };
+    };
 
-    // 3. pendingpages
-    if (!syncCheckCache.pendingpages) {
-      const pendingStats = await prisma.pending_pages.aggregate({
-        _max: { created_at: true },
-        _count: { pending_id: true },
-      });
-      const pending_last_updated = pendingStats._max.created_at ? pendingStats._max.created_at.getTime() : 0;
-      const pending_count = pendingStats._count.pending_id;
-      syncCheckCache.pendingpages = { last_updated: pending_last_updated, count: pending_count };
-    }
-
-    // 4. updatedpages
-    if (!syncCheckCache.updatedpages) {
-      const liveStats = await prisma.live_pages.aggregate({
-        _max: { updated_at: true },
-        _count: { page_id: true },
-        where: { deleted_at: null }
-      });
-      const updated_last_updated = liveStats._max.updated_at ? liveStats._max.updated_at.getTime() : 0;
-      const updated_count = liveStats._count.page_id;
-      syncCheckCache.updatedpages = { last_updated: updated_last_updated, count: updated_count };
-    }
-
-    // 5. bookmarks count & max created_at for this user (if logged in)
     let bookmarks_last_updated = 0;
     let bookmarks_count = 0;
-    
+
     if (req.user && req.user.user_id) {
       const userId = Number(req.user.user_id);
       const cachedBookmark = bookmarkStatsCache.get(userId);
@@ -936,72 +963,20 @@ export const getSyncCheck = async (req: Request, res: Response) => {
         bookmarkStatsCache.set(userId, {
           last_updated: bookmarks_last_updated,
           count: bookmarks_count,
-          expiry: Date.now() + 10000 // 10 seconds cache
+          expiry: Date.now() + 10000
         });
       }
     }
 
-    // 6. featured pages
-    if (!syncCheckCache.featured) {
-      const featuredStats = await prisma.featured_pages.aggregate({
-        _max: { updated_at: true },
-        _count: { featured_id: true }
-      });
-      const featured_last_updated = featuredStats._max.updated_at ? featuredStats._max.updated_at.getTime() : 0;
-      syncCheckCache.featured = { last_updated: featured_last_updated, count: featuredStats._count.featured_id };
-    }
-
-    // 7. events
-    if (!syncCheckCache.events) {
-      const eventStats = await prisma.events.aggregate({
-        _max: { updated_at: true },
-        _count: { event_id: true },
-        where: { deleted_at: null }
-      });
-      const events_last_updated = eventStats._max.updated_at ? eventStats._max.updated_at.getTime() : 0;
-      syncCheckCache.events = { last_updated: events_last_updated, count: eventStats._count.event_id };
-    }
-
-    // 8. mess menu page
-    if (!syncCheckCache.messmenu) {
-      const page = await prisma.live_pages.findFirst({
-        where: { slug: 'mess-menu', deleted_at: null },
-        select: { updated_at: true }
-      });
-      const mess_last_updated = page ? page.updated_at.getTime() : 0;
-      syncCheckCache.messmenu = { last_updated: mess_last_updated, count: page ? 1 : 0 };
-    }
-
-    // 9. transport page
-    if (!syncCheckCache.transport) {
-      const page = await prisma.live_pages.findFirst({
-        where: { slug: 'campus-transport', deleted_at: null },
-        select: { updated_at: true }
-      });
-      const transport_last_updated = page ? page.updated_at.getTime() : 0;
-      syncCheckCache.transport = { last_updated: transport_last_updated, count: page ? 1 : 0 };
-    }
-
-    // 10. popular pages (live_pages count/max updated_at)
-    if (!syncCheckCache.popular) {
-      const popularStats = await prisma.live_pages.aggregate({
-        _max: { updated_at: true },
-        _count: { page_id: true },
-        where: { deleted_at: null }
-      });
-      const popular_last_updated = popularStats._max.updated_at ? popularStats._max.updated_at.getTime() : 0;
-      syncCheckCache.popular = { last_updated: popular_last_updated, count: popularStats._count.page_id };
-    }
-
     return res.json({
-      news: syncCheckCache.news,
-      pendingpages: syncCheckCache.pendingpages,
-      updatedpages: syncCheckCache.updatedpages,
-      featured: syncCheckCache.featured,
-      events: syncCheckCache.events,
-      messmenu: syncCheckCache.messmenu,
-      transport: syncCheckCache.transport,
-      popular: syncCheckCache.popular,
+      news: formatMeta('news'),
+      pendingpages: formatMeta('pendingpages'),
+      updatedpages: formatMeta('updatedpages'),
+      featured: formatMeta('featured'),
+      events: formatMeta('events'),
+      messmenu: formatMeta('messmenu'),
+      transport: formatMeta('transport'),
+      popular: formatMeta('popular'),
       bookmarks: { last_updated: bookmarks_last_updated, count: bookmarks_count }
     });
   } catch (error: any) {
@@ -1043,9 +1018,12 @@ export const getPopularPages = async (req: Request, res: Response) => {
 export const incrementViewCount = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;
-    await prisma.live_pages.updateMany({
-      where: { slug, deleted_at: null },
-      data: { view_count: { increment: 1 } },
+    await prisma.$transaction(async (tx) => {
+      await tx.live_pages.updateMany({
+        where: { slug, deleted_at: null },
+        data: { view_count: { increment: 1 } },
+      });
+      await updateSyncMetadata('popular', 0, tx);
     });
     return res.json({ success: true });
   } catch (error: any) {
@@ -1195,6 +1173,15 @@ export const revertPageToRevision = async (req: Request, res: Response) => {
           ip_address: '127.0.0.1',
         },
       });
+
+      await updateSyncMetadata('updatedpages', 0, tx);
+      await updateSyncMetadata('popular', 0, tx);
+      const pageSlug = livePage.slug;
+      if (pageSlug === 'mess-menu') {
+        await updateSyncMetadata('messmenu', 0, tx);
+      } else if (pageSlug === 'campus-transport') {
+        await updateSyncMetadata('transport', 0, tx);
+      }
 
       return updatedPage;
     });

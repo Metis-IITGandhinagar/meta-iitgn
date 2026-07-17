@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { invalidateSyncCache } from './page.controller.js';
+import { updateSyncMetadata } from '../utils/syncMetadata.js';
 
 /**
  * Extract the infobox image from a page's markdown frontmatter — the same
@@ -77,18 +78,23 @@ export const setFeaturedPage = async (req: Request, res: Response) => {
     if (!page_id) return res.status(400).json({ success: false, error: { code: 'MISSING_PAGE_ID', message: 'page_id is required' } });
 
     const pid = Number(page_id);
-    const existing = await prisma.featured_pages.findFirst({ where: { page_id: pid } });
-    let result;
-    if (existing) {
-      result = await prisma.featured_pages.update({
-        where: { featured_id: existing.featured_id },
-        data: { order, tag, location, description },
-      });
-    } else {
-      result = await prisma.featured_pages.create({
-        data: { page_id: pid, order, tag, location, description },
-      });
-    }
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.featured_pages.findFirst({ where: { page_id: pid } });
+      let res;
+      if (existing) {
+        res = await tx.featured_pages.update({
+          where: { featured_id: existing.featured_id },
+          data: { order, tag, location, description },
+        });
+        await updateSyncMetadata('featured', 0, tx);
+      } else {
+        res = await tx.featured_pages.create({
+          data: { page_id: pid, order, tag, location, description },
+        });
+        await updateSyncMetadata('featured', 1, tx);
+      }
+      return res;
+    });
     invalidateSyncCache('featured');
     return res.json({ success: true, data: result });
   } catch (error: any) {
@@ -104,7 +110,10 @@ export const setFeaturedPage = async (req: Request, res: Response) => {
 export const removeFeaturedPage = async (req: Request, res: Response) => {
   try {
     const { featured_id } = req.params;
-    await prisma.featured_pages.delete({ where: { featured_id: Number(featured_id) } });
+    await prisma.$transaction(async (tx) => {
+      await tx.featured_pages.delete({ where: { featured_id: Number(featured_id) } });
+      await updateSyncMetadata('featured', -1, tx);
+    });
     invalidateSyncCache('featured');
     return res.json({ success: true });
   } catch (error: any) {
