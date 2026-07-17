@@ -30,7 +30,7 @@ export default function SearchTab({
     router.push(`/search-results?query=${encodeURIComponent(q)}`);
   };
 
-  const autoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
+  const autoFocus = localStorage.getItem("wiki_autofocus_search") === "true";
 
   return (
     <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-base-100 overflow-hidden select-none">

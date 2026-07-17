@@ -32,7 +32,6 @@ interface AuditLogRecord {
 interface UserRecord {
   user_id: number;
   name: string;
-  email: string;
   avatar_url: string | null;
   role: string;
   created_at: string;
@@ -400,7 +399,6 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
                         </div>
                         <div className="min-w-0">
                           <h4 className="text-sm font-bold text-base-content truncate">{item.name}</h4>
-                          <p className="text-xs text-base-content/50 mt-0.5 truncate font-medium">{item.email}</p>
                           <span className="text-[10px] text-base-content/40 font-semibold">Joined: {new Date(item.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>

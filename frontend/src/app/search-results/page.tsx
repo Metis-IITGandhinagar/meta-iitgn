@@ -97,7 +97,7 @@ function SearchResultsContent() {
     setHistory(getSearchHistory());
   }, []);
 
-  const autoFocus = localStorage.getItem("wiki_autofocus_search") !== "false";
+  const autoFocus = localStorage.getItem("wiki_autofocus_search") === "true";
   // "Open links in new tab" applies to internal search-result links.
   const openInNewTab = localStorage.getItem("wiki_open_new_tab") === "true";
 
