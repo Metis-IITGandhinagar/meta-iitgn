@@ -681,7 +681,7 @@ export default function ProfileContent() {
             </Link>
           </div>
 
-          {bookmarks.length === 0 ? (
+          {displayBookmarks.length === 0 ? (
             <div className="text-center py-12 border border-dashed border-base-300 rounded-2xl">
               <Bookmark className="h-10 w-10 mx-auto text-base-content/30 mb-3" />
               <p className="text-sm font-bold text-base-content/60">
@@ -693,7 +693,7 @@ export default function ProfileContent() {
             </div>
           ) : (
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-              {bookmarks.map((item: any) => (
+              {displayBookmarks.map((item: any) => (
                 <div
                   key={item.id || item.bookmark_id}
                   className="flex items-center justify-between p-4 rounded-2xl border border-base-200 hover:border-primary/30 hover:shadow-sm transition-all group cursor-pointer"
@@ -707,16 +707,18 @@ export default function ProfileContent() {
                       {item.category}
                     </span>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeBookmark(item.id || String(item.page_id));
-                    }}
-                    className="btn btn-ghost btn-xs text-base-content/40 hover:text-error transition-colors shrink-0 opacity-0 group-hover:opacity-100"
-                    aria-label="Remove bookmark"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {isOwnProfile && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeBookmark(item.id || String(item.page_id));
+                      }}
+                      className="btn btn-ghost btn-xs text-base-content/40 hover:text-error transition-colors shrink-0 opacity-0 group-hover:opacity-100"
+                      aria-label="Remove bookmark"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
