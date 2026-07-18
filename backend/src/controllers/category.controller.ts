@@ -1,20 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 
-const DEFAULT_CATEGORIES = [
-  { slug: "departments", name: "Departments", description: "Explore the academic departments and engineering disciplines at IIT Gandhinagar." },
-  { slug: "faculty", name: "Faculty", description: "Learn about the professors, researchers, and their specialized research labs." },
-  { slug: "courses", name: "Courses", description: "Browse course syllabi, prerequisites, grading policies, and recommendations." },
-  { slug: "research", name: "Research Labs", description: "Discover center facilities, instrumentation resources, and active projects." },
-  { slug: "hostels", name: "Hostels", description: "Everything about hostel capacities, mascots, mess dining, and residential guidelines." },
-  { slug: "facilities", name: "Campus Facilities", description: "Details on sports complex, medical center, transport schedules, and shops." },
-  { slug: "clubs", name: "Student Clubs", description: "Get involved in technical, cultural, sports, and social clubs." },
-  { slug: "fests", name: "Institute Fests", description: "Read about Amalthea, Blithchron, Hallabol, and other annual events." },
-  { slug: "academic-info", name: "Academic Info", description: "Keep track of semesters, exams, academic guidelines, and institute holidays." },
-  { slug: "policies", name: "Institute Policies", description: "Read about graduation criteria, leave policies, and code of conduct guidelines." },
-  { slug: "placements", name: "Placement Stats", description: "Analyze trends, recruiter information, and sector-wise distribution profiles." }
-];
-
 let categoriesCache: any[] | null = null;
 
 export const invalidateCategoriesCache = () => {
@@ -27,28 +13,21 @@ export const getCategories = async (req: Request, res: Response) => {
       return res.json(categoriesCache);
     }
 
-    const count = await prisma.categories.count();
-    if (count === 0) {
-      console.log("Seeding default categories...");
-      await prisma.categories.createMany({
-        data: DEFAULT_CATEGORIES
-      });
-    }
-
     const categories = await prisma.categories.findMany({
       orderBy: { name: "asc" }
     });
 
+    // Count live pages per category using the `category` column.
     const rawCounts = await prisma.live_pages.groupBy({
-      by: ['subcategory'],
-      where: { deleted_at: null, subcategory: { not: null } },
+      by: ['category'],
+      where: { deleted_at: null, category: { not: null } },
       _count: { _all: true }
     });
 
     const counts: Record<string, number> = {};
     for (const row of rawCounts) {
-      if (row.subcategory) {
-        counts[row.subcategory] = row._count._all;
+      if (row.category) {
+        counts[row.category] = row._count._all;
       }
     }
 
@@ -171,9 +150,28 @@ export const updateCategory = async (req: Request, res: Response) => {
       data.slug = slug;
     }
 
-    const updated = await prisma.categories.update({
-      where: { category_id: id },
-      data
+    const slugChanged = !!data.slug && data.slug !== existing.slug;
+
+    const updated = await prisma.$transaction(async (tx) => {
+      // When the category is renamed, its slug changes. Pages store the
+      // category as a slug in their `category` column, so repoint any pages
+      // (live and pending drafts) that referenced the old slug to the new one.
+      // Without this they become orphaned and "disappear" from the category.
+      if (slugChanged) {
+        await tx.live_pages.updateMany({
+          where: { category: existing.slug },
+          data: { category: data.slug },
+        });
+        await tx.pending_pages.updateMany({
+          where: { category: existing.slug },
+          data: { category: data.slug },
+        });
+      }
+
+      return tx.categories.update({
+        where: { category_id: id },
+        data,
+      });
     });
 
     invalidateCategoriesCache();
@@ -297,30 +295,23 @@ export const getCategoryArticles = async (req: Request, res: Response) => {
     const limitNum = parseInt(req.query.limit as string, 10) || 6;
     const skip = (pageNum - 1) * limitNum;
 
-    const PARENT_CATEGORIES = ["academics", "campus", "student-life", "research", "policies"];
-    const isParent = PARENT_CATEGORIES.includes(categorySlug);
-
-    const filterCondition = isParent
-      ? { category: categorySlug }
-      : { subcategory: categorySlug };
-
+    // Pages are associated with a category via the `category` column.
     const totalMatched = await prisma.live_pages.count({
       where: {
         deleted_at: null,
-        ...filterCondition
+        category: categorySlug
       }
     });
 
     const paginatedPages = await prisma.live_pages.findMany({
       where: {
         deleted_at: null,
-        ...filterCondition
+        category: categorySlug
       },
       select: {
         page_id: true,
         slug: true,
-        title: true,
-        description: true
+        title: true
       },
       orderBy: {
         title: 'asc'
@@ -332,8 +323,7 @@ export const getCategoryArticles = async (req: Request, res: Response) => {
     const results = paginatedPages.map((page) => ({
       page_id: page.page_id,
       slug: page.slug,
-      title: page.title || "Untitled",
-      description: page.description || ""
+      title: page.title || "Untitled"
     }));
 
     return res.json({

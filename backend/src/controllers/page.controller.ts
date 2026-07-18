@@ -672,6 +672,30 @@ export const createPage = async (req: Request, res: Response) => {
         },
       });
 
+      // Seed the initial revision so the page's v1 content is preserved in
+      // history. Every subsequent edit records the new state it produced, so
+      // without this the original content is never reachable from history.
+      await tx.revision_pages.create({
+        data: {
+          page_id: page.page_id,
+          created_by_user_id: creatorId,
+          commit_message: 'Initial version',
+          title: page.title,
+          slug: page.slug,
+          content: page.content,
+          category: page.category,
+          subcategory: page.subcategory,
+          description: page.description,
+          metadata: page.metadata || {},
+          original_author_id: page.original_author_id,
+          contributors: page.contributors || [],
+          version: page.version,
+          created_at: page.created_at,
+          updated_at: page.updated_at,
+          deleted_at: null,
+        },
+      });
+
       // Auto-feature if category is "Featured" or "featured"
       const meta = metadata as any;
       const metaCategory = String(meta?.category || '').toLowerCase();
@@ -724,7 +748,7 @@ export const createPage = async (req: Request, res: Response) => {
 export const updatePage = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;
-    const { title, content, metadata, video_url } = req.body;
+    const { title, content, metadata, video_url, edit_summary } = req.body;
 
     const editorId = Number(req.user.user_id);
 
@@ -769,38 +793,50 @@ export const updatePage = async (req: Request, res: Response) => {
 
     const currentVersion = livePage.version !== null ? livePage.version : 1;
 
+    // Use the editor's typed summary as the human-readable change description;
+    // fall back to a clear version marker when none is provided.
+    const editSummary = typeof edit_summary === 'string' && edit_summary.trim()
+      ? edit_summary.trim()
+      : `Version ${currentVersion}`;
+
+    // Compute the resulting state of this edit up front so the revision
+    // history records the NEW state (the state this edit produced), not the
+    // pre-edit state. Otherwise the commit message ("removed everything")
+    // ends up attached to a snapshot of the old content.
+    const nextContent = content !== undefined ? content : livePage.content;
+    const nextMetadata = metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata;
+    const parsedFields = extractPageFields(nextContent, nextMetadata);
+    const nextTitle = title !== undefined ? title : livePage.title;
+    const newVersion = currentVersion + 1;
+
     const updatedPage = await prisma.$transaction(async (tx) => {
-      // Snapshot the current live state into revision history.
+      // Record the NEW live state as a revision so its content matches the
+      // commit message describing this edit.
       await tx.revision_pages.create({
         data: {
           page_id: livePage.page_id,
-          created_by_user_id:
-            livePage.updated_by !== null ? livePage.updated_by : livePage.original_author_id,
-          commit_message: 'Backup prior to direct edit',
-          title: livePage.title,
+          created_by_user_id: editorId,
+          commit_message: editSummary,
+          title: nextTitle,
           slug: livePage.slug,
-          content: livePage.content,
-          category: livePage.category,
-          subcategory: livePage.subcategory,
-          description: livePage.description,
-          metadata: livePage.metadata || {},
+          content: nextContent,
+          category: parsedFields.category,
+          subcategory: parsedFields.subcategory,
+          description: parsedFields.description,
+          metadata: nextMetadata || {},
           original_author_id: livePage.original_author_id,
-          contributors: livePage.contributors || [],
-          version: livePage.version,
+          contributors,
+          version: newVersion,
           created_at: livePage.created_at,
           updated_at: livePage.updated_at,
           deleted_at: livePage.deleted_at,
         },
       });
 
-      const nextContent = content !== undefined ? content : livePage.content;
-      const nextMetadata = metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata;
-      const parsedFields = extractPageFields(nextContent, nextMetadata);
-
       const page = await tx.live_pages.update({
         where: { page_id: livePage.page_id },
         data: {
-          title: title !== undefined ? title : livePage.title,
+          title: nextTitle,
           content: nextContent,
           metadata: nextMetadata,
           category: parsedFields.category,
@@ -808,7 +844,7 @@ export const updatePage = async (req: Request, res: Response) => {
           description: parsedFields.description,
           video_url: video_url !== undefined ? video_url : livePage.video_url,
           contributors,
-          version: currentVersion + 1,
+          version: newVersion,
           updated_by: editorId,
           updated_at: new Date(),
         },
@@ -1137,29 +1173,10 @@ export const revertPageToRevision = async (req: Request, res: Response) => {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create a backup revision of the current live state
-      await tx.revision_pages.create({
-        data: {
-          page_id: livePage.page_id,
-          created_by_user_id: livePage.updated_by ?? livePage.original_author_id,
-          commit_message: `Automatic backup before revert to revision #${revision_id}`,
-          title: livePage.title,
-          slug: livePage.slug,
-          content: livePage.content,
-          category: livePage.category,
-          subcategory: livePage.subcategory,
-          description: livePage.description,
-          metadata: livePage.metadata || {},
-          original_author_id: livePage.original_author_id,
-          contributors: livePage.contributors || [],
-          version: livePage.version,
-          created_at: livePage.created_at,
-          updated_at: livePage.updated_at,
-          deleted_at: livePage.deleted_at,
-        },
-      });
+      const nextVersion = (livePage.version ?? 1) + 1;
+      const parsedFields = extractPageFields(revision.content, revision.metadata);
 
-      // 2. Fetch the user performing the revert to add them to contributors
+      // Fetch the user performing the revert to add them to contributors.
       const user = await tx.users.findUnique({ where: { user_id: userId } });
       const userName = user?.name || 'Unknown';
 
@@ -1173,11 +1190,32 @@ export const revertPageToRevision = async (req: Request, res: Response) => {
         contributors.push(userName);
       }
 
-      const nextVersion = (livePage.version ?? 1) + 1;
+      // 1. Record the reverted state as a revision (the state this revert
+      // produces), tagged with the revert message. This matches the new-state
+      // history model used for edits so the content lines up with the message.
+      await tx.revision_pages.create({
+        data: {
+          page_id: livePage.page_id,
+          created_by_user_id: userId,
+          commit_message: `Reverted to v${revision.version ?? '?'}`,
 
-      const parsedFields = extractPageFields(revision.content, revision.metadata);
+          title: revision.title,
+          slug: livePage.slug,
+          content: revision.content,
+          category: revision.category || parsedFields.category,
+          subcategory: revision.subcategory || parsedFields.subcategory,
+          description: revision.description || parsedFields.description,
+          metadata: revision.metadata || {},
+          original_author_id: livePage.original_author_id,
+          contributors,
+          version: nextVersion,
+          created_at: livePage.created_at,
+          updated_at: livePage.updated_at,
+          deleted_at: livePage.deleted_at,
+        },
+      });
 
-      // 3. Update the live page with the revision data
+      // 2. Update the live page with the revision data
       const updatedPage = await tx.live_pages.update({
         where: { page_id: livePage.page_id },
         data: {

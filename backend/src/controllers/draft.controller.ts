@@ -403,13 +403,20 @@ export const reviewDraft = async (req: Request, res: Response) => {
           throw new Error('Original live page not found');
         }
 
+        // Use the editor's typed edit summary (carried in metadata) as the
+        // human-readable revision note; fall back to a clear version marker.
+        const draftMeta: any = (draft.metadata as object) || {};
+        const commitMessage =
+          typeof draftMeta.edit_summary === 'string' && draftMeta.edit_summary.trim()
+            ? draftMeta.edit_summary.trim()
+            : `Version ${livePage.version ?? 1}`;
+
         // Backup current live page state to revision_pages
         await tx.revision_pages.create({
           data: {
             page_id: livePage.page_id,
-            created_by_user_id:
-              livePage.updated_by !== null ? livePage.updated_by : livePage.original_author_id,
-            commit_message: `Backup prior to draft ${pending_id} approval`,
+            created_by_user_id: draft.editor_id,
+            commit_message: commitMessage,
             title: livePage.title,
             slug: livePage.slug,
             content: livePage.content,

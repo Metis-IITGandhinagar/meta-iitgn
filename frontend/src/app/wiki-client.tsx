@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import BottomNavbar from "@/components/navs/BottomNavbar";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
+import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 
 // Subcomponents
 import RevisionsView from "@/components/wiki/RevisionsView";
@@ -68,6 +69,8 @@ export default function WikiClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
+  const [showSubmitSummary, setShowSubmitSummary] = useState(false);
+  const [submitSummary, setSubmitSummary] = useState('');
   const [markdown, setMarkdown] = useState(initialMarkdown ?? '');
   const [activeSection, setActiveSection] = useState<string>("");
   const [readingProgressPct, setReadingProgressPct] = useState(0);
@@ -439,7 +442,8 @@ export default function WikiClient({
 
   const handleSave = async (
     resolvedContentOverride?: string,
-    resolvedVersionOverride?: number
+    resolvedVersionOverride?: number,
+    summary?: string
   ) => {
     try {
       let category = categorySlug || initialMetadata?.category || "campus";
@@ -506,6 +510,7 @@ export default function WikiClient({
             title: parsed.title || "Untitled Page",
             content: cleanedContent,
             metadata,
+            edit_summary: summary ?? '',
           });
           toast.success("Page updated successfully!");
           setIsEditing(false);
@@ -527,7 +532,10 @@ export default function WikiClient({
           page_id: dbPageId || null,
           title: parsed.title || "Untitled Page",
           content: cleanedContent,
-          metadata,
+          metadata: {
+            ...metadata,
+            ...(summary && summary.trim() ? { edit_summary: summary.trim() } : {}),
+          },
           editor_id: user?.user_id || 0,
           base_version:
             resolvedVersionOverride !== undefined
@@ -833,7 +841,9 @@ export default function WikiClient({
                     id: "save",
                     label: "Save",
                     icon: Check,
-                    onClick: () => handleSave(),
+                    onClick: () => {
+                      setShowSubmitSummary(true);
+                    },
                     colorClass: "bg-success text-success-content",
                   },
                   {
@@ -863,8 +873,7 @@ export default function WikiClient({
                   },
                 ]
               : ([
-                  (user?.role === "admin" ||
-                    user?.role === "moderator") &&
+                  user?.role === "admin" &&
                     !isMessMenu &&
                     !isTransport && {
                       id: "delete",
@@ -924,6 +933,7 @@ export default function WikiClient({
                         console.error("Failed to load page for editing:", err);
                       }
                       setIsEditing(true);
+                      setSubmitSummary('');
                     },
                   },
 
@@ -1075,6 +1085,54 @@ export default function WikiClient({
             </footer>
           </div>
         </div>
+      )}
+
+      {/* Submit summary modal — captures the human-readable change note */}
+      {showSubmitSummary && (
+        <GenericOverlayModal
+          isOpen={true}
+          onClose={() => setShowSubmitSummary(false)}
+          title="Describe your changes"
+          maxWidthClass="max-w-lg"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-base-content/60">
+              This note is saved with the revision history so reviewers and
+              readers can see what was changed.
+            </p>
+            <input
+              type="text"
+              autoFocus
+              value={submitSummary}
+              onChange={(e) => setSubmitSummary(e.target.value)}
+              placeholder="e.g. Fixed admission dates, added hostel info"
+              className="input input-bordered w-full bg-base-100 border-base-300 focus:border-primary rounded-xl text-sm"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setShowSubmitSummary(false);
+                  handleSave(undefined, undefined, submitSummary);
+                }
+              }}
+            />
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowSubmitSummary(false)}
+                className="btn btn-ghost btn-sm rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowSubmitSummary(false);
+                  handleSave(undefined, undefined, submitSummary);
+                }}
+                className="btn btn-success btn-sm text-success-content rounded-xl font-bold"
+              >
+                Submit Changes
+              </button>
+            </div>
+          </div>
+        </GenericOverlayModal>
       )}
 
       {/* Mess menu editor modal (opened from the mess-menu wiki page) */}

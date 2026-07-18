@@ -251,13 +251,13 @@ export default function HomeTab({
     .map((line, i) => ({
       line,
       index: i,
-      trip: nextTrip(line.slots.flatMap((s) => s.trips), nowMinutes),
+      trip: nextTrip(line.trips, nowMinutes),
     }))
     .filter((x) => x.trip);
   // Flattened, time-sorted view of every trip to find the single next departure.
   const transportFlat = transportData
     .flatMap((line, index) =>
-      line.slots.flatMap((s) => s.trips).map((trip) => ({ line, index, trip }))
+      line.trips.map((trip) => ({ line, index, trip }))
     )
     .map((x) => ({ ...x, m: tripTimeToMinutes(x.trip.time) }))
     .filter((x) => x.m !== null) as Array<{

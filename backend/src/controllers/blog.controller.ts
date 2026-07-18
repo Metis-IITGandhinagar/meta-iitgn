@@ -248,7 +248,7 @@ export const updateBlog = async (req: any, res: Response) => {
         await tx.revision_blogs.create({
           data: {
             blog_id: blog.blog_id,
-            created_by_user_id: blog.updated_by ?? blog.original_author_id,
+            created_by_user_id: userId,
             commit_message: `Backup prior to update by admin/moderator`,
             title: blog.title,
             description: blog.description,
@@ -669,7 +669,7 @@ export const reviewBlogDraft = async (req: any, res: Response) => {
         await tx.revision_blogs.create({
           data: {
             blog_id: liveBlog.blog_id,
-            created_by_user_id: liveBlog.updated_by ?? liveBlog.original_author_id,
+            created_by_user_id: draft.editor_id,
             commit_message: `Backup prior to draft #${pending_id} approval`,
             title: liveBlog.title,
             description: liveBlog.description,
@@ -828,7 +828,7 @@ export const revertBlogToRevision = async (req: any, res: Response) => {
       await tx.revision_blogs.create({
         data: {
           blog_id: liveBlog.blog_id,
-          created_by_user_id: liveBlog.updated_by ?? liveBlog.original_author_id,
+          created_by_user_id: userId,
           commit_message: `Automatic backup before revert to revision #${revision_id}`,
           title: liveBlog.title,
           description: liveBlog.description,

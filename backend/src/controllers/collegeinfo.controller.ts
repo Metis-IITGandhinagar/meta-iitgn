@@ -30,16 +30,44 @@ export const getEvents = async (req: Request, res: Response) => {
 };
 
 /**
+ * Ensure a college-info page exists in live_pages, creating an empty one if it
+ * is missing. Used so /collegeinfo/mess-menu and /collegeinfo/campus-transport
+ * never 404 — they return an empty (editable) page instead.
+ */
+const ensureCollegeInfoPage = async (slug: string, title: string, subcategory: string) => {
+  const existing = await prisma.live_pages.findFirst({
+    where: { slug, deleted_at: null },
+  });
+  if (existing) return existing;
+
+  // Pick any existing user as the original author to satisfy the FK constraint.
+  const author = await prisma.users.findFirst({ orderBy: { user_id: 'asc' } });
+  const authorId = author?.user_id ?? 1;
+
+  return prisma.live_pages.create({
+    data: {
+      title,
+      slug,
+      content: '',
+      category: 'Campus',
+      subcategory,
+      description: '',
+      metadata: {},
+      video_url: null,
+      original_author_id: authorId,
+      contributors: author ? [author.name] : [],
+      version: 1,
+    },
+  });
+};
+
+/**
  * GET /collegeinfo/mess-menu
- * Returns the mess menu page content
+ * Returns the mess menu page content. Creates an empty page if missing.
  */
 export const getMessMenu = async (req: Request, res: Response) => {
   try {
-    const page = await prisma.live_pages.findFirst({
-      where: { slug: 'mess-menu', deleted_at: null },
-      select: { page_id: true, title: true, slug: true, content: true, updated_at: true },
-    });
-    if (!page) return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Mess menu page not found' } });
+    const page = await ensureCollegeInfoPage('mess-menu', 'Mess Menu', 'Mess');
     return res.json({ success: true, data: page });
   } catch (error: any) {
     console.error('Error in getMessMenu:', error);
@@ -49,15 +77,11 @@ export const getMessMenu = async (req: Request, res: Response) => {
 
 /**
  * GET /collegeinfo/campus-transport
- * Returns the campus transport page content
+ * Returns the campus transport page content. Creates an empty page if missing.
  */
 export const getCampusTransport = async (req: Request, res: Response) => {
   try {
-    const page = await prisma.live_pages.findFirst({
-      where: { slug: 'campus-transport', deleted_at: null },
-      select: { page_id: true, title: true, slug: true, content: true, updated_at: true },
-    });
-    if (!page) return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Campus transport page not found' } });
+    const page = await ensureCollegeInfoPage('campus-transport', 'Campus Transport', 'Transport');
     return res.json({ success: true, data: page });
   } catch (error: any) {
     console.error('Error in getCampusTransport:', error);

@@ -37,6 +37,12 @@ interface PendingDraft {
   reviewer_id?: number | null;
 }
 
+const getEditSummary = (draft: PendingDraft): string | null => {
+  const meta = draft.metadata as Record<string, unknown> | undefined;
+  const summary = meta?.edit_summary;
+  return typeof summary === "string" && summary.trim() ? summary.trim() : null;
+};
+
 const DraftSkeleton = () => (
   <div className="p-4 sm:p-5 border border-base-300 bg-base-100 rounded-2xl shadow-sm animate-pulse select-none">
     <div className="flex items-start gap-4">
@@ -234,6 +240,17 @@ export default function PendingChangesView({
                         {pending.content.replace(/---[\s\S]*?---/, "").trim()}
                       </p>
 
+                      {getEditSummary(pending) && (
+                        <div className="mt-2.5 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                            Changes
+                          </span>
+                          <p className="text-xs text-base-content/80 leading-relaxed mt-0.5">
+                            {getEditSummary(pending)}
+                          </p>
+                        </div>
+                      )}
+
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-base-200 border-dashed">
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                           <Link
@@ -314,6 +331,17 @@ export default function PendingChangesView({
               <p className="text-xs text-base-content/50 mb-3 font-semibold uppercase tracking-wider shrink-0">
                 Compare live content with proposal. Author: {activeReviewDraft.users?.name || `User #${activeReviewDraft.editor_id}`}
               </p>
+
+              {getEditSummary(activeReviewDraft) && (
+                <div className="mb-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2 shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                    What changed
+                  </span>
+                  <p className="text-sm text-base-content/80 leading-relaxed mt-0.5">
+                    {getEditSummary(activeReviewDraft)}
+                  </p>
+                </div>
+              )}
 
               {/* Two content columns side by side */}
               <div className="flex-1 min-h-0 flex flex-row gap-4">

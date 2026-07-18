@@ -10,8 +10,6 @@ import CategoryEditModal from "@/components/overlays/CategoryEditModal";
 export interface Article {
   slug: string;
   title: string;
-  snippet: string;
-  content: string;
 }
 
 export const ICON_MAP: Record<string, any> = {
@@ -76,9 +74,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
 
       const mapped: Article[] = res.articles.map((art: any) => ({
         slug: art.slug,
-        title: art.title,
-        snippet: art.description,
-        content: ""
+        title: art.title
       }));
 
       setArticles(prev => append ? [...prev, ...mapped] : mapped);
@@ -191,10 +187,6 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                       <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300">
                         {article.title}
                       </h3>
-
-                      <p className="text-xs text-base-content/60 leading-relaxed line-clamp-3">
-                        {article.snippet}
-                      </p>
                     </div>
                   </Link>
                 ))}

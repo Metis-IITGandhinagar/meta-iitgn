@@ -18,8 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import TransportView from "@/components/article/TransportView";
 import {
-  TransportLine,
-  TransportSlot,
+  TransportBus,
   TransportTrip,
   splitTransportContent,
   buildTransportContent,
@@ -41,11 +40,11 @@ export default function TransportOverlay({
   const { user } = useAuth();
   const canEdit = user?.role === "admin" || user?.role === "moderator";
 
-  const [lines, setLines] = useState<TransportLine[]>([]);
-  const [activeLine, setActiveLine] = useState<number>(0);
+  const [buses, setBuses] = useState<TransportBus[]>([]);
+  const [activeBus, setActiveBus] = useState<number>(0);
   const [editing, setEditing] = useState(false);
   const [header, setHeader] = useState("");
-  const [newLineName, setNewLineName] = useState("");
+  const [newBusName, setNewBusName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -63,96 +62,71 @@ export default function TransportOverlay({
     setError(null);
     setSuccess(null);
     const parsed = transport?.content ? parseTransport(transport.content) : [];
-    setLines(parsed);
-    setActiveLine(0);
+    setBuses(parsed);
+    setActiveBus(0);
   }, [isOpen, transport]);
 
-  const selectedLine: TransportLine | undefined = lines[activeLine];
+  const selectedBus: TransportBus | undefined = buses[activeBus];
 
-  // ── Visual edit helpers (operate on the active line) ────────────────────────
-  const patchActiveLine = (
-    patch: Partial<TransportLine> | ((l: TransportLine) => TransportLine)
+  // ── Visual edit helpers (operate on the active bus) ───────────────────────
+  const patchActiveBus = (
+    patch: Partial<TransportBus> | ((b: TransportBus) => TransportBus)
   ) => {
-    setLines((prev) =>
-      prev.map((l, i) => {
-        if (i !== activeLine) return l;
-        return typeof patch === "function" ? patch(l) : { ...l, ...patch };
+    setBuses((prev) =>
+      prev.map((b, i) => {
+        if (i !== activeBus) return b;
+        return typeof patch === "function" ? patch(b) : { ...b, ...patch };
       })
     );
   };
 
-  const setSlots = (slots: TransportSlot[]) => patchActiveLine({ slots });
-
-  const addSlot = () => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots([...slots, { name: "New Slot", trips: [] }]);
+  const addTrip = () => {
+    const trips = selectedBus?.trips ?? [];
+    patchActiveBus({ trips: [...trips, { time: "", from: "", to: "", via: "" }] });
   };
 
-  const updateSlot = (si: number, patch: Partial<TransportSlot>) => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots(slots.map((s, i) => (i === si ? { ...s, ...patch } : s)));
+  const updateTrip = (ti: number, patch: Partial<TransportTrip>) => {
+    const trips = selectedBus?.trips ?? [];
+    patchActiveBus({ trips: trips.map((t, j) => (j === ti ? { ...t, ...patch } : t)) });
   };
 
-  const removeSlot = (si: number) => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots(slots.filter((_, i) => i !== si));
+  const removeTrip = (ti: number) => {
+    const trips = selectedBus?.trips ?? [];
+    patchActiveBus({ trips: trips.filter((_, j) => j !== ti) });
   };
 
-  const moveSlot = (si: number, dir: -1 | 1) => {
-    const slots = selectedLine?.slots ?? [];
-    const target = si + dir;
-    if (target < 0 || target >= slots.length) return;
-    const next = [...slots];
-    [next[si], next[target]] = [next[target], next[si]];
-    setSlots(next);
+  const moveTrip = (ti: number, dir: -1 | 1) => {
+    const trips = selectedBus?.trips ?? [];
+    const target = ti + dir;
+    if (target < 0 || target >= trips.length) return;
+    const next = [...trips];
+    [next[ti], next[target]] = [next[target], next[ti]];
+    patchActiveBus({ trips: next });
   };
 
-  const addTrip = (si: number) => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots(
-      slots.map((s, i) =>
-        i === si ? { ...s, trips: [...s.trips, { time: "", from: "", to: "", via: "" }] } : s
-      )
-    );
+  const addBus = (name: string) => {
+    const finalName = name.trim() || `Bus ${buses.length + 1}`;
+    setBuses((prev) => [...prev, { name: finalName, trips: [] }]);
+    setActiveBus(buses.length);
+    setNewBusName("");
   };
 
-  const updateTrip = (si: number, ti: number, patch: Partial<TransportTrip>) => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots(
-      slots.map((s, i) =>
-        i === si
-          ? { ...s, trips: s.trips.map((t, j) => (j === ti ? { ...t, ...patch } : t)) }
-          : s
-      )
-    );
+  const removeBus = (bi: number) => {
+    setBuses((prev) => prev.filter((_, i) => i !== bi));
+    setActiveBus((curr) => {
+      const newLen = buses.length - 1; // pre-deletion length
+      if (curr === bi) return Math.min(bi, Math.max(0, newLen - 1));
+      if (curr > bi) return curr - 1;
+      return Math.min(curr, Math.max(0, newLen - 1));
+    });
   };
 
-  const removeTrip = (si: number, ti: number) => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots(
-      slots.map((s, i) => (i === si ? { ...s, trips: s.trips.filter((_, j) => j !== ti) } : s))
-    );
-  };
-
-  const moveTrip = (si: number, ti: number, dir: -1 | 1) => {
-    const slots = selectedLine?.slots ?? [];
-    setSlots(
-      slots.map((s, i) => {
-        if (i !== si) return s;
-        const target = ti + dir;
-        if (target < 0 || target >= s.trips.length) return s;
-        const next = [...s.trips];
-        [next[ti], next[target]] = [next[target], next[ti]];
-        return { ...s, trips: next };
-      })
-    );
-  };
-
-  const addLine = (name: string) => {
-    if (!name.trim()) return;
-    setLines((prev) => [...prev, { name: name.trim(), slots: [] }]);
-    setActiveLine(lines.length);
-    setNewLineName("");
+  const moveBus = (bi: number, dir: -1 | 1) => {
+    const target = bi + dir;
+    if (target < 0 || target >= buses.length) return;
+    const next = [...buses];
+    [next[bi], next[target]] = [next[target], next[bi]];
+    setBuses(next);
   };
 
   const handleEdit = async () => {
@@ -161,15 +135,15 @@ export default function TransportOverlay({
       const editRes: any = await apiService.getPageForEdit("campus-transport");
       const fullPage: any = await apiService.getPage("campus-transport");
       const content = editRes?.content ?? transport?.content ?? "";
-      const { header: parsedHeader, lines: parsedLines } = splitTransportContent(content);
+      const { header: parsedHeader, buses: parsedBuses } = splitTransportContent(content);
       setHeader(parsedHeader);
-      setLines(parsedLines);
+      setBuses(parsedBuses);
       setPageId(editRes?.page_id ?? fullPage?.page_id ?? transport?.page_id ?? null);
       setBaseVersion(editRes?.versionId ?? fullPage?.version ?? 1);
       setPageMetadata(fullPage?.metadata ?? { category: "campus-transport" });
       setPageTitle(editRes?.title ?? fullPage?.title ?? "Campus Transport");
-      setActiveLine(0);
-      setNewLineName("");
+      setActiveBus(0);
+      setNewBusName("");
       setEditing(true);
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || "Failed to load schedule for editing");
@@ -177,13 +151,13 @@ export default function TransportOverlay({
   };
 
   const handleSave = async () => {
-    if (lines.length === 0 && !header.trim()) return;
+    if (buses.length === 0 && !header.trim()) return;
     setSaving(true);
     setError(null);
     try {
-      const content = buildTransportContent(header, lines);
+      const content = buildTransportContent(header, buses);
       const isStaff = user?.role === "admin" || user?.role === "moderator";
-      
+
       if (isStaff) {
         await apiService.updatePage("campus-transport", {
           title: pageTitle,
@@ -272,188 +246,149 @@ export default function TransportOverlay({
         {editing ? (
           <div className="space-y-4">
             <p className="text-xs text-base-content/60">
-              Edit bus lines, slots, and trips below — your changes are submitted for review and
+              Edit buses and trips below — your changes are submitted for review and
               published by a moderator.
             </p>
 
-            {/* Line switcher (dropdown) + add line */}
+            {/* Bus switcher (dropdown) + add bus */}
             <div className="flex flex-wrap items-center gap-2">
               <Bus className="h-4 w-4 text-secondary" />
               <select
-                value={activeLine}
-                onChange={(e) => setActiveLine(Number(e.target.value))}
+                value={activeBus}
+                onChange={(e) => setActiveBus(Number(e.target.value))}
                 className="select select-sm select-bordered border-base-300 bg-base-100 text-base-content/80 font-semibold min-w-0 flex-1"
               >
-                {lines.map((l, i) => (
+                {buses.map((b, i) => (
                   <option key={i} value={i}>
-                    {l.name || `Line ${i + 1}`}
+                    {b.name || `Bus ${i + 1}`}
                   </option>
                 ))}
               </select>
               <button
-                onClick={() => addLine(newLineName || `Line ${lines.length + 1}`)}
+                onClick={() => addBus(newBusName || `Bus ${buses.length + 1}`)}
                 className="btn btn-ghost btn-sm gap-1 text-secondary"
               >
-                <Plus className="h-3.5 w-3.5" /> Line
+                <Plus className="h-3.5 w-3.5" /> Bus
               </button>
             </div>
 
-            {selectedLine ? (
+            {selectedBus ? (
               <div className="space-y-4">
-                {/* Line header: name + note */}
+                {/* Bus header: name + note + delete */}
                 <div className="space-y-2 rounded-xl border border-base-200 bg-base-100 p-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={selectedBus.name}
+                      onChange={(e) => patchActiveBus({ name: e.target.value })}
+                      placeholder="Bus name (e.g. 29-Seater Non-AC Bus)"
+                      className="input input-sm input-bordered font-bold w-full"
+                    />
+                    <button
+                      onClick={() => removeBus(activeBus)}
+                      aria-label="Delete bus"
+                      className="btn btn-ghost btn-sm btn-square shrink-0 text-base-content/40 hover:text-error"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                   <input
-                    value={selectedLine.name}
-                    onChange={(e) => patchActiveLine({ name: e.target.value })}
-                    placeholder="Bus line name (e.g. 29-Seater Non-AC Bus)"
-                    className="input input-sm input-bordered font-bold w-full"
-                  />
-                  <input
-                    value={selectedLine.note ?? ""}
-                    onChange={(e) => patchActiveLine({ note: e.target.value })}
+                    value={selectedBus.note ?? ""}
+                    onChange={(e) => patchActiveBus({ note: e.target.value })}
                     placeholder="Optional note (e.g. JEET Royal Hostel Accommodation)"
                     className="input input-sm input-bordered text-xs w-full"
                   />
                 </div>
 
-                {/* Slots */}
-                {selectedLine.slots.length === 0 ? (
-                  <p className="text-sm text-base-content/50 italic px-1">No slots yet — add one below.</p>
-                ) : (
-                  selectedLine.slots.map((slot, si) => {
-                    const isFirst = si === 0;
-                    const isLast = si === selectedLine.slots.length - 1;
-                    return (
-                      <div key={si} className="rounded-xl border border-base-200 bg-base-100 p-3 space-y-2.5">
-                        {/* Slot name + range + reorder / remove */}
-                        <div className="flex items-start gap-2">
+                {/* Trips */}
+                <div className="space-y-1.5 pl-1">
+                  {selectedBus.trips.length === 0 ? (
+                    <p className="text-sm text-base-content/50 italic px-1">No trips yet — add one below.</p>
+                  ) : (
+                    selectedBus.trips.map((trip, ti) => {
+                      const tFirst = ti === 0;
+                      const tLast = selectedBus.trips.length - 1 === ti;
+                      return (
+                        <div key={ti} className="flex items-center gap-1.5">
+                          <span className="text-base leading-none shrink-0 text-secondary">•</span>
+                          <div className="relative">
+                            <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-base-content/40 pointer-events-none" />
+                            <input
+                              value={trip.time}
+                              onChange={(e) => updateTrip(ti, { time: e.target.value })}
+                              placeholder="7:45 am"
+                              className="input input-sm input-bordered text-xs pl-8 w-28"
+                            />
+                          </div>
                           <input
-                            value={slot.name}
-                            onChange={(e) => updateSlot(si, { name: e.target.value })}
-                            placeholder="Slot (e.g. Morning)"
-                            className="input input-sm input-bordered font-bold flex-1 min-w-0"
+                            value={trip.from}
+                            onChange={(e) => updateTrip(ti, { from: e.target.value })}
+                            placeholder="From"
+                            className="input input-sm input-bordered text-xs flex-1 min-w-0"
+                          />
+                          <span className="text-base-content/40 shrink-0">→</span>
+                          <input
+                            value={trip.to ?? ""}
+                            onChange={(e) => updateTrip(ti, { to: e.target.value })}
+                            placeholder="To"
+                            className="input input-sm input-bordered text-xs flex-1 min-w-0"
                           />
                           <input
-                            value={slot.range ?? ""}
-                            onChange={(e) => updateSlot(si, { range: e.target.value })}
-                            placeholder="Range (e.g. 7:45 am – 11:15 am)"
-                            className="input input-sm input-bordered text-xs w-40 shrink-0"
+                            value={trip.via ?? ""}
+                            onChange={(e) => updateTrip(ti, { via: e.target.value })}
+                            placeholder="Via (optional)"
+                            className="input input-sm input-bordered text-xs w-40 shrink-0 hidden sm:block"
                           />
                           <div className="flex items-center gap-0.5 shrink-0">
                             <button
-                              onClick={() => moveSlot(si, -1)}
-                              disabled={isFirst}
-                              aria-label="Move slot up"
+                              onClick={() => moveTrip(ti, -1)}
+                              disabled={tFirst}
+                              aria-label="Move trip up"
                               className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-secondary disabled:opacity-20"
                             >
-                              <ArrowUp className="h-3.5 w-3.5" />
+                              <ArrowUp className="h-3 w-3" />
                             </button>
                             <button
-                              onClick={() => moveSlot(si, 1)}
-                              disabled={isLast}
-                              aria-label="Move slot down"
+                              onClick={() => moveTrip(ti, 1)}
+                              disabled={tLast}
+                              aria-label="Move trip down"
                               className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-secondary disabled:opacity-20"
                             >
-                              <ArrowDown className="h-3.5 w-3.5" />
+                              <ArrowDown className="h-3 w-3" />
                             </button>
                             <button
-                              onClick={() => removeSlot(si)}
-                              aria-label="Remove slot"
-                              className="btn btn-ghost btn-sm btn-square text-base-content/40 hover:text-error"
+                              onClick={() => removeTrip(ti)}
+                              aria-label="Remove trip"
+                              className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-error"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <X className="h-3 w-3" />
                             </button>
                           </div>
                         </div>
+                      );
+                    })
+                  )}
+                  <button
+                    onClick={addTrip}
+                    className="btn btn-ghost btn-xs text-secondary gap-1"
+                  >
+                    <Plus className="h-3 w-3" /> Add trip
+                  </button>
+                </div>
 
-                        {/* Trips */}
-                        <div className="space-y-1.5 pl-1">
-                          {slot.trips.map((trip, ti) => {
-                            const tFirst = ti === 0;
-                            const tLast = slot.trips.length - 1 === ti;
-                            return (
-                              <div key={ti} className="flex items-center gap-1.5">
-                                <span className="text-base leading-none shrink-0 text-secondary">•</span>
-                                <div className="relative">
-                                  <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-base-content/40 pointer-events-none" />
-                                  <input
-                                    value={trip.time}
-                                    onChange={(e) => updateTrip(si, ti, { time: e.target.value })}
-                                    placeholder="7:45 am"
-                                    className="input input-sm input-bordered text-xs pl-8 w-28"
-                                  />
-                                </div>
-                                <input
-                                  value={trip.from}
-                                  onChange={(e) => updateTrip(si, ti, { from: e.target.value })}
-                                  placeholder="From"
-                                  className="input input-sm input-bordered text-xs flex-1 min-w-0"
-                                />
-                                <span className="text-base-content/40 shrink-0">→</span>
-                                <input
-                                  value={trip.to ?? ""}
-                                  onChange={(e) => updateTrip(si, ti, { to: e.target.value })}
-                                  placeholder="To"
-                                  className="input input-sm input-bordered text-xs flex-1 min-w-0"
-                                />
-                                <input
-                                  value={trip.via ?? ""}
-                                  onChange={(e) => updateTrip(si, ti, { via: e.target.value })}
-                                  placeholder="Via (optional)"
-                                  className="input input-sm input-bordered text-xs w-40 shrink-0 hidden sm:block"
-                                />
-                                <div className="flex items-center gap-0.5 shrink-0">
-                                  <button
-                                    onClick={() => moveTrip(si, ti, -1)}
-                                    disabled={tFirst}
-                                    aria-label="Move trip up"
-                                    className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-secondary disabled:opacity-20"
-                                  >
-                                    <ArrowUp className="h-3 w-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => moveTrip(si, ti, 1)}
-                                    disabled={tLast}
-                                    aria-label="Move trip down"
-                                    className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-secondary disabled:opacity-20"
-                                  >
-                                    <ArrowDown className="h-3 w-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => removeTrip(si, ti)}
-                                    aria-label="Remove trip"
-                                    className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-error"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                          <button
-                            onClick={() => addTrip(si)}
-                            className="btn btn-ghost btn-xs text-secondary gap-1"
-                          >
-                            <Plus className="h-3 w-3" /> Add trip
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
+                {selectedBus.trips.length > 0 && (
+                  <button
+                    onClick={addTrip}
+                    className="btn btn-outline btn-sm border-secondary/40 text-secondary hover:bg-secondary hover:text-secondary-content gap-1.5 w-full"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Add trip to {selectedBus.name}
+                  </button>
                 )}
-
-                <button
-                  onClick={addSlot}
-                  className="btn btn-outline btn-sm border-secondary/40 text-secondary hover:bg-secondary hover:text-secondary-content gap-1.5 w-full"
-                >
-                  <Plus className="h-3.5 w-3.5" /> Add slot to {selectedLine.name}
-                </button>
               </div>
             ) : (
               <div className="text-center py-16 border border-dashed border-base-300 rounded-2xl">
-                <p className="text-base-content/60 font-medium mb-3">No lines added yet.</p>
-                <button onClick={() => addLine("")} className="btn btn-secondary btn-sm gap-1.5">
-                  <Plus className="h-3.5 w-3.5" /> Add line
+                <p className="text-base-content/60 font-medium mb-3">No buses added yet.</p>
+                <button onClick={() => addBus("")} className="btn btn-secondary btn-sm gap-1.5">
+                  <Plus className="h-3.5 w-3.5" /> Add bus
                 </button>
               </div>
             )}
