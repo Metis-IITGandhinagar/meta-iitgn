@@ -35,7 +35,7 @@ interface CategoryFormInput {
 export default function CategoriesPage() {
   useDocumentTitle("Categories");
   const router = useRouter();
-  const { user, categories, addCategoryState, updateCategoryState, activeTier } = useAuth();
+  const { user, categories, addCategoryState, updateCategoryState } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Add Category form states
@@ -54,7 +54,7 @@ export default function CategoriesPage() {
     defaultValues: { icon: "BookOpen" }
   });
 
-  const isGold = activeTier === "gold";
+  const canManageCategory = user?.role === "admin" || user?.role === "moderator";
   const selectedIcon = watch("icon") || "BookOpen";
   const selectedIconEdit = watchEdit("icon") || "BookOpen";
 
@@ -413,7 +413,7 @@ export default function CategoriesPage() {
                         {cat.total_articles}<span className="hidden sm:inline"> articles</span>
                       </span>
                     )}
-                    {isGold && (
+                    {canManageCategory && (
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
@@ -447,7 +447,7 @@ export default function CategoriesPage() {
                         )}
                       </button>
                     )}
-                    {isGold && (
+                    {canManageCategory && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

@@ -66,8 +66,8 @@ export default function PendingChangesView({
   title,
   isGlobal = false,
 }: PendingChangesViewProps) {
-  const { user, activeTier } = useAuth();
-  const canModerate = activeTier !== "bronze";
+  const { user } = useAuth();
+  const canModerate = user?.role === "admin" || user?.role === "moderator";
   const router = useRouter();
   const [drafts, setDrafts] = useState<PendingDraft[]>([]);
   const [loading, setLoading] = useState(true);

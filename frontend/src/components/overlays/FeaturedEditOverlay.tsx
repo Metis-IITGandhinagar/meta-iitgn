@@ -18,8 +18,8 @@ export default function FeaturedEditOverlay({
   isOpen,
   onClose,
 }: FeaturedEditOverlayProps) {
-  const { activeTier, user } = useAuth();
-  const isGold = activeTier === "gold" || user?.role === "admin" || user?.role === "moderator";
+  const { user } = useAuth();
+  const canManageFeatured = user?.role === "admin" || user?.role === "moderator";
 
   const router = useRouter();
   const featuredPages = useHomeStore((s) => s.featuredPages);
@@ -122,7 +122,7 @@ export default function FeaturedEditOverlay({
       headerColorClass="text-primary bg-base-200"
     >
       <div className="space-y-6 w-full">
-        {!isGold && (
+        {!canManageFeatured && (
           <div className="rounded-xl border border-base-300 bg-base-200/40 px-4 py-3 text-xs text-base-content/70 font-semibold">
             You&rsquo;re viewing the featured list. Editing is available to gold
             members and moderators.
@@ -130,7 +130,7 @@ export default function FeaturedEditOverlay({
         )}
 
         {/* Gold-only: search & add / create */}
-        {isGold && (
+        {canManageFeatured && (
           <div className="space-y-3">
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -197,7 +197,7 @@ export default function FeaturedEditOverlay({
         {/* Listing (everyone) */}
         <div className="space-y-3">
           <h4 className="text-[10px] font-bold text-base-content/50 tracking-wider uppercase">
-            {isGold ? "Currently Featured" : "Featured List"}
+            {canManageFeatured ? "Currently Featured" : "Featured List"}
           </h4>
 
           {featuredPages.length === 0 ? (
@@ -226,7 +226,7 @@ export default function FeaturedEditOverlay({
                     {f.location ? ` · ${f.location}` : ""}
                   </p>
                 </div>
-                {isGold && (
+                {canManageFeatured && (
                   <button
                     type="button"
                     disabled={busyId === `remove-${f.featured_id}`}
