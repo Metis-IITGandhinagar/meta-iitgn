@@ -292,8 +292,7 @@ export const getCategoryArticles = async (req: Request, res: Response) => {
       select: {
         page_id: true,
         slug: true,
-        title: true,
-        description: true
+        title: true
       },
       orderBy: {
         title: 'asc'
@@ -305,8 +304,7 @@ export const getCategoryArticles = async (req: Request, res: Response) => {
     const results = paginatedPages.map((page) => ({
       page_id: page.page_id,
       slug: page.slug,
-      title: page.title || "Untitled",
-      description: page.description || ""
+      title: page.title || "Untitled"
     }));
 
     return res.json({
