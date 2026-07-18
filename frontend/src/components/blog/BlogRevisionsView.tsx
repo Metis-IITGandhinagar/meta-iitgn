@@ -7,6 +7,7 @@ import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
 import { PanelRight, Check, X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 import dynamic from "next/dynamic";
 
@@ -163,12 +164,12 @@ export default function BlogRevisionsView({ setShowRevisions, slug }: BlogRevisi
       setRevertingId(revisionToRestore);
       const res = await apiService.revertBlog(slug, revisionToRestore);
       if (res && res.success) {
-        alert("Blog post reverted successfully!");
+        toast.success("Blog post reverted successfully!");
         setShowRevisions(false);
         window.location.reload();
       }
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to revert blog post.");
+      toast.error(err.response?.data?.error || err.message || "Failed to revert blog post.");
     } finally {
       setRevertingId(null);
       setRevisionToRestore(null);

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
@@ -82,9 +83,10 @@ export default function ProfileContent() {
       }
 
       setIsEditingReadme(false);
+      toast.success("Profile README saved successfully!");
     } catch (err) {
       console.error("Failed to save profile README:", err);
-      alert("Failed to save profile README. Please try again.");
+      toast.error("Failed to save profile README. Please try again.");
     } finally {
       setIsSavingReadme(false);
     }

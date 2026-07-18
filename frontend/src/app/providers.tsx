@@ -4,6 +4,7 @@ import React, { Suspense } from "react";
 import { AuthProvider } from "@/context/AuthProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ProfileProvider } from "@/context/ProfileContext";
+import { Toaster } from "react-hot-toast";
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -132,6 +133,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <ProfileProvider>
           {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: "!bg-base-100 !text-base-content border !border-base-300 rounded-lg shadow-lg font-sans",
+              style: {
+                borderRadius: "8px",
+              },
+            }}
+          />
           <Suspense fallback={null}>
             <SettingsModalTrigger />
           </Suspense>

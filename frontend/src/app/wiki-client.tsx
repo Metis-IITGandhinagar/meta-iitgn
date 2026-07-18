@@ -6,6 +6,7 @@ import { parseMarkdown, stringifyMarkdown } from "@/lib/utils";
 import { InfoboxData, InfoboxRow } from "@/lib/types";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "react-hot-toast";
 
 import { EditableCell } from "@/components/article/editable-cell";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -422,15 +423,15 @@ export default function WikiClient({
         currentSlug = window.location.pathname.split("/").pop();
       }
       if (!currentSlug) {
-        alert("Could not identify article slug.");
+        toast.error("Could not identify article slug.");
         return;
       }
       await apiService.deletePage(currentSlug);
-      alert("Article deleted successfully.");
+      toast.success("Article deleted successfully.");
       router.push(`/wiki/${categorySlug || "campus"}`);
     } catch (err: any) {
       console.error("Error deleting article:", err);
-      alert(
+      toast.error(
         err.response?.data?.error || err.message || "Failed to delete article"
       );
     }
@@ -461,10 +462,10 @@ export default function WikiClient({
         currentSlug = window.location.pathname.split("/").pop();
       }
       if (category === "profile") {
-        alert("Normal articles cannot be categorized as 'profile'.");
+        toast.error("Normal articles cannot be categorized as 'profile'.");
         return;
       }
-
+ 
       const tagRow = parsed.infobox?.rows?.find(
         (row: any) => row.label?.toLowerCase() === "tag"
       );
@@ -478,12 +479,12 @@ export default function WikiClient({
         tag: tagRow?.value || "Featured Story",
         location: locationRow?.value || "",
       };
-
+ 
       const isStaff = user?.role === "admin" || user?.role === "moderator";
       const contentVal = resolvedContentOverride !== undefined
         ? resolvedContentOverride
         : markdownRef.current;
-
+ 
       // Drop empty key-info rows so they aren't persisted (e.g. unused
       // optional fields added on a new page).
       const parsedForSave = parseMarkdown(contentVal);
@@ -498,7 +499,7 @@ export default function WikiClient({
         { ...parsedForSave.infobox, rows: cleanedRows },
         parsedForSave.title
       );
-
+ 
       if (isStaff) {
         if (dbPageId) {
           const res = await apiService.updatePage(currentSlug || "", {
@@ -506,7 +507,7 @@ export default function WikiClient({
             content: cleanedContent,
             metadata,
           });
-          alert("Page updated successfully!");
+          toast.success("Page updated successfully!");
           setIsEditing(false);
           router.push(`/wiki/page/${res.slug}`);
           router.refresh();
@@ -516,7 +517,7 @@ export default function WikiClient({
             content: cleanedContent,
             metadata,
           });
-          alert("Page created and published successfully!");
+          toast.success("Page created and published successfully!");
           setIsEditing(false);
           router.push(`/wiki/page/${res.slug}`);
           router.refresh();
@@ -533,9 +534,9 @@ export default function WikiClient({
               ? resolvedVersionOverride
               : versionId,
         };
-
+ 
         await apiService.submitDraft(payload);
-        alert("Proposed changes submitted for review successfully!");
+        toast.success("Proposed changes submitted for review successfully!");
         setIsEditing(false);
         setConflictData(null);
         router.refresh();
@@ -558,7 +559,7 @@ export default function WikiClient({
           error.response?.data?.error ||
           error.message ||
           "Unknown error";
-        alert(`Failed to submit draft: ${detail}`);
+        toast.error(`Failed to submit draft: ${detail}`);
       }
     }
   };
@@ -996,7 +997,7 @@ export default function WikiClient({
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(conflictData.myDraft);
-                      alert("Copied your draft to clipboard!");
+                      toast.success("Copied your draft to clipboard!");
                     }}
                     className="btn btn-xs btn-outline btn-warning rounded-lg"
                   >
@@ -1032,7 +1033,7 @@ export default function WikiClient({
                     markdownRef.current = conflictData.myDraft;
                     setVersionId(conflictData.currentVersion);
                     setConflictData(null);
-                    alert(
+                    toast.success(
                       "Applied your draft to the editor. Save again to submit with version v" +
                         conflictData.currentVersion
                     );
@@ -1047,7 +1048,7 @@ export default function WikiClient({
                     markdownRef.current = conflictData.latestContent;
                     setVersionId(conflictData.currentVersion);
                     setConflictData(null);
-                    alert("Applied the latest server version to the editor.");
+                    toast.success("Applied the latest server version to the editor.");
                   }}
                   className="btn btn-outline btn-sm rounded-xl"
                 >

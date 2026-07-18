@@ -12,6 +12,7 @@ import BottomNavbar from "@/components/navs/BottomNavbar";
 import BlogRevisionsView from "@/components/blog/BlogRevisionsView";
 import BlogPendingChangesView from "@/components/blog/BlogPendingChangesView";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
+import { toast } from "react-hot-toast";
 
 const BlockNoteReader = dynamic(
   () => import("@/components/blog/BlockNoteReader"),
@@ -93,10 +94,11 @@ export default function BlogDetailPage() {
       setDeleting(true);
       const res = await apiService.deleteBlog(blog.slug);
       if (res && res.success) {
+        toast.success("Blog post deleted successfully!");
         router.push("/blog");
       }
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to delete blog post.");
+      toast.error(err.response?.data?.error || err.message || "Failed to delete blog post.");
     } finally {
       setDeleting(false);
     }

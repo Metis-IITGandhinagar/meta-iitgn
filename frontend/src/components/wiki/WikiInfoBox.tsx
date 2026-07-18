@@ -7,6 +7,7 @@ import { InfoboxData } from "@/lib/types";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import type { Category } from "@/context/AuthContext";
+import { toast } from "react-hot-toast";
 
 interface WikiInfoBoxProps {
   rightSidebarOpen: boolean;
@@ -283,7 +284,7 @@ export default function WikiInfoBox({
 
                     // Validate image size: 2MB limit in frontend
                     if (file.size > 2 * 1024 * 1024) {
-                      alert("Image size cannot exceed 2MB");
+                      toast.error("Image size cannot exceed 2MB");
                       e.target.value = ""; // reset
                       return;
                     }
@@ -298,11 +299,11 @@ export default function WikiInfoBox({
                           ...parsed.infobox,
                           image: res.url,
                         });
-                        alert("Image uploaded successfully!");
+                        toast.success("Image uploaded successfully!");
                       }
                     } catch (err: any) {
                       console.error("Error uploading image:", err);
-                      alert(err.response?.data?.error || err.message || "Failed to upload image");
+                      toast.error(err.response?.data?.error || err.message || "Failed to upload image");
                     }
                   }}
                   className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-2 py-1 text-xs text-base-content bg-base-100 focus:outline-none transition-all duration-150 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"

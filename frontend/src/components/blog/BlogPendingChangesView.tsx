@@ -7,6 +7,7 @@ import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import dynamic from "next/dynamic";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
+import { toast } from "react-hot-toast";
 
 const BlockNoteReader = dynamic(
   () => import("@/components/blog/BlockNoteReader"),
@@ -164,7 +165,7 @@ export default function BlogPendingChangesView({
   const handleReview = async (pendingId: number, action: "approve" | "reject") => {
     const reviewerId = user?.user_id ?? 0;
     if (!reviewerId) {
-      alert("You must be logged in to review drafts.");
+      toast.error("You must be logged in to review drafts.");
       return;
     }
     try {
@@ -173,7 +174,7 @@ export default function BlogPendingChangesView({
         action: action,
       });
 
-      alert(`Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`);
+      toast.success(`Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`);
 
       setDrafts((prev) =>
         prev.map((d) =>
@@ -186,7 +187,7 @@ export default function BlogPendingChangesView({
       window.dispatchEvent(new CustomEvent("blog-pending-updated"));
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.error || err.message || "Error processing review");
+      toast.error(err.response?.data?.error || err.message || "Error processing review");
     }
   };
 
@@ -199,10 +200,10 @@ export default function BlogPendingChangesView({
     if (draftToCancel === null) return;
     try {
       await apiService.deleteBlogDraft(draftToCancel);
-      alert("Draft cancelled successfully!");
+      toast.success("Draft cancelled successfully!");
       setDrafts((prev) => prev.filter((d) => d.pending_id !== draftToCancel));
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to cancel draft");
+      toast.error(err.response?.data?.error || err.message || "Failed to cancel draft");
     } finally {
       setDraftToCancel(null);
     }

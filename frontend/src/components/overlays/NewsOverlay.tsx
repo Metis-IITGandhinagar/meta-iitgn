@@ -5,6 +5,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
+import { toast } from "react-hot-toast";
 
 interface NewsOverlayProps {
   isOpen: boolean;
@@ -79,7 +80,7 @@ export default function NewsOverlay({
         video_url: newNewsVideoUrl.trim() || undefined,
       });
 
-      alert("News page published successfully!");
+      toast.success("News page published successfully!");
       setNewNewsTitle("");
       setNewNewsContent("");
       setNewNewsVideoUrl("");
@@ -87,7 +88,7 @@ export default function NewsOverlay({
       fetchNews(1, false);
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.error || err.message || "Failed to publish news");
+      toast.error(err.response?.data?.error || err.message || "Failed to publish news");
     } finally {
       setIsSubmittingNews(false);
     }

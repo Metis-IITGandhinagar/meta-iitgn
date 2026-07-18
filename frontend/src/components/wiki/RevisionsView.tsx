@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
 import { parseMarkdown } from "@/lib/utils";
 import { PanelRight, Check, X } from "lucide-react";
+import { toast } from "react-hot-toast";
 import dynamic from "next/dynamic";
 
 const MilkdownEditor = dynamic<any>(() => import("@/components/article/milkdown-editor"), { ssr: false });
@@ -173,12 +174,12 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
     try {
       const res = await apiService.revertPage(slug, revisionToRestore);
       if (res && res.success) {
-        alert("Page reverted successfully!");
+        toast.success("Page reverted successfully!");
         setShowRevisions(false);
         window.location.reload();
       }
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to revert page.");
+      toast.error(err.response?.data?.error || err.message || "Failed to revert page.");
     } finally {
       setRevisionToRestore(null);
     }

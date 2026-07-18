@@ -8,6 +8,7 @@ import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import WikiReadView from "@/components/article/WikiReadView";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "react-hot-toast";
 
 interface PendingChangesViewProps {
   setShowPendingChanges: (show: boolean) => void;
@@ -133,7 +134,7 @@ export default function PendingChangesView({
   const handleReview = async (pendingId: number, action: "approve" | "reject") => {
     const reviewerId = user?.user_id ?? 0;
     if (!reviewerId) {
-      alert("You must be logged in to review drafts.");
+      toast.error("You must be logged in to review drafts.");
       return;
     }
     try {
@@ -143,7 +144,7 @@ export default function PendingChangesView({
         rejection_reason: action === "reject" ? "Rejected by reviewer/moderator." : undefined,
       });
 
-      alert(`Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`);
+      toast.success(`Draft ${action === "approve" ? "approved and published" : "rejected"} successfully!`);
 
       // Update state status
       setDrafts((prev) =>
@@ -163,7 +164,7 @@ export default function PendingChangesView({
     } catch (err: unknown) {
       console.error(err);
       const errMsg = err instanceof Error ? err.message : `Error processing review`;
-      alert(errMsg);
+      toast.error(errMsg);
     }
   };
 

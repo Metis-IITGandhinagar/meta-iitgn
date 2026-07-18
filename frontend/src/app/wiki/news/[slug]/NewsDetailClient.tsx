@@ -8,6 +8,7 @@ import { ChevronLeft, Calendar, Video, Pencil, Trash2, X, Check, Loader2 } from 
 import { apiService, NewsItem } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
+import { toast } from "react-hot-toast";
 
 interface NewsDetailClientProps {
   initialNewsItem: NewsItem;
@@ -62,13 +63,13 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
         video_url: editVideoUrl.trim() || undefined,
       });
 
-      alert("News page updated successfully!");
+      toast.success("News page updated successfully!");
       setNewsItem(updated);
       setIsEditing(false);
       router.refresh();
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.error || err.message || "Failed to update news");
+      toast.error(err.response?.data?.error || err.message || "Failed to update news");
     } finally {
       setIsSubmitting(false);
     }
@@ -82,11 +83,11 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
     setIsDeleting(true);
     try {
       await apiService.deleteNews(newsItem.slug);
-      alert("News article deleted successfully.");
+      toast.success("News article deleted successfully.");
       router.push("/");
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.error || err.message || "Failed to delete news");
+      toast.error(err.response?.data?.error || err.message || "Failed to delete news");
       setIsDeleting(false);
     }
   };

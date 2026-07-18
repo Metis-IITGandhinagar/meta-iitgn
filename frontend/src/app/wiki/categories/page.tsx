@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
 import { Category } from "@/context/AuthContext";
+import { toast } from "react-hot-toast";
 
 const ICON_MAP: Record<string, any> = {
   BookOpen,
@@ -418,7 +419,7 @@ export default function CategoriesPage() {
                           e.stopPropagation();
                           const pinnedCount = categories.filter((c) => c.is_pinned).length;
                           if (!cat.is_pinned && pinnedCount >= 10) {
-                            alert("Quick Portals is full! You can pin a maximum of 10 categories. Please unpin another category first.");
+                            toast.error("Quick Portals is full! You can pin a maximum of 10 categories. Please unpin another category first.");
                             return;
                           }
                           setPinningCategoryId(cat.category_id);
@@ -429,7 +430,7 @@ export default function CategoriesPage() {
                             updateCategoryState(updated);
                           } catch (err) {
                             console.error(err);
-                            alert("Failed to toggle pin");
+                            toast.error("Failed to toggle pin");
                           } finally {
                             setPinningCategoryId(null);
                           }

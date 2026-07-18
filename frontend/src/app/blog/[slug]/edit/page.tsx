@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 import {
   X,
   Check,
@@ -115,12 +116,12 @@ export default function BlogEditPage() {
 
   const handleUploadFile = async (file: File): Promise<string> => {
     if (file.type.startsWith("video/")) {
-      alert("Direct video uploads are disabled to save cloud space. Please use a YouTube or other video link!");
+      toast.error("Direct video uploads are disabled to save cloud space. Please use a YouTube or other video link!");
       throw new Error("Direct video uploads are disabled");
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("File size cannot exceed 2MB.");
+      toast.error("File size cannot exceed 2MB.");
       throw new Error("File size cannot exceed 2MB");
     }
 
@@ -134,7 +135,7 @@ export default function BlogEditPage() {
       }
       throw new Error("Upload response did not contain URL");
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to upload file.");
+      toast.error(err.response?.data?.error || err.message || "Failed to upload file.");
       throw err;
     }
   };
@@ -160,9 +161,10 @@ export default function BlogEditPage() {
         const res = await apiService.createBlog(payload);
         if (res && res.success) {
           if (res.is_draft) {
-            alert("Your blog post has been submitted to admins for approval!");
+            toast.success("Your blog post has been submitted to admins for approval!");
             router.push("/blog");
           } else {
+            toast.success("Blog post published successfully!");
             router.push(`/blog/${res.blog.slug}`);
           }
         }
@@ -170,9 +172,10 @@ export default function BlogEditPage() {
         const res = await apiService.updateBlog(slug, payload);
         if (res && res.success) {
           if (res.is_draft) {
-            alert("Your edits have been submitted to admins for review!");
+            toast.success("Your edits have been submitted to admins for review!");
             router.push(`/blog/${slug}`);
           } else {
+            toast.success("Blog post updated successfully!");
             router.push(`/blog/${res.blog.slug}`);
           }
         }
