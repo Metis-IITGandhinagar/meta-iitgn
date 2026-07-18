@@ -105,6 +105,8 @@ export interface HomeState {
   handleAddHistory: (args: { title: string; content: string; videoUrl: string }) => Promise<void>;
   addBookmark: (args: { slug: string; title: string; category: string; user: any }) => Promise<{ ok: boolean; already?: boolean; error?: string }>;
   removeBookmark: (id: string) => Promise<void>;
+  // Drop every in-memory cached collection so the UI reflects a freshly cleared cache.
+  resetCacheData: () => void;
 }
 
 let activeHomeDataPromise: Promise<void> | null = null;
@@ -929,4 +931,20 @@ ${content}`,
       console.error(err);
     }
   },
+
+  resetCacheData: () =>
+    set({
+      newsPages: [],
+      pendingPages: [],
+      newPages: [],
+      updatedPages: [],
+      triviaPages: [],
+      historyPages: [],
+      bookmarks: [],
+      featuredPages: [],
+      popularPages: [],
+      upcomingEvents: [],
+      messMenu: null,
+      campusTransport: null,
+    }),
 }));

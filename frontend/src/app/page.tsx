@@ -167,6 +167,18 @@ export default function HomePage() {
     };
   }, [setActiveOverlay]);
 
+  // When the user clears the offline cache from Settings, re-fetch everything
+  // so the freshly emptied data re-downloads immediately.
+  useEffect(() => {
+    const handleCacheCleared = () => {
+      loadHomeData({ user, setTotalPagesCount, forceRefresh: true });
+    };
+    window.addEventListener("wiki_cache_cleared", handleCacheCleared);
+    return () => {
+      window.removeEventListener("wiki_cache_cleared", handleCacheCleared);
+    };
+  }, [loadHomeData, setTotalPagesCount, user]);
+
   useEffect(() => {
     if (activeOverlay) {
       window.dispatchEvent(new CustomEvent("wiki_close_settings"));

@@ -5,6 +5,7 @@ import { X, Eye, Layout, ChevronLeft, Search, HelpCircle, HardDrive, Cpu, Maximi
 import { WIKI_THEMES, DARK_THEMES } from "@/lib/constants";
 import ProfilePopover from "@/components/navs/ProfilePopover";
 import { db } from "@/lib/db";
+import { useHomeStore } from "@/store/useHomeStore";
 
 // Real build info shown in the Help & About tab.
 const APP_VERSION = "1.1.0";
@@ -291,6 +292,13 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
         db.meta.clear(),
       ]);
       localStorage.removeItem("syncCheck");
+      // The displayed content also lives in the in-memory store, so clear that
+      // too — otherwise the UI would still show the "cached" data.
+      useHomeStore.getState().resetCacheData();
+      // Re-fetch fresh data so it re-downloads immediately (the home page
+      // listens for this event). Since the Dexie + meta tables were just
+      // emptied, the next load treats the cache as invalid and re-pulls.
+      window.dispatchEvent(new CustomEvent("wiki_cache_cleared"));
     } catch (e) {
       console.error("Failed to clear offline cache:", e);
     }
