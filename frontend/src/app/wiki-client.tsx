@@ -86,23 +86,7 @@ export default function WikiClient({
     initialMetadata?.slug === `profile-${user?.user_id}`
   );
 
-  if (!authLoading && !dbPageId && !isStaff && !isSelfProfile) {
-    return (
-      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-base-100 mt-16 text-center select-none">
-        <div className="max-w-4xl mx-auto py-20 flex flex-col items-center gap-4">
-          <div className="w-16 h-16 bg-error/10 text-error rounded-2xl flex items-center justify-center font-black">
-            ✕
-          </div>
-          <h1 className="text-3xl font-display font-black tracking-tight text-base-content">Access Denied</h1>
-          <p className="text-base-content/65 max-w-md">Only administrators and moderators are allowed to create new articles.</p>
-          <button onClick={() => router.back()} className="btn btn-primary rounded-xl font-bold mt-4">
-            Go Back
-          </button>
-        </div>
-      </main>
-    );
-  }
-
+  // All hooks must be called unconditionally before any early returns
   const [activeSection, setActiveSection] = useState<string>("");
   const [readingProgressPct, setReadingProgressPct] = useState(0);
   const [editorLoaded, setEditorLoaded] = useState(false);
@@ -198,6 +182,24 @@ export default function WikiClient({
   // over the whole reading area without the sidebar getting in the way.
   const hideSidebar = (isNews && isEditing) || isMessMenu || isTransport;
   const actualSidebarOpen = rightSidebarOpen && !hideSidebar;
+
+  // Early return for access denied - AFTER all hooks
+  if (!authLoading && !dbPageId && !isStaff && !isSelfProfile) {
+    return (
+      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-base-100 mt-16 text-center select-none">
+        <div className="max-w-4xl mx-auto py-20 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 bg-error/10 text-error rounded-2xl flex items-center justify-center font-black">
+            ✕
+          </div>
+          <h1 className="text-3xl font-display font-black tracking-tight text-base-content">Access Denied</h1>
+          <p className="text-base-content/65 max-w-md">Only administrators and moderators are allowed to create new articles.</p>
+          <button onClick={() => router.back()} className="btn btn-primary rounded-xl font-bold mt-4">
+            Go Back
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   const fetchPendingCount = useCallback(async () => {
     try {
