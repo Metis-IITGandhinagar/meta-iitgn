@@ -58,6 +58,9 @@ model live_pages {
   title              String?
   slug               String           @unique
   content            String?
+  category           String?
+  subcategory        String?
+  description        String?
   metadata           Json             @default("{}")
   video_url          String?
   original_author_id Int
@@ -81,6 +84,8 @@ model live_pages {
   featured_pages     featured_pages[]
 
   @@index([slug], name: "live_pages_index_0")
+  @@index([category])
+  @@index([subcategory])
 }
 
 model pending_pages {
@@ -88,6 +93,9 @@ model pending_pages {
   page_id     Int?
   title       String?
   content     String?
+  category    String?
+  subcategory String?
+  description String?
   metadata    Json                    @default("{}")
   video_url   String?
   status      pending_status?
@@ -127,6 +135,9 @@ model revision_pages {
   title              String?
   slug               String
   content            String?
+  category           String?
+  subcategory        String?
+  description        String?
   metadata           Json       @default("{}")
   original_author_id Int
   contributors       Json?

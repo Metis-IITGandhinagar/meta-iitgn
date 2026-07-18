@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { invalidateCategoriesCache } from './category.controller.js';
+import { invalidateCategoriesCache, extractPageFields } from './category.controller.js';
 import { processAndMarkMediaUsed } from '../utils/cleanup.js';
 import { updateSyncMetadata } from '../utils/syncMetadata.js';
 
@@ -151,6 +151,9 @@ export const searchPages = async (req: Request, res: Response) => {
         slug: true,
         content: true,
         metadata: true,
+        category: true,
+        subcategory: true,
+        description: true,
       },
     });
 
@@ -166,6 +169,9 @@ export const searchPages = async (req: Request, res: Response) => {
         content: true,
         metadata: true,
         status: true,
+        category: true,
+        subcategory: true,
+        description: true,
       },
     });
 
@@ -295,8 +301,7 @@ export const searchPages = async (req: Request, res: Response) => {
     }
 
     for (const p of livePages) {
-      const meta = p.metadata as any;
-      const category = meta?.category || 'Campus';
+      const category = p.subcategory || p.category || 'Campus';
 
       const titleScore = scoreText(p.title || '', query);
       const contentScore = scoreText(p.content || '', query);
@@ -310,7 +315,7 @@ export const searchPages = async (req: Request, res: Response) => {
           path: `/wiki/page/${p.slug}`,
           category,
           type: 'page',
-          description: cleanContent(p.content),
+          description: p.description || cleanContent(p.content),
           is_pending: false,
           score: totalScore,
         });
@@ -318,9 +323,8 @@ export const searchPages = async (req: Request, res: Response) => {
     }
 
     for (const p of pendingPages) {
-      const meta = p.metadata as any;
-      const category = meta?.category || 'Campus';
-      const isProfile = category.toLowerCase() === 'profile' || (meta?.slug && String(meta.slug).startsWith('profile-')) || (p.title && p.title.toLowerCase().startsWith('profile-'));
+      const category = p.subcategory || p.category || 'Campus';
+      const isProfile = category.toLowerCase() === 'profile' || (p.title && p.title.toLowerCase().startsWith('profile-'));
       if (isProfile) {
         continue;
       }
@@ -330,6 +334,7 @@ export const searchPages = async (req: Request, res: Response) => {
       const totalScore = titleScore * 3 + contentScore;
       
       if (totalScore > 15) {
+        const meta = p.metadata as any;
         let draftSlug = meta?.slug;
         if (!draftSlug && p.title) {
           const baseSlug = p.title
@@ -344,7 +349,7 @@ export const searchPages = async (req: Request, res: Response) => {
           path: `/wiki/page/${draftSlug || 'untitled'}`,
           category,
           type: 'page',
-          description: cleanContent(p.content),
+          description: p.description || cleanContent(p.content),
           is_pending: true,
           score: totalScore,
         });
@@ -648,12 +653,17 @@ export const createPage = async (req: Request, res: Response) => {
     });
     const creatorName = userObj?.name || 'Unknown';
 
+    const parsedFields = extractPageFields(content, metadata);
+
     const newPage = await prisma.$transaction(async (tx) => {
       const page = await tx.live_pages.create({
         data: {
           title,
           slug,
           content: content || null,
+          category: parsedFields.category,
+          subcategory: parsedFields.subcategory,
+          description: parsedFields.description,
           metadata: metadata || {},
           video_url: video_url || null,
           original_author_id: creatorId,
@@ -770,6 +780,9 @@ export const updatePage = async (req: Request, res: Response) => {
           title: livePage.title,
           slug: livePage.slug,
           content: livePage.content,
+          category: livePage.category,
+          subcategory: livePage.subcategory,
+          description: livePage.description,
           metadata: livePage.metadata || {},
           original_author_id: livePage.original_author_id,
           contributors: livePage.contributors || [],
@@ -780,12 +793,19 @@ export const updatePage = async (req: Request, res: Response) => {
         },
       });
 
+      const nextContent = content !== undefined ? content : livePage.content;
+      const nextMetadata = metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata;
+      const parsedFields = extractPageFields(nextContent, nextMetadata);
+
       const page = await tx.live_pages.update({
         where: { page_id: livePage.page_id },
         data: {
           title: title !== undefined ? title : livePage.title,
-          content: content !== undefined ? content : livePage.content,
-          metadata: metadata !== undefined ? { ...(livePage.metadata as object), ...metadata } : livePage.metadata,
+          content: nextContent,
+          metadata: nextMetadata,
+          category: parsedFields.category,
+          subcategory: parsedFields.subcategory,
+          description: parsedFields.description,
           video_url: video_url !== undefined ? video_url : livePage.video_url,
           contributors,
           version: currentVersion + 1,
@@ -1126,6 +1146,9 @@ export const revertPageToRevision = async (req: Request, res: Response) => {
           title: livePage.title,
           slug: livePage.slug,
           content: livePage.content,
+          category: livePage.category,
+          subcategory: livePage.subcategory,
+          description: livePage.description,
           metadata: livePage.metadata || {},
           original_author_id: livePage.original_author_id,
           contributors: livePage.contributors || [],
@@ -1152,12 +1175,17 @@ export const revertPageToRevision = async (req: Request, res: Response) => {
 
       const nextVersion = (livePage.version ?? 1) + 1;
 
+      const parsedFields = extractPageFields(revision.content, revision.metadata);
+
       // 3. Update the live page with the revision data
       const updatedPage = await tx.live_pages.update({
         where: { page_id: livePage.page_id },
         data: {
           title: revision.title,
           content: revision.content,
+          category: revision.category || parsedFields.category,
+          subcategory: revision.subcategory || parsedFields.subcategory,
+          description: revision.description || parsedFields.description,
           metadata: revision.metadata || {},
           contributors,
           version: nextVersion,

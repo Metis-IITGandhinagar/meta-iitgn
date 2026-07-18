@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { invalidateCategoriesCache } from './category.controller.js';
+import { invalidateCategoriesCache, extractPageFields } from './category.controller.js';
 import { invalidateStatsCache, invalidateSearchCache, invalidateSyncCache } from './page.controller.js';
 import { recomputeUserPoints } from '../utils/points.js';
 import { processAndMarkMediaUsed } from '../utils/cleanup.js';
@@ -47,12 +47,19 @@ export const submitDraft = async (req: Request, res: Response) => {
         }
 
         const updatedDraft = await prisma.$transaction(async (tx) => {
+          const nextContent = content !== undefined ? content : activeDraft.content;
+          const nextMetadata = metadata !== undefined ? { ...(activeDraft.metadata as object), ...metadata } : activeDraft.metadata;
+          const parsed = extractPageFields(nextContent, nextMetadata);
+
           const draft = await tx.pending_pages.update({
             where: { pending_id: activeDraft.pending_id },
             data: {
               title,
-              content,
-              metadata: metadata || activeDraft.metadata || {},
+              content: nextContent,
+              metadata: nextMetadata,
+              category: parsed.category,
+              subcategory: parsed.subcategory,
+              description: parsed.description,
               video_url: video_url !== undefined ? video_url : activeDraft.video_url,
               editor_id,
               version: currentVersion + 1,
@@ -86,12 +93,16 @@ export const submitDraft = async (req: Request, res: Response) => {
         }
 
         const newDraft = await prisma.$transaction(async (tx) => {
+          const parsed = extractPageFields(content, metadata);
           const draft = await tx.pending_pages.create({
             data: {
               page_id: Number(page_id),
               title,
               content,
               metadata: metadata || {},
+              category: parsed.category,
+              subcategory: parsed.subcategory,
+              description: parsed.description,
               video_url,
               editor_id,
               version: versionVal + 1,
@@ -130,11 +141,18 @@ export const submitDraft = async (req: Request, res: Response) => {
         }
 
         const updatedDraft = await prisma.$transaction(async (tx) => {
+          const nextContent = content !== undefined ? content : existingDraft.content;
+          const nextMetadata = metadata !== undefined ? { ...(existingDraft.metadata as object), ...metadata } : existingDraft.metadata;
+          const parsed = extractPageFields(nextContent, nextMetadata);
+
           const draft = await tx.pending_pages.update({
             where: { pending_id: existingDraft.pending_id },
             data: {
-              content,
-              metadata: metadata || existingDraft.metadata || {},
+              content: nextContent,
+              metadata: nextMetadata,
+              category: parsed.category,
+              subcategory: parsed.subcategory,
+              description: parsed.description,
               video_url: video_url !== undefined ? video_url : existingDraft.video_url,
               editor_id,
               version: currentVersion + 1,
@@ -150,12 +168,16 @@ export const submitDraft = async (req: Request, res: Response) => {
       }
 
       const newDraft = await prisma.$transaction(async (tx) => {
+        const parsed = extractPageFields(content, metadata);
         const draft = await tx.pending_pages.create({
           data: {
             page_id: null,
             title,
             content,
             metadata: metadata || {},
+            category: parsed.category,
+            subcategory: parsed.subcategory,
+            description: parsed.description,
             video_url,
             editor_id,
             version: 1,
@@ -303,12 +325,17 @@ export const reviewDraft = async (req: Request, res: Response) => {
 
         const now = new Date();
 
+        const parsedFields = extractPageFields(draft.content, draft.metadata);
+
         // Insert into live_pages
         const newLivePage = await tx.live_pages.create({
           data: {
             title: draft.title,
             slug,
             content: draft.content,
+            category: draft.category || parsedFields.category,
+            subcategory: draft.subcategory || parsedFields.subcategory,
+            description: draft.description || parsedFields.description,
             metadata: draft.metadata || {},
             video_url: draft.video_url,
             original_author_id: draft.editor_id,
@@ -386,6 +413,9 @@ export const reviewDraft = async (req: Request, res: Response) => {
             title: livePage.title,
             slug: livePage.slug,
             content: livePage.content,
+            category: livePage.category,
+            subcategory: livePage.subcategory,
+            description: livePage.description,
             metadata: livePage.metadata || {},
             original_author_id: livePage.original_author_id,
             contributors: livePage.contributors || [],
@@ -410,12 +440,17 @@ export const reviewDraft = async (req: Request, res: Response) => {
 
         const currentVersion = livePage.version !== null ? livePage.version : 1;
 
+        const parsedFields = extractPageFields(draft.content, draft.metadata);
+
         // Update live page with draft edits
         const updatedLivePage = await tx.live_pages.update({
           where: { page_id: draft.page_id },
           data: {
             title: draft.title,
             content: draft.content,
+            category: draft.category || parsedFields.category,
+            subcategory: draft.subcategory || parsedFields.subcategory,
+            description: draft.description || parsedFields.description,
             metadata: draft.metadata || {},
             video_url: draft.video_url,
             contributors,

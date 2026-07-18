@@ -10,7 +10,7 @@ async function main() {
     facilities: "MapPin",
     research: "FlaskConical",
     fests: "Sparkles",
-    calendar: "Calendar",
+    "academic-info": "Calendar",
     policies: "Shield",
     placements: "TrendingUp",
   };

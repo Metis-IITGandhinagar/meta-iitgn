@@ -196,8 +196,8 @@ rows:
 
   const messMenuPage = await prisma.live_pages.upsert({
     where: { slug: 'mess-menu' },
-    update: { title: 'Weekly Mess Menu', content: messMenuContent, metadata: { category: 'mess-menu', description: 'Weekly student mess schedule for IIT Gandhinagar' } },
-    create: { title: 'Weekly Mess Menu', slug: 'mess-menu', content: messMenuContent, metadata: { category: 'mess-menu', description: 'Weekly student mess schedule for IIT Gandhinagar' }, original_author_id: authorId, version: 1 },
+    update: { title: 'Weekly Mess Menu', content: messMenuContent, category: 'campus', subcategory: 'facilities', description: 'Weekly student mess schedule for IIT Gandhinagar', metadata: { category: 'mess-menu', description: 'Weekly student mess schedule for IIT Gandhinagar' } },
+    create: { title: 'Weekly Mess Menu', slug: 'mess-menu', content: messMenuContent, category: 'campus', subcategory: 'facilities', description: 'Weekly student mess schedule for IIT Gandhinagar', metadata: { category: 'mess-menu', description: 'Weekly student mess schedule for IIT Gandhinagar' }, original_author_id: authorId, version: 1 },
   });
   console.log(`Upserted mess menu page: ${messMenuPage.slug}`);
 
@@ -288,8 +288,8 @@ rows:
 
   const transportPage = await prisma.live_pages.upsert({
     where: { slug: 'campus-transport' },
-    update: { title: 'Campus Transport', content: transportContent, metadata: { category: 'campus-transport', description: 'Bus routes, shuttle timings, and transport info for IIT Gandhinagar' } },
-    create: { title: 'Campus Transport', slug: 'campus-transport', content: transportContent, metadata: { category: 'campus-transport', description: 'Bus routes, shuttle timings, and transport info for IIT Gandhinagar' }, original_author_id: authorId, version: 1 },
+    update: { title: 'Campus Transport', content: transportContent, category: 'campus', subcategory: 'facilities', description: 'Bus routes, shuttle timings, and transport info for IIT Gandhinagar', metadata: { category: 'campus-transport', description: 'Bus routes, shuttle timings, and transport info for IIT Gandhinagar' } },
+    create: { title: 'Campus Transport', slug: 'campus-transport', content: transportContent, category: 'campus', subcategory: 'facilities', description: 'Bus routes, shuttle timings, and transport info for IIT Gandhinagar', metadata: { category: 'campus-transport', description: 'Bus routes, shuttle timings, and transport info for IIT Gandhinagar' }, original_author_id: authorId, version: 1 },
   });
   console.log(`Upserted campus transport page: ${transportPage.slug}`);
 
@@ -377,8 +377,8 @@ The annual convocation ceremony for graduating students. Attendance is mandatory
 
   const eventsPage = await prisma.live_pages.upsert({
     where: { slug: 'upcoming-events' },
-    update: { title: 'Upcoming Events', content: eventsContent, metadata: { category: 'events', description: 'Upcoming campus events, talks, fests, and academic activities at IIT Gandhinagar' } },
-    create: { title: 'Upcoming Events', slug: 'upcoming-events', content: eventsContent, metadata: { category: 'events', description: 'Upcoming campus events, talks, fests, and academic activities at IIT Gandhinagar' }, original_author_id: authorId, version: 1 },
+    update: { title: 'Upcoming Events', content: eventsContent, category: 'student-life', subcategory: 'fests', description: 'Upcoming campus events, talks, fests, and academic activities at IIT Gandhinagar', metadata: { category: 'events', description: 'Upcoming campus events, talks, fests, and academic activities at IIT Gandhinagar' } },
+    create: { title: 'Upcoming Events', slug: 'upcoming-events', content: eventsContent, category: 'student-life', subcategory: 'fests', description: 'Upcoming campus events, talks, fests, and academic activities at IIT Gandhinagar', metadata: { category: 'events', description: 'Upcoming campus events, talks, fests, and academic activities at IIT Gandhinagar' }, original_author_id: authorId, version: 1 },
   });
   console.log(`Upserted upcoming events page: ${eventsPage.slug}`);
 

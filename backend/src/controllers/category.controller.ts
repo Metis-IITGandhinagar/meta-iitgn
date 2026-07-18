@@ -10,7 +10,7 @@ const DEFAULT_CATEGORIES = [
   { slug: "facilities", name: "Campus Facilities", description: "Details on sports complex, medical center, transport schedules, and shops." },
   { slug: "clubs", name: "Student Clubs", description: "Get involved in technical, cultural, sports, and social clubs." },
   { slug: "fests", name: "Institute Fests", description: "Read about Amalthea, Blithchron, Hallabol, and other annual events." },
-  { slug: "calendar", name: "Academic Calendar", description: "Keep track of semesters, mid-sem exams, end-sems, and institute holidays." },
+  { slug: "academic-info", name: "Academic Info", description: "Keep track of semesters, exams, academic guidelines, and institute holidays." },
   { slug: "policies", name: "Institute Policies", description: "Read about graduation criteria, leave policies, and code of conduct guidelines." },
   { slug: "placements", name: "Placement Stats", description: "Analyze trends, recruiter information, and sector-wise distribution profiles." }
 ];
@@ -27,8 +27,7 @@ export const getCategories = async (req: Request, res: Response) => {
       return res.json(categoriesCache);
     }
 
-    // 1. Check if categories table is empty
-    let count = await prisma.categories.count();
+    const count = await prisma.categories.count();
     if (count === 0) {
       console.log("Seeding default categories...");
       await prisma.categories.createMany({
@@ -36,30 +35,26 @@ export const getCategories = async (req: Request, res: Response) => {
       });
     }
 
-    // 2. Fetch all categories
     const categories = await prisma.categories.findMany({
       orderBy: { name: "asc" }
     });
 
-    // 3. Count live pages per category dynamically using raw SQL (highly optimized)
-    const counts: Record<string, number> = {};
-    const rawCounts = await prisma.$queryRaw<Array<{ category: string | null; count: number }>>`
-      SELECT (metadata->>'category') AS category, COUNT(*)::int AS count
-      FROM "live_pages"
-      WHERE "deleted_at" IS NULL AND (metadata->>'category') IS NOT NULL
-      GROUP BY metadata->>'category'
-    `;
+    const rawCounts = await prisma.live_pages.groupBy({
+      by: ['subcategory'],
+      where: { deleted_at: null, subcategory: { not: null } },
+      _count: { _all: true }
+    });
 
+    const counts: Record<string, number> = {};
     for (const row of rawCounts) {
-      if (row.category) {
-        counts[row.category] = row.count;
+      if (row.subcategory) {
+        counts[row.subcategory] = row._count._all;
       }
     }
 
-    // 4. Map count to results
     const results = categories.map(cat => ({
       ...cat,
-      total_articles: counts[cat.slug] || counts[cat.name] || 0
+      total_articles: counts[cat.slug] || 0
     }));
 
     categoriesCache = results;
@@ -86,7 +81,6 @@ export const createCategory = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid category name" });
     }
 
-    // Check conflict
     const existing = await prisma.categories.findUnique({
       where: { slug }
     });
@@ -163,7 +157,6 @@ export const updateCategory = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Invalid category name" });
       }
 
-      // Check slug conflict with other categories
       const conflict = await prisma.categories.findFirst({
         where: {
           slug,
@@ -185,13 +178,9 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     invalidateCategoriesCache();
 
-    // Count live pages for this slug using raw SQL query (super fast)
-    const rawCounts = await prisma.$queryRaw<Array<{ count: number }>>`
-      SELECT COUNT(*)::int AS count
-      FROM "live_pages"
-      WHERE "deleted_at" IS NULL AND (metadata->>'category') = ${updated.slug}
-    `;
-    const count = rawCounts[0]?.count || 0;
+    const count = await prisma.live_pages.count({
+      where: { deleted_at: null, subcategory: updated.slug }
+    });
 
     return res.json({
       ...updated,
@@ -203,30 +192,7 @@ export const updateCategory = async (req: Request, res: Response) => {
   }
 };
 
-function parsePageContent(content: string | null) {
-  if (!content) return { category: "", description: "" };
-  let category = "";
-  let description = "";
-
-  if (content.startsWith("---")) {
-    const parts = content.split("---");
-    if (parts.length >= 3) {
-      const frontmatter = parts[1];
-      const lines = frontmatter.split("\n");
-      for (let line of lines) {
-        line = line.trim();
-        if (line.startsWith("description:")) {
-          description = line.replace("description:", "").trim();
-        } else if (line.startsWith("category:")) {
-          category = line.replace("category:", "").trim();
-        }
-      }
-    }
-  }
-  return { category, description };
-}
-
-const normalizeCategoryToSlug = (value: string): string => {
+export const normalizeCategoryToSlug = (value: string): string => {
   const normalized = value.toLowerCase().trim();
   if (normalized === "campus facilities" || normalized === "facilities") return "facilities";
   if (normalized === "faculty profiles" || normalized === "faculty") return "faculty";
@@ -237,166 +203,138 @@ const normalizeCategoryToSlug = (value: string): string => {
   if (normalized === "institute fests" || normalized === "fests") return "fests";
   if (normalized === "placement stats" || normalized === "placements") return "placements";
   if (normalized === "institute policies" || normalized === "policies") return "policies";
-  if (normalized === "academic calendar" || normalized === "calendar") return "calendar";
+  if (normalized === "academic calendar" || normalized === "calendar" || normalized === "academic info" || normalized === "academic-info") return "academic-info";
   return normalized;
+};
+
+export const extractPageFields = (content: string | null, metadata: any) => {
+  let category: string | null = null;
+  let subcategory: string | null = null;
+  let description: string | null = null;
+
+  if (content && content.startsWith("---")) {
+    const parts = content.split("---");
+    if (parts.length >= 3) {
+      const frontmatter = parts[1];
+      const lines = frontmatter.split("\n");
+      for (let line of lines) {
+        line = line.trim();
+        const lowerLine = line.toLowerCase();
+        if (lowerLine.startsWith("category:")) {
+          category = line.substring("category:".length).trim().toLowerCase() || null;
+        } else if (lowerLine.startsWith("subcategory:")) {
+          subcategory = line.substring("subcategory:".length).trim().toLowerCase() || null;
+        } else if (lowerLine.startsWith("description:")) {
+          description = line.substring("description:".length).trim() || null;
+        }
+      }
+    }
+  }
+
+  if (!category && metadata?.category) {
+    category = String(metadata.category).trim().toLowerCase();
+  }
+  if (!subcategory && metadata?.subcategory) {
+    subcategory = String(metadata.subcategory).trim().toLowerCase();
+  }
+  if (!description && metadata?.description) {
+    description = String(metadata.description);
+  }
+
+  if (!description && content) {
+    const clean = content.replace(/^---[\s\S]*?---/, "").trim();
+    description = clean.length > 150 ? clean.substring(0, 150) + "..." : clean;
+  }
+
+  if (category) {
+    category = normalizeCategoryToSlug(category);
+  }
+  if (subcategory) {
+    subcategory = normalizeCategoryToSlug(subcategory);
+  }
+
+  const SUBCATEGORY_TO_CATEGORY: Record<string, string> = {
+    faculty: "academics",
+    courses: "academics",
+    departments: "academics",
+    hostels: "campus",
+    facilities: "campus",
+    clubs: "student-life",
+    fests: "student-life",
+    research: "research",
+    "academic-info": "policies",
+    placements: "policies",
+    policies: "policies"
+  };
+
+  if (!subcategory && category && SUBCATEGORY_TO_CATEGORY[category]) {
+    subcategory = category;
+    category = SUBCATEGORY_TO_CATEGORY[subcategory];
+  } else if (subcategory && !category) {
+    category = SUBCATEGORY_TO_CATEGORY[subcategory] || null;
+  } else if (subcategory && category) {
+    const alignedParent = SUBCATEGORY_TO_CATEGORY[subcategory];
+    if (alignedParent) {
+      category = alignedParent;
+    }
+  }
+
+  return {
+    category: category || null,
+    subcategory: subcategory || null,
+    description: description || null
+  };
 };
 
 export const getCategoryArticles = async (req: Request, res: Response) => {
   try {
-    const categorySlug = (req.params.slug as string).toLowerCase().trim();
+    let categorySlug = (req.params.slug as string).toLowerCase().trim();
+    if (categorySlug === "calendar") {
+      categorySlug = "academic-info";
+    }
+
     const pageNum = parseInt(req.query.page as string, 10) || 1;
     const limitNum = parseInt(req.query.limit as string, 10) || 6;
     const skip = (pageNum - 1) * limitNum;
 
-    // Fetch pages containing potential category tags
-    const pages = await prisma.live_pages.findMany({
-      where: { deleted_at: null },
+    const PARENT_CATEGORIES = ["academics", "campus", "student-life", "research", "policies"];
+    const isParent = PARENT_CATEGORIES.includes(categorySlug);
+
+    const filterCondition = isParent
+      ? { category: categorySlug }
+      : { subcategory: categorySlug };
+
+    const totalMatched = await prisma.live_pages.count({
+      where: {
+        deleted_at: null,
+        ...filterCondition
+      }
+    });
+
+    const paginatedPages = await prisma.live_pages.findMany({
+      where: {
+        deleted_at: null,
+        ...filterCondition
+      },
       select: {
         page_id: true,
-        title: true,
         slug: true,
-        metadata: true,
-        content: true,
-        created_at: true,
-        updated_at: true
-      }
+        title: true,
+        description: true
+      },
+      orderBy: {
+        title: 'asc'
+      },
+      skip,
+      take: limitNum
     });
 
-    const matchedPages = pages.filter((page: any) => {
-      const meta = (page.metadata as any) || {};
-      let pageCategory = meta.category ? normalizeCategoryToSlug(meta.category) : "";
-
-      if (!pageCategory) {
-        const parsed = parsePageContent(page.content);
-        if (parsed.category) {
-          pageCategory = normalizeCategoryToSlug(parsed.category);
-        }
-      }
-
-      if (pageCategory === categorySlug) return true;
-
-      const title = (page.title || "").toLowerCase();
-      const slug = (page.slug || "").toLowerCase();
-
-      if (pageCategory === "academics") {
-        if (categorySlug === "faculty") {
-          return title.startsWith("prof.") || slug.includes("prof") || slug.includes("faculty");
-        }
-        if (categorySlug === "courses") {
-          return (
-            /^[a-z]{2,3}\s*\d{3}/i.test(title) ||
-            /^[a-z]{2,3}-\d{3}/i.test(slug) ||
-            title.includes(":")
-          );
-        }
-        if (categorySlug === "departments") {
-          return (
-            !title.startsWith("prof.") &&
-            !slug.includes("prof") &&
-            !slug.includes("faculty") &&
-            !/^[a-z]{2,3}\s*\d{3}/i.test(title) &&
-            !/^[a-z]{2,3}-\d{3}/i.test(slug) &&
-            !title.includes(":")
-          );
-        }
-      }
-
-      if (pageCategory === "campus") {
-        if (categorySlug === "hostels") {
-          return title.includes("hostel") || slug.includes("hostel");
-        }
-        if (categorySlug === "facilities") {
-          return !title.includes("hostel") && !slug.includes("hostel");
-        }
-      }
-
-      if (pageCategory === "policies") {
-        if (categorySlug === "calendar") {
-          return title.includes("calendar") || title.includes("date") || slug.includes("calendar") || slug.includes("date");
-        }
-        if (categorySlug === "placements") {
-          return title.includes("placement") || slug.includes("placement");
-        }
-        if (categorySlug === "policies") {
-          return (
-            !title.includes("calendar") && !title.includes("date") && !slug.includes("calendar") && !slug.includes("date") &&
-            !title.includes("placement") && !slug.includes("placement")
-          );
-        }
-      }
-
-      if (!pageCategory) {
-        if (categorySlug === "faculty") {
-          return title.startsWith("prof.") || slug.includes("prof") || slug.includes("faculty");
-        }
-        if (categorySlug === "courses") {
-          return (
-            /^[a-z]{2,3}\s*\d{3}/i.test(title) ||
-            /^[a-z]{2,3}-\d{3}/i.test(slug) ||
-            title.includes(":")
-          );
-        }
-        if (categorySlug === "hostels") {
-          return title.includes("hostel") || slug.includes("hostel");
-        }
-        if (categorySlug === "facilities") {
-          return slug.includes("sports") || slug.includes("complex") || slug.includes("shop") || slug.includes("canteen") || slug.includes("center") || slug.includes("facility");
-        }
-        if (categorySlug === "clubs") {
-          return slug.includes("club") || title.includes("club");
-        }
-        if (categorySlug === "fests") {
-          return slug.includes("fest") || title.includes("fest") || slug.includes("amalthea") || slug.includes("blith");
-        }
-        if (categorySlug === "research") {
-          return slug.includes("research") || slug.includes("lab") || title.includes("laboratory");
-        }
-        if (categorySlug === "calendar") {
-          return title.includes("calendar") || title.includes("date") || slug.includes("calendar") || slug.includes("date");
-        }
-        if (categorySlug === "placements") {
-          return title.includes("placement") || slug.includes("placement");
-        }
-        if (categorySlug === "departments") {
-          return (
-            !title.startsWith("prof.") &&
-            !slug.includes("prof") &&
-            !slug.includes("faculty") &&
-            !/^[a-z]{2,3}\s*\d{3}/i.test(title) &&
-            !/^[a-z]{2,3}-\d{3}/i.test(slug) &&
-            !title.includes(":") &&
-            (slug.includes("department") || slug.includes("engineering") || title.includes("engineering"))
-          );
-        }
-      }
-
-      return false;
-    });
-
-    matchedPages.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-
-    const totalMatched = matchedPages.length;
-    const paginatedPages = matchedPages.slice(skip, skip + limitNum);
-
-    const results = paginatedPages.map((page: any) => {
-      const meta = (page.metadata as any) || {};
-      let description = meta.description || "";
-      if (!description) {
-        const parsed = parsePageContent(page.content);
-        description = parsed.description;
-      }
-      if (!description && page.content) {
-        const clean = page.content.replace(/^---[\s\S]*?---/, "").trim();
-        description = clean.length > 150 ? clean.substring(0, 150) + "..." : clean;
-      }
-
-      return {
-        page_id: page.page_id,
-        slug: page.slug,
-        title: page.title || "Untitled",
-        description: description || ""
-      };
-    });
+    const results = paginatedPages.map((page) => ({
+      page_id: page.page_id,
+      slug: page.slug,
+      title: page.title || "Untitled",
+      description: page.description || ""
+    }));
 
     return res.json({
       articles: results,

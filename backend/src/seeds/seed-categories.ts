@@ -9,7 +9,7 @@ const DEFAULT_CATEGORIES = [
   { slug: "facilities", name: "Campus Facilities", description: "Details on sports complex, medical center, transport schedules, and shops." },
   { slug: "clubs", name: "Student Clubs", description: "Get involved in technical, cultural, sports, and social clubs." },
   { slug: "fests", name: "Institute Fests", description: "Read about Amalthea, Blithchron, Hallabol, and other annual events." },
-  { slug: "calendar", name: "Academic Calendar", description: "Keep track of semesters, mid-sem exams, end-sems, and institute holidays." },
+  { slug: "academic-info", name: "Academic Info", description: "Keep track of semesters, exams, academic guidelines, and institute holidays." },
   { slug: "policies", name: "Institute Policies", description: "Read about graduation criteria, leave policies, and code of conduct guidelines." },
   { slug: "placements", name: "Placement Stats", description: "Analyze trends, recruiter information, and sector-wise distribution profiles." }
 ];

@@ -179,14 +179,6 @@ export const TIERS: Record<string, Tier> = {
 };
 
 
-
-export const menuItems = [
-  { title: "Home", icon: Home, link: "/" },
-  { title: "Campus Map", icon: Map, link: "#" },
-  { title: "Academics", icon: BookOpen, link: "#" },
-  { title: "Student Life", icon: Users, link: "#" },
-];
-
 // --- New Navigation and Portal Constants for Redesigned Homepage ---
 
 export interface SidebarItem {
@@ -224,95 +216,6 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
   },
 ];
 
-export const QUICK_PORTALS: QuickPortalItem[] = [
-  {
-    name: "Departments",
-    path: "/wiki/departments",
-    iconName: "Building2",
-    colorTheme: {
-      bg: "bg-rose-50 text-rose-500",
-      icon: "text-rose-500",
-      textBg: "hover:bg-rose-50/50",
-    },
-  },
-  {
-    name: "Faculty",
-    path: "/wiki/faculty",
-    iconName: "Users2",
-    colorTheme: {
-      bg: "bg-amber-50 text-amber-600",
-      icon: "text-amber-600",
-      textBg: "hover:bg-amber-50/50",
-    },
-  },
-  {
-    name: "Courses",
-    path: "/wiki/courses",
-    iconName: "BookOpen",
-    colorTheme: {
-      bg: "bg-emerald-50 text-emerald-600",
-      icon: "text-emerald-600",
-      textBg: "hover:bg-emerald-50/50",
-    },
-  },
-  {
-    name: "Clubs",
-    path: "/wiki/clubs",
-    iconName: "Trophy",
-    colorTheme: {
-      bg: "bg-indigo-50 text-indigo-600",
-      icon: "text-indigo-600",
-      textBg: "hover:bg-indigo-50/50",
-    },
-  },
-  {
-    name: "Hostels",
-    path: "/wiki/hostels",
-    iconName: "Tent",
-    colorTheme: {
-      bg: "bg-sky-50 text-sky-500",
-      icon: "text-sky-500",
-      textBg: "hover:bg-sky-50/50",
-    },
-  },
-  {
-    name: "Campus Facilities",
-    path: "/wiki/facilities",
-    iconName: "MapPin",
-    colorTheme: {
-      bg: "bg-purple-50 text-purple-600",
-      icon: "text-purple-600",
-      textBg: "hover:bg-purple-50/50",
-    },
-  },
-  {
-    name: "Research Labs",
-    path: "/wiki/research",
-    iconName: "FlaskConical",
-    colorTheme: {
-      bg: "bg-teal-50 text-teal-600",
-      icon: "text-teal-600",
-      textBg: "hover:bg-teal-50/50",
-    },
-  },
-  {
-    name: "Student Life",
-    path: "/wiki/fests",
-    iconName: "Sparkles",
-    colorTheme: {
-      bg: "bg-fuchsia-50 text-fuchsia-600",
-      icon: "text-fuchsia-600",
-      textBg: "hover:bg-fuchsia-50/50",
-    },
-  },
-];
-
-export const PROFILE_MENU_ITEMS = [
-  { name: "My Profile", path: "/user/profile" },
-  { name: "My Contributions", path: "/user/profile" },
-  { name: "Settings", path: "/user/settings" },
-  { name: "Sign Out", path: "/user/signout", isDanger: true },
-];
 
 // Theme lists are generated from daisyUI's built-in themes so they stay in
 // sync with the installed version. See src/lib/daisyThemes.ts (regenerate
