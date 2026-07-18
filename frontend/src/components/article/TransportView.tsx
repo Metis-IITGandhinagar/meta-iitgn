@@ -24,10 +24,10 @@ interface RouteOption {
 /**
  * Read-only structured view of the campus transport schedule.
  *
- * A **Routes** filter at the top lists every unique from→to route (e.g.
+ * A **Routes** filter at the top lists every unique from→to trip route (e.g.
  * "(Kudasan-Palaj)") as a toggle button. Tapping a route shows only the trips
- * that run on that exact route; tapping it again clears the filter. Matching
- * trips are grouped by bus line, each on two lines:
+ * that run on that exact route; tapping it again clears the filter. Trips are
+ * grouped by bus, each on two lines:
  *   · time · route (from → to)            ← line 1
  *   · Via: …                              ← line 2 (when present)
  *
@@ -35,24 +35,22 @@ interface RouteOption {
  * TransportOverlay view mode.
  */
 export default function TransportView({ content }: TransportViewProps) {
-  const lines = parseTransport(content ?? "");
+  const buses = parseTransport(content ?? "");
 
   // Unique routes (from→to pairs) across the whole schedule, de-duplicated.
   const routes = useMemo<RouteOption[]>(() => {
     const seen = new Set<string>();
     const list: RouteOption[] = [];
-    for (const line of lines) {
-      for (const slot of line.slots) {
-        for (const t of slot.trips) {
-          const key = `${t.from}|${t.to ?? ""}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          list.push({ from: t.from, to: t.to ?? "", label: formatRoute(t) });
-        }
+    for (const bus of buses) {
+      for (const t of bus.trips) {
+        const key = `${t.from}|${t.to ?? ""}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        list.push({ from: t.from, to: t.to ?? "", label: formatRoute(t) });
       }
     }
     return list;
-  }, [lines]);
+  }, [buses]);
 
   const [routeQ, setRouteQ] = useState<RouteOption | null>(null);
   const [routeOpen, setRouteOpen] = useState(false);
@@ -79,12 +77,12 @@ export default function TransportView({ content }: TransportViewProps) {
     !routeQ ||
     (trip.from === routeQ.from && (trip.to ?? "") === routeQ.to);
 
-  const filteredLines = lines
-    .map((line) => ({
-      line,
-      trips: line.slots.flatMap((s) => s.trips).filter(tripMatches),
+  const filteredBuses = buses
+    .map((bus) => ({
+      bus,
+      trips: bus.trips.filter(tripMatches),
     }))
-    .filter((l) => l.trips.length > 0);
+    .filter((b) => b.trips.length > 0);
 
   // The single soonest upcoming trip across the whole schedule — flagged with a
   // "NEXT" badge in the read view (presentational only, mirrors the mockup).
@@ -93,8 +91,8 @@ export default function TransportView({ content }: TransportViewProps) {
     return d.getHours() * 60 + d.getMinutes();
   })();
   const nextTripRef: TransportTrip | null = (() => {
-    const parsed = lines
-      .flatMap((l) => l.slots.flatMap((s) => s.trips))
+    const parsed = buses
+      .flatMap((b) => b.trips)
       .map((t) => ({ t, m: tripTimeToMinutes(t.time) }))
       .filter((x) => x.m !== null) as { t: TransportTrip; m: number }[];
     if (parsed.length === 0) return null;
@@ -102,7 +100,7 @@ export default function TransportView({ content }: TransportViewProps) {
     return (upcoming[0] ?? [...parsed].sort((a, b) => a.m - b.m)[0]).t;
   })();
 
-  if (lines.length === 0) {
+  if (buses.length === 0) {
     return (
       <div className="text-center py-20 border border-dashed border-base-300 rounded-2xl">
         <p className="text-base-content/60 font-medium">Transport schedule not available yet.</p>
@@ -205,25 +203,25 @@ export default function TransportView({ content }: TransportViewProps) {
         </div>
       )}
 
-      {/* ── Matching trips, grouped by line ────────────────────────────────── */}
-      {filteredLines.length === 0 ? (
+      {/* ── Matching trips, grouped by bus ─────────────────────────────── */}
+      {filteredBuses.length === 0 ? (
         <p className="text-sm text-base-content/50 italic px-1">
-          No trips {routeQ && `on route “${routeQ.label}”`} in the current schedule.
+          No trips {routeQ && `on route "${routeQ.label}"`} in the current schedule.
         </p>
       ) : (
-        filteredLines.map(({ line, trips }, i) => (
+        filteredBuses.map(({ bus, trips }, i) => (
           <div key={i} className="mb-5 last:mb-0">
-            {/* Bus line banner (mirrors the mockup's dark bus-type bar) */}
+            {/* Bus banner (mirrors the mockup's dark bus-type bar) */}
             <div className="mb-3 flex items-center gap-3">
               <span
                 className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-[11px] font-black tracking-wide ${lineActiveTheme(i)}`}
               >
                 <Bus className="h-3.5 w-3.5" />
-                {line.name}
+                {bus.name}
               </span>
-              {line.note && (
+              {bus.note && (
                 <span className="truncate text-[11px] font-semibold text-base-content/50">
-                  · {line.note}
+                  · {bus.note}
                 </span>
               )}
             </div>

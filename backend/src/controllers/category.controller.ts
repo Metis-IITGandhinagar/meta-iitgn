@@ -1,20 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 
-const DEFAULT_CATEGORIES = [
-  { slug: "departments", name: "Departments", description: "Explore the academic departments and engineering disciplines at IIT Gandhinagar." },
-  { slug: "faculty", name: "Faculty", description: "Learn about the professors, researchers, and their specialized research labs." },
-  { slug: "courses", name: "Courses", description: "Browse course syllabi, prerequisites, grading policies, and recommendations." },
-  { slug: "research", name: "Research Labs", description: "Discover center facilities, instrumentation resources, and active projects." },
-  { slug: "hostels", name: "Hostels", description: "Everything about hostel capacities, mascots, mess dining, and residential guidelines." },
-  { slug: "facilities", name: "Campus Facilities", description: "Details on sports complex, medical center, transport schedules, and shops." },
-  { slug: "clubs", name: "Student Clubs", description: "Get involved in technical, cultural, sports, and social clubs." },
-  { slug: "fests", name: "Institute Fests", description: "Read about Amalthea, Blithchron, Hallabol, and other annual events." },
-  { slug: "academic-info", name: "Academic Info", description: "Keep track of semesters, exams, academic guidelines, and institute holidays." },
-  { slug: "policies", name: "Institute Policies", description: "Read about graduation criteria, leave policies, and code of conduct guidelines." },
-  { slug: "placements", name: "Placement Stats", description: "Analyze trends, recruiter information, and sector-wise distribution profiles." }
-];
-
 let categoriesCache: any[] | null = null;
 
 export const invalidateCategoriesCache = () => {
@@ -25,14 +11,6 @@ export const getCategories = async (req: Request, res: Response) => {
   try {
     if (categoriesCache) {
       return res.json(categoriesCache);
-    }
-
-    const count = await prisma.categories.count();
-    if (count === 0) {
-      console.log("Seeding default categories...");
-      await prisma.categories.createMany({
-        data: DEFAULT_CATEGORIES
-      });
     }
 
     const categories = await prisma.categories.findMany({
