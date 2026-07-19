@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  getPage, getRecentNewPages, getRecentUpdatedPages, searchPages, getPageStats,
+  getPage, getRecentNewPages, getRecentUpdatedPages, searchPages, getPagesList, getPageStats,
   createPage, updatePage, deletePage, getPageCount, getSyncCheck, getPageForEdit,
   getPageById, getPopularPages, incrementViewCount, getPageRevisions, revertPageToRevision
 } from "../controllers/page.controller.js";
@@ -24,6 +24,9 @@ router.use("/featured", featuredRouter);
 
 // Search
 router.get("/search", searchPages);
+
+// Full page list (for editor autocomplete)
+router.get("/list", checkAuthOptional, getPagesList);
 
 // Page by ID
 router.get("/id/:page_id", getPageById);

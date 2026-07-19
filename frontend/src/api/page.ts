@@ -1,5 +1,23 @@
 import { api } from '../lib/api';
 
+export interface PageListItem {
+  page_id: number;
+  title: string | null;
+  slug: string;
+  category: string | null;
+  description: string | null;
+}
+
+/**
+ * Fetch every live page (slug + title + category) for editor autocomplete
+ * (the [[ page-link ]] dropdown). Slugs are stable, so the editor links by
+ * slug regardless of a page's current category.
+ */
+export const getPagesList = async (): Promise<PageListItem[]> => {
+  const response = await api.get('/pages/list');
+  return response.data as PageListItem[];
+};
+
 export const getRecentNewPages = async (limit = 4, page = 1) => {
   const response = await api.get('/pages/recent/new', { params: { limit, page } });
   return response.data;

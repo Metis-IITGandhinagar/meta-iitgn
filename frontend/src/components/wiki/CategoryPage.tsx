@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen, PlusCircle, Pencil, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap } from "lucide-react";
+import { BookOpen, PlusCircle, Pencil, Sparkles, Building2, Users2, Trophy, Tent, MapPin, FlaskConical, Calendar, Shield, TrendingUp, GraduationCap, FileText, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiService } from "@/api";
 import CategoryEditModal from "@/components/overlays/CategoryEditModal";
@@ -146,7 +146,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             {!embedded && (user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={handleStartEdit}
-                className="btn btn-outline btn-sm font-bold rounded-xl shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
+                className="btn btn-outline btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
               >
                 <Pencil className="h-4.5 w-4.5" />
                 <span>Edit Category</span>
@@ -155,7 +155,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             {!embedded && (user?.role === "admin" || user?.role === "moderator") && (
               <Link
                 href={`/wiki/${categorySlug}/new`}
-                className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-primary-content"
+                className="btn btn-primary btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95 text-primary-content"
               >
                 <PlusCircle className="h-4.5 w-4.5" />
                 <span>New Article</span>
@@ -182,18 +182,27 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             </div>
           ) : (
             <div className="w-full flex flex-col gap-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
                 {articles.map((article) => (
                   <Link
                     key={article.slug}
                     href={`/wiki/${categorySlug}/${article.slug}`}
-                    className="card card-compact card-border w-full flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary transition-all duration-300 group cursor-pointer"
+                    className="card card-compact card-border w-full flex flex-row items-center gap-3 p-4 md:p-5 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-300 group cursor-pointer"
                   >
-                    <div className="space-y-2 md:space-y-3">
-                      <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300">
-                        {article.title}
-                      </h3>
+                    <div
+                      className="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 shadow-sm transition-all duration-300"
+                      style={{
+                        backgroundColor: `${category.color || "#4f46e5"}1a`,
+                        borderColor: `${category.color || "#4f46e5"}33`,
+                        color: category.color || "#4f46e5",
+                      }}
+                    >
+                      <FileText className="h-4.5 w-4.5" />
                     </div>
+                    <h3 className="flex-1 min-w-0 text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300 truncate">
+                      {article.title}
+                    </h3>
+                    <ChevronRight className="h-4.5 w-4.5 shrink-0 text-base-content/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all duration-300" />
                   </Link>
                 ))}
                 {loadingMore && (

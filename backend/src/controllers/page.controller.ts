@@ -120,6 +120,32 @@ export const getRecentUpdatedPages = async (req: Request, res: Response) => {
 };
 
 /**
+ * GET /pages/list
+ * Return every live page (slug + title + category) for client-side
+ * autocomplete (e.g. the editor's [[ page-link ]] dropdown). Slugs are stable,
+ * so consumers can link by slug without knowing the current category.
+ */
+export const getPagesList = async (req: Request, res: Response) => {
+  try {
+    const pages = await prisma.live_pages.findMany({
+      where: { deleted_at: null },
+      select: {
+        page_id: true,
+        title: true,
+        slug: true,
+        category: true,
+        description: true,
+      },
+      orderBy: { updated_at: 'desc' },
+    });
+    return res.json(pages);
+  } catch (error: any) {
+    console.error('Error in getPagesList:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
  * GET /pages/search
  * Search pages, categories, users, news, everything.
  */

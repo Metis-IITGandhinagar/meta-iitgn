@@ -38,7 +38,7 @@ export default function PortalOverlay({
     <div className="flex items-center gap-2">
       <button
         onClick={() => setIsEditing(true)}
-        className="btn btn-outline btn-sm font-bold rounded-xl shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
+        className="btn btn-ghost btn-sm font-semibold rounded-xl border border-base-300 bg-base-100 text-base-content/70 hover:text-base-content hover:bg-base-200 shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
       >
         <Pencil className="h-4.5 w-4.5" />
         <span className="hidden sm:inline">Edit Category</span>
@@ -48,7 +48,7 @@ export default function PortalOverlay({
           instead of opening the editor. */}
       <Link
         href={`/wiki/${categorySlug}/new`}
-        className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-primary-content"
+        className="btn btn-ghost btn-sm font-semibold rounded-xl border border-base-300 bg-base-100 text-base-content/70 hover:text-primary hover:bg-primary/10 shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
       >
         <PlusCircle className="h-4.5 w-4.5" />
         <span className="hidden sm:inline">New Article</span>

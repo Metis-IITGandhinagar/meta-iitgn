@@ -13,16 +13,14 @@ import {
   MapPin,
   Trophy,
   Sparkles,
-  Calendar,
   Shield,
   TrendingUp,
   GraduationCap,
   HelpCircle,
   LucideIcon,
   User,
-  MapIcon,
+  UserCircle2,
   InboxIcon,
-  History,
   LogOut,
   X,
 } from "lucide-react";
@@ -200,56 +198,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           )}
 
-          {/* Calander/Campus Map Section */}
-
-          <div className="space-y-1 border-t border-base-200 pt-2">
-            <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/40 uppercase">
-              Tools
-            </h3>
-            <div className="space-y-0.5">
-              <Link
-                href={"/calender"}
-                onClick={() => {
-                  if (window.innerWidth < 1024) onClose();
-                }}
-                className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                  pathname === "/calender"
-                    ? "bg-primary/10 text-primary font-bold"
-                    : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                }`}
-              >
-                <Calendar
-                  className={`h-5 w-5 transition-colors duration-200 ${
-                    pathname === "/calender"
-                      ? "text-primary"
-                      : "text-base-content/50 group-hover:text-base-content/80"
-                  }`}
-                />
-                <span className="truncate">Academic Calender</span>
-              </Link>
-              <Link
-                href={"/map"}
-                onClick={() => {
-                  if (window.innerWidth < 1024) onClose();
-                }}
-                className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                  pathname === "/map"
-                    ? "bg-primary/10 text-primary font-bold"
-                    : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                }`}
-              >
-                <MapIcon
-                  className={`h-5 w-5 transition-colors duration-200 ${
-                    pathname === "/map"
-                      ? "text-primary"
-                      : "text-base-content/50 group-hover:text-base-content/80"
-                  }`}
-                />
-                <span className="truncate">Campus Map</span>
-              </Link>
-            </div>
-          </div>
-
           {/* Account/Profile Section */}
           {user ? (
             <div className="space-y-1 border-t border-base-200 pt-2">
@@ -268,14 +216,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       : "text-base-content/75 hover:text-base-content hover:bg-base-200"
                   }`}
                 >
-                  <History
+                  <UserCircle2
                     className={`h-5 w-5 transition-colors duration-200 ${
                       pathname === "/user/profile"
                         ? "text-primary"
                         : "text-base-content/50 group-hover:text-base-content/80"
                     }`}
                   />
-                  <span className="truncate">My Contributions</span>
+                  <span className="truncate">Profile</span>
                 </Link>
                 <Link
                   href="/logout"

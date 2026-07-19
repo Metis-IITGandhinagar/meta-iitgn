@@ -1,11 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Crepe } from "@milkdown/crepe";
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
 import { listener, listenerCtx } from "@milkdown/plugin-listener";
+import { Plugin } from "@milkdown/prose/state";
+import type { EditorView } from "@milkdown/prose/view";
+import { $prose, $useKeymap } from "@milkdown/utils";
 import { cn } from "@/lib/utils";
-import { apiService } from "@/api";
+import { apiService, getPagesList } from "@/api";
+import type { PageListItem } from "@/api";
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/common/toolbar.css";
@@ -134,6 +145,103 @@ function applySectionFolding(prose: HTMLElement, startCollapsed = false) {
   prose.dataset.folded = "true";
 }
 
+/** Active `[[` page-link suggestion shown by the editor dropdown. */
+interface WikiLinkSuggestion {
+  query: string;
+  /** Doc position just after the opening `[[`. */
+  from: number;
+  /** Doc position of the cursor (end of the typed query). */
+  to: number;
+  /** Viewport coords of the cursor, from `view.coordsAtPos`. */
+  coords: { left: number; top: number; bottom: number };
+}
+
+/**
+ * Floating picker that appears below the cursor when the user types `[[`.
+ * Lists pages (filtered by the query) and inserts a slug-based Markdown link
+ * on selection. Keyboard navigation is driven by the editor's keymap; this
+ * component only renders the list and reports clicks/hover.
+ */
+function WikiLinkDropdown({
+  suggestion,
+  pages,
+  selectedIndex,
+  loading,
+  onSelect,
+  onHover,
+}: {
+  suggestion: WikiLinkSuggestion;
+  pages: PageListItem[];
+  selectedIndex: number;
+  loading: boolean;
+  onSelect: (page: PageListItem) => void;
+  onHover: (index: number) => void;
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Keep the highlighted item in view as the selection moves.
+  useEffect(() => {
+    const el = listRef.current?.querySelector<HTMLElement>(
+      `[data-index="${selectedIndex}"]`
+    );
+    el?.scrollIntoView({ block: "nearest" });
+  }, [selectedIndex]);
+
+  const style: CSSProperties = {
+    position: "fixed",
+    left: suggestion.coords.left,
+    top: suggestion.coords.bottom + 6,
+    zIndex: 60,
+    maxWidth: "min(320px, calc(100vw - 24px))",
+  };
+
+  return (
+    <div
+      style={style}
+      className="max-h-64 w-72 overflow-y-auto rounded-lg border border-base-300 bg-base-100 p-1 shadow-xl"
+      role="listbox"
+      aria-label="Link to a page"
+      ref={listRef}
+    >
+      {loading ? (
+        <div className="px-3 py-2 text-sm text-base-content/60">Loading pages…</div>
+      ) : pages.length === 0 ? (
+        <div className="px-3 py-2 text-sm text-base-content/60">No pages found</div>
+      ) : (
+        pages.map((page, i) => (
+          <button
+            key={page.slug}
+            type="button"
+            data-index={i}
+            role="option"
+            aria-selected={i === selectedIndex}
+            // Use mousedown + preventDefault so the editor keeps focus and the
+            // current selection (the `[[` range) stays valid when we insert.
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onSelect(page);
+            }}
+            onMouseEnter={() => onHover(i)}
+            className={cn(
+              "flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left text-sm transition-colors",
+              i === selectedIndex ? "bg-base-200" : "hover:bg-base-200/60"
+            )}
+          >
+            <span className="truncate font-medium text-base-content">
+              {page.title?.trim() || page.slug}
+            </span>
+            {page.category && (
+              <span className="truncate text-[11px] text-base-content/50">
+                {page.category}
+              </span>
+            )}
+          </button>
+        ))
+      )}
+    </div>
+  );
+}
+
 function MilkdownEditorInner({
   initialMarkdown,
   onMarkdownChange,
@@ -155,22 +263,95 @@ function MilkdownEditorInner({
   const [showWordCount, setShowWordCount] = useState(true);
   const [wordCount, setWordCount] = useState({ words: 0, chars: 0 });
 
+  // --- `[[` page-link autocomplete state ---------------------------------
+  const viewRef = useRef<EditorView | null>(null);
+  const suggestionRef = useRef<WikiLinkSuggestion | null>(null);
+  const filteredRef = useRef<PageListItem[]>([]);
+  const selectedIndexRef = useRef(0);
+  const pagesRef = useRef<PageListItem[]>([]);
+  const [suggestion, setSuggestion] = useState<WikiLinkSuggestion | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [pages, setPages] = useState<PageListItem[]>([]);
+
+  // Report a new suggestion state, skipping redundant updates.
+  const report = useCallback((next: WikiLinkSuggestion | null) => {
+    const prev = suggestionRef.current;
+    if (next && prev && next.query === prev.query && next.from === prev.from && next.to === prev.to) {
+      return;
+    }
+    if (!next && !prev) return;
+    suggestionRef.current = next;
+    setSuggestion(next);
+    if (next) setSelectedIndex(0);
+  }, []);
+
+  // Insert the chosen page as a slug-based Markdown link, replacing `[[query`.
+  const selectPage = useCallback(
+    (page: PageListItem | undefined) => {
+      const view = viewRef.current;
+      const sug = suggestionRef.current;
+      if (!view || !sug || !page) return;
+
+      const { state } = view;
+      const label = (page.title && page.title.trim()) || page.slug;
+      const href = `/wiki/page/${page.slug}`;
+      const linkMark = state.schema.marks.link;
+      const node = linkMark
+        ? state.schema.text(label, [linkMark.create({ href, title: "" })])
+        : state.schema.text(`[${label}](${href})`);
+
+      const tr = state.tr.replaceWith(sug.from, sug.to, node).insertText(" ");
+      view.dispatch(tr);
+      report(null);
+      view.focus();
+    },
+    [report]
+  );
+
   useEffect(() => {
     onMarkdownChangeRef.current = onMarkdownChange;
   }, [onMarkdownChange]);
 
-  // Load editor preferences and keep them in sync while editing.
+  // Load the full page list once for the `[[` autocomplete (editable only).
   useEffect(() => {
-    const readPrefs = () => {
-      setEditorFontStyle(localStorage.getItem("wiki_editor_font_style") || "serif");
-      setEditorFontSize(localStorage.getItem("wiki_editor_font_size") || "normal");
-      setSpellCheck(localStorage.getItem("wiki_editor_spellcheck") !== "false");
-      setShowWordCount(localStorage.getItem("wiki_editor_word_count") !== "false");
+    if (readOnly) return;
+    let cancelled = false;
+    getPagesList()
+      .then((data) => {
+        if (cancelled) return;
+        pagesRef.current = data;
+        setPages(data);
+      })
+      .catch((err) => console.error("Failed to load pages for autocomplete:", err));
+    return () => {
+      cancelled = true;
     };
-    readPrefs();
-    window.addEventListener("wiki_settings_changed", readPrefs);
-    return () => window.removeEventListener("wiki_settings_changed", readPrefs);
-  }, []);
+  }, [readOnly]);
+
+  // Pages filtered by the current `[[` query (empty query => all pages).
+  const filtered = useMemo(() => {
+    const q = (suggestion?.query ?? "").toLowerCase().trim();
+    const list = q
+      ? pages.filter((p) =>
+          `${p.title ?? ""} ${p.slug} ${p.category ?? ""}`.toLowerCase().includes(q)
+        )
+      : pages;
+    return list.slice(0, 8);
+  }, [pages, suggestion]);
+
+  // Keep refs in sync with render state for use inside ProseMirror handlers.
+  useEffect(() => {
+    filteredRef.current = filtered;
+  }, [filtered]);
+  useEffect(() => {
+    selectedIndexRef.current = selectedIndex;
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    if (selectedIndex >= filtered.length) {
+      setSelectedIndex(Math.max(0, filtered.length - 1));
+    }
+  }, [filtered.length, selectedIndex]);
 
   // Live word/character count derived from the current markdown.
   const updateWordCount = (md: string) => {
@@ -204,9 +385,9 @@ function MilkdownEditorInner({
               console.error("Failed to upload image inside Milkdown:", err);
               throw err;
             }
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     crepe.setReadonly(readOnly);
@@ -221,6 +402,114 @@ function MilkdownEditorInner({
         }
       });
     });
+
+    // Detect `[[` in the current text block and surface a suggestion. The
+    // plugin's view runs on every transaction; it is read-only with respect to
+    // the document (no keydown handling here — that lives in the keymap below).
+    crepe.editor.use(
+      $prose(
+        () =>
+          new Plugin({
+            view(editorView) {
+              viewRef.current = editorView;
+              return {
+                update(view) {
+                  if (!view.editable) {
+                    report(null);
+                    return;
+                  }
+                  const { selection } = view.state;
+                  if (!selection.empty) {
+                    report(null);
+                    return;
+                  }
+                  const $from = view.state.doc.resolve(selection.from);
+                  const parent = $from.parent;
+                  if (parent.type.spec.code) {
+                    report(null);
+                    return;
+                  }
+                  const textBefore = parent.textBetween(0, $from.parentOffset);
+                  const match = /\[\[([^\]\n]*)$/.exec(textBefore);
+                  if (!match) {
+                    report(null);
+                    return;
+                  }
+                  const query = match[1];
+                  const from = selection.from - match[0].length;
+                  const to = selection.from;
+                  const coords = view.coordsAtPos(to);
+                  report({
+                    query,
+                    from,
+                    to,
+                    coords: { left: coords.left, top: coords.top, bottom: coords.bottom },
+                  });
+                },
+                destroy() {
+                  viewRef.current = null;
+                },
+              };
+            },
+          })
+      )
+    );
+
+    // Intercept navigation/confirm keys while a `[[` suggestion is open. Priority
+    // 1000 runs before ProseMirror's baseKeymap (priority 100) so Enter inserts
+    // the link instead of splitting the paragraph.
+    crepe.editor.use(
+      $useKeymap("wikiLink", {
+        ConfirmWikiLink: {
+          shortcuts: ["Enter"],
+          priority: 1000,
+          command: () => () => {
+            const sug = suggestionRef.current;
+            if (!sug) return false;
+            const list = filteredRef.current;
+            if (list.length === 0) return false;
+            selectPage(list[selectedIndexRef.current]);
+            return true;
+          },
+        },
+        NextWikiLink: {
+          shortcuts: ["ArrowDown"],
+          priority: 1000,
+          command: () => () => {
+            const sug = suggestionRef.current;
+            if (!sug) return false;
+            const list = filteredRef.current;
+            if (list.length === 0) return false;
+            selectedIndexRef.current = (selectedIndexRef.current + 1) % list.length;
+            setSelectedIndex(selectedIndexRef.current);
+            return true;
+          },
+        },
+        PrevWikiLink: {
+          shortcuts: ["ArrowUp"],
+          priority: 1000,
+          command: () => () => {
+            const sug = suggestionRef.current;
+            if (!sug) return false;
+            const list = filteredRef.current;
+            if (list.length === 0) return false;
+            selectedIndexRef.current =
+              (selectedIndexRef.current - 1 + list.length) % list.length;
+            setSelectedIndex(selectedIndexRef.current);
+            return true;
+          },
+        },
+        CloseWikiLink: {
+          shortcuts: ["Escape"],
+          priority: 1000,
+          command: () => () => {
+            if (!suggestionRef.current) return false;
+            report(null);
+            return true;
+          },
+        },
+      })
+    );
 
     crepeRef.current = crepe;
     return crepe;
@@ -296,6 +585,16 @@ function MilkdownEditorInner({
           <span>{wordCount.words} words</span>
           <span>{wordCount.chars} chars</span>
         </div>
+      )}
+      {!readOnly && suggestion && (
+        <WikiLinkDropdown
+          suggestion={suggestion}
+          pages={filtered}
+          selectedIndex={selectedIndex}
+          loading={pages.length === 0}
+          onSelect={(page) => selectPage(page)}
+          onHover={(i) => setSelectedIndex(i)}
+        />
       )}
     </div>
   );
