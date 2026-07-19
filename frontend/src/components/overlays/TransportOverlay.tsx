@@ -20,9 +20,6 @@ import TransportView from "@/components/article/TransportView";
 import {
   TransportBus,
   TransportTrip,
-  splitTransportContent,
-  buildTransportContent,
-  parseTransport,
 } from "@/lib/transport";
 
 interface TransportOverlayProps {
@@ -36,6 +33,7 @@ export default function TransportOverlay({
   isOpen,
   onClose,
   transport,
+  onSaved,
 }: TransportOverlayProps) {
   const { user } = useAuth();
   const canEdit = user?.role === "admin" || user?.role === "moderator";
@@ -43,26 +41,23 @@ export default function TransportOverlay({
   const [buses, setBuses] = useState<TransportBus[]>([]);
   const [activeBus, setActiveBus] = useState<number>(0);
   const [editing, setEditing] = useState(false);
-  const [header, setHeader] = useState("");
   const [newBusName, setNewBusName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  // Draft metadata captured on edit so we can submit a review draft
-  // (no direct live-page edits for the transport schedule).
-  const [pageId, setPageId] = useState<number | null>(null);
-  const [baseVersion, setBaseVersion] = useState<number>(1);
-  const [pageMetadata, setPageMetadata] = useState<any>({ category: "campus-transport" });
-  const [pageTitle, setPageTitle] = useState<string>("Campus Transport");
 
   useEffect(() => {
     if (!isOpen) return;
     setEditing(false);
     setError(null);
     setSuccess(null);
-    const parsed = transport?.content ? parseTransport(transport.content) : [];
-    setBuses(parsed);
+    const parsed = Array.isArray(transport) ? transport : [];
+    const items = parsed.map((item: any) => ({
+      name: item.name || item.route || "",
+      note: item.note || item.type || "",
+      trips: item.trips || item.schedule || []
+    }));
+    setBuses(items);
     setActiveBus(0);
   }, [isOpen, transport]);
 
@@ -131,53 +126,26 @@ export default function TransportOverlay({
 
   const handleEdit = async () => {
     setError(null);
-    try {
-      const editRes: any = await apiService.getPageForEdit("campus-transport");
-      const fullPage: any = await apiService.getPage("campus-transport");
-      const content = editRes?.content ?? transport?.content ?? "";
-      const { header: parsedHeader, buses: parsedBuses } = splitTransportContent(content);
-      setHeader(parsedHeader);
-      setBuses(parsedBuses);
-      setPageId(editRes?.page_id ?? fullPage?.page_id ?? transport?.page_id ?? null);
-      setBaseVersion(editRes?.versionId ?? fullPage?.version ?? 1);
-      setPageMetadata(fullPage?.metadata ?? { category: "campus-transport" });
-      setPageTitle(editRes?.title ?? fullPage?.title ?? "Campus Transport");
-      setActiveBus(0);
-      setNewBusName("");
-      setEditing(true);
-    } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || "Failed to load schedule for editing");
-    }
+    setEditing(true);
   };
 
   const handleSave = async () => {
-    if (buses.length === 0 && !header.trim()) return;
+    if (buses.length === 0) return;
     setSaving(true);
     setError(null);
     try {
-      const content = buildTransportContent(header, buses);
-      const isStaff = user?.role === "admin" || user?.role === "moderator";
-
-      if (isStaff) {
-        await apiService.updatePage("campus-transport", {
-          title: pageTitle,
-          content,
-          metadata: pageMetadata,
-        });
-        setEditing(false);
-        setSuccess("Transport schedule updated successfully!");
-      } else {
-        await apiService.submitDraft({
-          page_id: pageId,
-          title: pageTitle,
-          content,
-          metadata: pageMetadata,
-          editor_id: user?.user_id ?? 0,
-          base_version: baseVersion,
-        });
-        setEditing(false);
-        setSuccess("Changes submitted for review. A moderator will publish them after approval.");
-      }
+      const payload = buses.map((b) => ({
+        route: b.name || "",
+        type: b.note || "",
+        schedule: b.trips || [],
+        name: b.name || "",
+        note: b.note || "",
+        trips: b.trips || []
+      }));
+      await apiService.updateCampusTransport(payload);
+      setEditing(false);
+      setSuccess("Transport schedule updated successfully!");
+      if (onSaved) onSaved();
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || "Failed to save schedule");
     } finally {
@@ -394,7 +362,7 @@ export default function TransportOverlay({
             )}
           </div>
         ) : (
-          <TransportView content={transport?.content} />
+          <TransportView buses={buses} />
         )}
       </div>
     </GenericOverlayModal>

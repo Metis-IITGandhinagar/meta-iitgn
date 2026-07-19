@@ -31,9 +31,9 @@ export async function updateSyncMetadata(
     } else if (key === 'events') {
       count = await client.events.count({ where: { deleted_at: null } });
     } else if (key === 'messmenu') {
-      count = await client.live_pages.count({ where: { slug: 'mess-menu', deleted_at: null } });
+      count = await client.mess_menu.count();
     } else if (key === 'transport') {
-      count = await client.live_pages.count({ where: { slug: 'campus-transport', deleted_at: null } });
+      count = await client.travel_schedule.count();
     }
 
     await client.sync_metadata.upsert({

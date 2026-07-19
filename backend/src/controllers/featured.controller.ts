@@ -121,3 +121,40 @@ export const removeFeaturedPage = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
   }
 };
+
+/**
+ * PUT /pages/featured/:featured_id (admin/moderator only)
+ * Update a featured page's info
+ */
+export const updateFeaturedPage = async (req: Request, res: Response) => {
+  try {
+    const { featured_id } = req.params;
+    const { order, tag, location, description } = req.body;
+    const fid = Number(featured_id);
+
+    const existing = await prisma.featured_pages.findUnique({ where: { featured_id: fid } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Featured entry not found' } });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const res = await tx.featured_pages.update({
+        where: { featured_id: fid },
+        data: {
+          order: order !== undefined ? order : existing.order,
+          tag: tag !== undefined ? tag : existing.tag,
+          location: location !== undefined ? location : existing.location,
+          description: description !== undefined ? description : existing.description
+        }
+      });
+      await updateSyncMetadata('featured', 0, tx);
+      return res;
+    });
+
+    invalidateSyncCache('featured');
+    return res.json({ success: true, data: updated });
+  } catch (error: any) {
+    console.error('Error in updateFeaturedPage:', error);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+};

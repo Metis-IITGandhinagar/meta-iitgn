@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import WikiClient from "../../../wiki-client";
+import MessMenuClient from "../../../mess-menu-client";
+import TransportClient from "../../../transport-client";
 import Link from "next/link";
 import { apiService } from "@/api";
 import { parseMarkdown } from "@/lib/utils";
@@ -121,6 +123,14 @@ Write your content here...`;
         </div>
       </main>
     );
+  }
+
+  if (slug === "mess-menu") {
+    return <MessMenuClient defaultEditing={edit === "true"} />;
+  }
+
+  if (slug === "campus-transport") {
+    return <TransportClient defaultEditing={edit === "true"} />;
   }
 
   return (

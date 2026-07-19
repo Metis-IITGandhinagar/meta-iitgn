@@ -28,10 +28,6 @@ import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import RevisionsView from "@/components/wiki/RevisionsView";
 import PendingChangesView from "@/components/wiki/PendingChangesView";
 import WikiInfoBox from "@/components/wiki/WikiInfoBox";
-import MessMenuView from "@/components/article/MessMenuView";
-import MessMenuOverlay from "@/components/overlays/MessMenuOverlay";
-import TransportView from "@/components/article/TransportView";
-import TransportOverlay from "@/components/overlays/TransportOverlay";
 
 // Dynamically import MilkdownEditor so it doesn't run during SSR
 const MilkdownEditor = dynamic(
@@ -94,8 +90,6 @@ export default function WikiClient({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showHelpConfirm, setShowHelpConfirm] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
-  const [showMessEditor, setShowMessEditor] = useState(false);
-  const [showTransportEditor, setShowTransportEditor] = useState(false);
 
   // Refs for stabilizing callbacks that depend on changing props
   const dbPageIdRef = useRef(dbPageId);
@@ -122,29 +116,6 @@ export default function WikiClient({
     );
   }, [parsed]);
 
-  const isMessMenu = useMemo(() => {
-    const slug =
-      initialMetadata?.slug ||
-      (typeof window !== "undefined"
-        ? window.location.pathname.split("/").pop()
-        : "");
-    return slug === "mess-menu";
-  }, [initialMetadata]);
-
-  const isTransport = useMemo(() => {
-    const slug =
-      initialMetadata?.slug ||
-      (typeof window !== "undefined"
-        ? window.location.pathname.split("/").pop()
-        : "");
-    return slug === "campus-transport";
-  }, [initialMetadata]);
-
-  // Stable prop objects for the editor modals (avoid re-parsing on every render
-  // while a modal is open).
-  const messMenuProp = useMemo(() => ({ content: markdown }), [markdown]);
-  const transportProp = useMemo(() => ({ content: markdown }), [markdown]);
-
   // Reader "auto fold" preference — sections start collapsed on load.
   const autoFold =
     typeof window !== "undefined" &&
@@ -153,7 +124,7 @@ export default function WikiClient({
   // The right sidebar (and its toggle button) is suppressed for page types that
   // don't use it. Extend `hideSidebar` for any future page/modal that should take
   // over the whole reading area without the sidebar getting in the way.
-  const hideSidebar = (isNews && isEditing) || isMessMenu || isTransport;
+  const hideSidebar = isNews && isEditing;
   const actualSidebarOpen = rightSidebarOpen && !hideSidebar;
 
   const fetchPendingCount = useCallback(async () => {
@@ -211,12 +182,8 @@ export default function WikiClient({
     const target = wmodal ?? "";
     if (target !== "revisions" && showRevisions) setShowRevisions(false);
     if (target !== "pending" && showPendingChanges) setShowPendingChanges(false);
-    if (target !== "mess" && showMessEditor) setShowMessEditor(false);
-    if (target !== "transport" && showTransportEditor) setShowTransportEditor(false);
     if (target === "revisions" && !showRevisions) setShowRevisions(true);
     if (target === "pending" && !showPendingChanges) setShowPendingChanges(true);
-    if (target === "mess" && !showMessEditor) setShowMessEditor(true);
-    if (target === "transport" && !showTransportEditor) setShowTransportEditor(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -230,8 +197,6 @@ export default function WikiClient({
     let desired: string | null = null;
     if (showRevisions) desired = "revisions";
     else if (showPendingChanges) desired = "pending";
-    else if (showMessEditor) desired = "mess";
-    else if (showTransportEditor) desired = "transport";
     if (!desired) {
       lastPushedWmodal.current = "";
       return;
@@ -246,7 +211,7 @@ export default function WikiClient({
       router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showRevisions, showPendingChanges, showMessEditor, showTransportEditor]);
+  }, [showRevisions, showPendingChanges]);
 
   useEffect(() => {
     const savedRight = localStorage.getItem("wiki-right-sidebar-width");
@@ -757,24 +722,16 @@ export default function WikiClient({
               </div>
             )}
 
-            {/* Milkdown Editor (replaced by the structured views on the mess-menu
-                and campus-transport pages) */}
-            {isMessMenu ? (
-              <MessMenuView content={parsed.contentMarkdown} />
-            ) : isTransport ? (
-              <TransportView content={parsed.contentMarkdown} />
-            ) : (
-              <MilkdownEditor
-                key={isEditing ? "edit" : "view"}
-                initialMarkdown={parsed.contentMarkdown}
-                onMarkdownChange={handleMarkdownChange}
-                readOnly={!isEditing}
-                onLoaded={() => setEditorLoaded(true)}
-                toolbarContainer={toolbarContainer}
-                enableFolding
-                autoFold={autoFold}
-              />
-            )}
+            <MilkdownEditor
+              key={isEditing ? "edit" : "view"}
+              initialMarkdown={parsed.contentMarkdown}
+              onMarkdownChange={handleMarkdownChange}
+              readOnly={!isEditing}
+              onLoaded={() => setEditorLoaded(true)}
+              toolbarContainer={toolbarContainer}
+              enableFolding
+              autoFold={autoFold}
+            />
           </article>
 
           {/* Page stats — visible to logged-in users only, below the article body */}
@@ -873,9 +830,7 @@ export default function WikiClient({
                   },
                 ]
               : ([
-                  user?.role === "admin" &&
-                    !isMessMenu &&
-                    !isTransport && {
+                  user?.role === "admin" && {
                       id: "delete",
                       label: "Delete Page",
                       icon: Trash2,
@@ -903,16 +858,6 @@ export default function WikiClient({
                     onClick: async () => {
                       if (!user) {
                         router.push("/login");
-                        return;
-                      }
-                      // The mess-menu and campus-transport pages are edited via
-                      // their dedicated editor modals.
-                      if (isMessMenu) {
-                        setShowMessEditor(true);
-                        return;
-                      }
-                      if (isTransport) {
-                        setShowTransportEditor(true);
                         return;
                       }
                       try {
@@ -1135,22 +1080,7 @@ export default function WikiClient({
         </GenericOverlayModal>
       )}
 
-      {/* Mess menu editor modal (opened from the mess-menu wiki page) */}
-      {isMessMenu && (
-        <MessMenuOverlay
-          isOpen={showMessEditor}
-          onClose={() => router.back()}
-          messMenu={messMenuProp}
-        />
-      )}
 
-      {isTransport && (
-        <TransportOverlay
-          isOpen={showTransportEditor}
-          onClose={() => router.back()}
-          transport={transportProp}
-        />
-      )}
 
       {/* Wiki overlays for revisions and pending approvals */}
       {showRevisions && (

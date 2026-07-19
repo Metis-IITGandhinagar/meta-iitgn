@@ -638,7 +638,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
             serverInfo: syncInfo.messmenu,
             fetcher: () => apiService.getMessMenu(),
             mapper: (res: any) =>
-              res.data ? [{ ...res.data, id: "mess-menu" }] : [],
+              res.data ? [{ content: res.data, id: "mess-menu" }] : [],
             onDataLoaded: (data) => {
               set({ messMenu: data[0] || null });
             },
@@ -652,7 +652,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
             serverInfo: syncInfo.transport,
             fetcher: () => apiService.getCampusTransport(),
             mapper: (res: any) =>
-              res.data ? [{ ...res.data, id: "campus-transport" }] : [],
+              res.data ? [{ content: res.data, id: "campus-transport" }] : [],
             onDataLoaded: (data) => {
               set({ campusTransport: data[0] || null });
             },

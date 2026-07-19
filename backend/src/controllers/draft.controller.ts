@@ -383,11 +383,6 @@ export const reviewDraft = async (req: Request, res: Response) => {
         await updateSyncMetadata('updatedpages', 1, tx);
         await updateSyncMetadata('popular', 1, tx);
         await updateSyncMetadata('pendingpages', 0, tx);
-        if (slug === 'mess-menu') {
-          await updateSyncMetadata('messmenu', 1, tx);
-        } else if (slug === 'campus-transport') {
-          await updateSyncMetadata('transport', 1, tx);
-        }
         if (metaCategory === 'featured' || meta?.featured === true) {
           await updateSyncMetadata('featured', 1, tx);
         }
@@ -541,12 +536,7 @@ export const reviewDraft = async (req: Request, res: Response) => {
         await updateSyncMetadata('updatedpages', 0, tx);
         await updateSyncMetadata('popular', 0, tx);
         await updateSyncMetadata('pendingpages', 0, tx);
-        const pageSlug = updatedLivePage.slug;
-        if (pageSlug === 'mess-menu') {
-          await updateSyncMetadata('messmenu', 0, tx);
-        } else if (pageSlug === 'campus-transport') {
-          await updateSyncMetadata('transport', 0, tx);
-        }
+
 
         if (metaCategory === 'featured' || upMeta?.featured === true) {
           const existingFeatured = await tx.featured_pages.findFirst({

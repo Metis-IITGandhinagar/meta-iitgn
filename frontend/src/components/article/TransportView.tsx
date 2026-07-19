@@ -9,10 +9,12 @@ import {
   lineTheme,
   lineActiveTheme,
   formatRoute,
+  TransportBus,
 } from "@/lib/transport";
 
 interface TransportViewProps {
   content?: string | null;
+  buses?: TransportBus[];
 }
 
 interface RouteOption {
@@ -34,8 +36,8 @@ interface RouteOption {
  * Used both inline on the campus-transport wiki page and inside the
  * TransportOverlay view mode.
  */
-export default function TransportView({ content }: TransportViewProps) {
-  const buses = parseTransport(content ?? "");
+export default function TransportView({ content, buses: propsBuses }: TransportViewProps) {
+  const buses = propsBuses || parseTransport(content ?? "");
 
   // Unique routes (from→to pairs) across the whole schedule, de-duplicated.
   const routes = useMemo<RouteOption[]>(() => {

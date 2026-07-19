@@ -17,7 +17,6 @@ import {
   Compass,
   MapPinned,
   Bus,
-  Camera,
   Newspaper,
   CalendarDays,
   TrendingUp,
@@ -29,10 +28,11 @@ import {
 
 import ParallaxBackground from "@/components/helpers/ParallaxBackground";
 import { useAuth } from "@/hooks/useAuth";
+import EventsOverlay from "@/components/overlays/EventsOverlay";
 import HomeCard from "@/components/home/HomeCard";
 import HomeMasonryGrid, { MasonryCardConfig } from "@/components/home/HomeMasonryGrid";
 import { getTimeOfDay, MESS_THEME } from "@/lib/messMenu";
-import { parseTransport, tripTimeToMinutes, TransportTrip } from "@/lib/transport";
+import { tripTimeToMinutes, TransportTrip, TransportBus } from "@/lib/transport";
 
 interface HomeTabProps {
   mousePos: { x: number; y: number };
@@ -112,43 +112,35 @@ const CARD_GROUPS: { title: string; ids: string[] }[] = [
   { title: "Campus Services", ids: ["mess-menu", "campus-transport"] },
 ];
 
-// Parse the whole weekly menu into one entry per day.
-function parseWeeklyMessMenu(markdown: string): MessDay[] {
-  const lines = markdown.split("\n");
-  const days: MessDay[] = [];
-  let currentDay: MessDay | null = null;
-  let currentMeal: MessMeal | null = null;
-
-  for (const line of lines) {
-    if (line.startsWith("## ")) {
-      const dayName = line.replace("##", "").trim();
-      if (WEEK_DAYS.includes(dayName)) {
-        currentDay = { day: dayName, meals: [] };
-        days.push(currentDay);
-        currentMeal = null;
-      }
-      continue;
+const getMessMenuArray = (val: any): any[] => {
+  if (Array.isArray(val)) return val;
+  if (val && Array.isArray(val.content)) return val.content;
+  if (val && typeof val === "object") {
+    const arr: any[] = [];
+    for (let i = 0; i < 7; i++) {
+      if (val[i]) arr.push(val[i]);
     }
-    if (!currentDay) continue;
-
-    const mealMatch = line.match(/^\*\*(.+?)\*\*(?:\s*\((.+?)\))?/);
-    if (mealMatch) {
-      currentMeal = { name: mealMatch[1].trim(), time: mealMatch[2]?.trim(), items: [] };
-      currentDay.meals.push(currentMeal);
-      continue;
-    }
-    if (line.startsWith("-") && currentMeal) {
-      currentMeal.items.push(line.replace(/^-\s*/, "").trim());
-    }
+    if (arr.length > 0) return arr;
   }
-  return days;
-}
+  return [];
+};
 
-// Parse today's mess menu section from weekly markdown.
-function parseTodayMessMenu(markdown: string): MessDay | null {
-  const today = WEEK_DAYS[new Date().getDay()];
-  return parseWeeklyMessMenu(markdown).find((d) => d.day === today) ?? null;
-}
+const getTransportArray = (val: any): any[] => {
+  if (Array.isArray(val)) return val;
+  if (val && Array.isArray(val.content)) return val.content;
+  if (val && typeof val === "object") {
+    const arr: any[] = [];
+    let i = 0;
+    while (val[i]) {
+      arr.push(val[i]);
+      i++;
+    }
+    if (arr.length > 0) return arr;
+  }
+  return [];
+};
+
+
 
 // ── Format event date ─────────────────────────────────────────────────────────
 // Next upcoming trip from a flat list of trips, given minutes-since-midnight.
@@ -212,6 +204,7 @@ export default function HomeTab({
     }
   }, []);
   const [showPrefs, setShowPrefs] = useState(false);
+  const [showEventsManager, setShowEventsManager] = useState(false);
 
   const toggleCard = (id: string) => {
     setHiddenCards((prev) => {
@@ -241,27 +234,34 @@ export default function HomeTab({
 
   // Derived / computed states from cached store/Dexie props
   const featuredSlides = (featuredPages && featuredPages.length > 0) ? featuredPages : [];
-  const messMenuData = messMenu?.content ? parseTodayMessMenu(messMenu.content) : null;
-  const transportData = campusTransport?.content ? parseTransport(campusTransport.content) : [];
+  const today = WEEK_DAYS[new Date().getDay()];
+  const messMenuArray = getMessMenuArray(messMenu);
+  const messMenuData: MessDay | null = messMenuArray.find((d: any) => d.day === today) || null;
+  const transportArray = getTransportArray(campusTransport);
+  const transportData = transportArray.map((item: any) => ({
+    name: item.route,
+    note: item.type,
+    trips: item.schedule || []
+  }));
   const nowMinutes = (() => {
     const d = new Date();
     return d.getHours() * 60 + d.getMinutes();
   })();
-  const transportNext = transportData
-    .map((line, i) => ({
+  const transportNext = (transportData as TransportBus[])
+    .map((line: TransportBus, i: number) => ({
       line,
       index: i,
       trip: nextTrip(line.trips, nowMinutes),
     }))
     .filter((x) => x.trip);
   // Flattened, time-sorted view of every trip to find the single next departure.
-  const transportFlat = transportData
-    .flatMap((line, index) =>
-      line.trips.map((trip) => ({ line, index, trip }))
+  const transportFlat = (transportData as TransportBus[])
+    .flatMap((line: TransportBus, index: number) =>
+      line.trips.map((trip: TransportTrip) => ({ line, index, trip }))
     )
     .map((x) => ({ ...x, m: tripTimeToMinutes(x.trip.time) }))
     .filter((x) => x.m !== null) as Array<{
-    line: (typeof transportData)[number];
+    line: TransportBus;
     index: number;
     trip: TransportTrip;
     m: number;
@@ -655,13 +655,13 @@ export default function HomeTab({
           )}
 
           {/* Action button */}
-          <Link
-            href="/wiki/page/upcoming-events"
+          <button
+            onClick={() => setShowEventsManager(true)}
             className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary py-4 text-[14px] font-bold tracking-wide text-primary-content shadow-lg shadow-primary/30 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-primary/40"
           >
             <CalendarDays className="h-[18px] w-[18px]" />
             VIEW ALL EVENTS
-          </Link>
+          </button>
         </div>
       ),
     },
@@ -857,7 +857,7 @@ export default function HomeTab({
           {/* Meal sections */}
           {messMenuData && messMenuData.meals.length > 0 ? (
             <div className="space-y-5">
-              {messMenuData.meals.map((meal, i) => {
+              {messMenuData.meals.map((meal: MessMeal, i: number) => {
                 const theme = MESS_THEME[getTimeOfDay(meal)];
                 return (
                   <div key={i+Math.random()}>
@@ -1212,6 +1212,8 @@ export default function HomeTab({
           </div>
         </div>
       </div>
+
+      <EventsOverlay isOpen={showEventsManager} onClose={() => setShowEventsManager(false)} />
     </>
   );
 }

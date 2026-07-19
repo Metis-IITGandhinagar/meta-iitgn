@@ -6,6 +6,7 @@ import { WEEK_DAYS, MessDay, getTimeOfDay, MESS_THEME, parseWeeklyMessMenu } fro
 
 interface MessMenuViewProps {
   content?: string | null;
+  days?: MessDay[];
 }
 
 /**
@@ -13,8 +14,8 @@ interface MessMenuViewProps {
  * into weekday sections and renders day tabs + meal cards. Used both inline
  * on the mess-menu wiki page and inside the MessMenuOverlay view mode.
  */
-export default function MessMenuView({ content }: MessMenuViewProps) {
-  const days = parseWeeklyMessMenu(content ?? "");
+export default function MessMenuView({ content, days: propsDays }: MessMenuViewProps) {
+  const days = propsDays || parseWeeklyMessMenu(content ?? "");
   const [activeDay, setActiveDay] = useState<string>(
     days.find((d) => d.day === WEEK_DAYS[new Date().getDay()])?.day ?? days[0]?.day ?? ""
   );

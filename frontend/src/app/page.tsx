@@ -33,6 +33,34 @@ import TransportOverlay from "@/components/overlays/TransportOverlay";
 import FeaturedEditOverlay from "@/components/overlays/FeaturedEditOverlay";
 import PortalOverlay from "@/components/overlays/PortalOverlay";
 
+const getMessMenuArray = (val: any): any[] => {
+  if (Array.isArray(val)) return val;
+  if (val && Array.isArray(val.content)) return val.content;
+  if (val && typeof val === "object") {
+    const arr: any[] = [];
+    for (let i = 0; i < 7; i++) {
+      if (val[i]) arr.push(val[i]);
+    }
+    if (arr.length > 0) return arr;
+  }
+  return [];
+};
+
+const getTransportArray = (val: any): any[] => {
+  if (Array.isArray(val)) return val;
+  if (val && Array.isArray(val.content)) return val.content;
+  if (val && typeof val === "object") {
+    const arr: any[] = [];
+    let i = 0;
+    while (val[i]) {
+      arr.push(val[i]);
+      i++;
+    }
+    if (arr.length > 0) return arr;
+  }
+  return [];
+};
+
 let initialLoadDone = false;
 
 export default function HomePage() {
@@ -423,7 +451,7 @@ export default function HomePage() {
       props: {
         isOpen: activeOverlay === "mess",
         onClose: () => router.back(),
-        messMenu,
+        messMenu: getMessMenuArray(messMenu),
         onSaved: () => loadHomeData({ user, setTotalPagesCount, forceRefresh: true }),
       },
     },
@@ -439,7 +467,7 @@ export default function HomePage() {
       props: {
         isOpen: activeOverlay === "transport",
         onClose: () => router.back(),
-        transport: campusTransport,
+        transport: getTransportArray(campusTransport),
       },
     },
     portal: {

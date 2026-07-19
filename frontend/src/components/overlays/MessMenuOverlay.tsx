@@ -15,7 +15,6 @@ import {
   TIME_OF_DAY_ORDER,
   MEAL_SLOT_PILLS,
   getTimeOfDay,
-  parseWeeklyMessMenu,
 } from "@/lib/messMenu";
 
 interface MessMenuOverlayProps {
@@ -25,55 +24,11 @@ interface MessMenuOverlayProps {
   onSaved?: () => void;
 }
 
-// Split a full page document into its preserved header (frontmatter + intro)
-// and the editable weekly day structure.
-function splitContent(content: string): { header: string; days: MessDay[] } {
-  const lines = content.split("\n");
-  let firstDayIdx = -1;
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^##\s+(.+?)\s*$/);
-    if (m && WEEK_DAYS.includes(m[1].trim())) {
-      firstDayIdx = i;
-      break;
-    }
-  }
-  if (firstDayIdx === -1) {
-    return { header: content, days: [] };
-  }
-  const header = lines.slice(0, firstDayIdx).join("\n").replace(/\s+$/, "");
-  const body = lines.slice(firstDayIdx).join("\n");
-  return { header, days: parseWeeklyMessMenu(body) };
-}
-
-function serializeDays(days: MessDay[]): string {
-  return days
-    .map((d) => {
-      const blocks = d.meals
-        .filter((m) => m.name.trim() !== "" || m.items.some((it) => it.trim() !== ""))
-        .map((m) => {
-          const lines = [`**${m.name.trim()}**${m.time?.trim() ? ` (${m.time.trim()})` : ""}`];
-          for (const item of m.items) {
-            if (item.trim() !== "") lines.push(`- ${item.trim()}`);
-          }
-          return lines.join("\n");
-        })
-        .join("\n\n");
-      return `## ${d.day}\n\n${blocks}`;
-    })
-    .join("\n\n");
-}
-
-function buildContent(header: string, days: MessDay[]): string {
-  const h = header.replace(/\s+$/, "");
-  const body = serializeDays(days);
-  if (!body) return `${h}\n`;
-  return `${h}\n\n${body}\n`;
-}
-
 export default function MessMenuOverlay({
   isOpen,
   onClose,
   messMenu,
+  onSaved,
 }: MessMenuOverlayProps) {
   const { user } = useAuth();
   const canEdit = user?.role === "admin" || user?.role === "moderator";
@@ -81,26 +36,18 @@ export default function MessMenuOverlay({
   const [days, setDays] = useState<MessDay[]>([]);
   const [activeDay, setActiveDay] = useState<string>(WEEK_DAYS[new Date().getDay()]);
   const [editing, setEditing] = useState(false);
-  const [header, setHeader] = useState("");
   const [newDay, setNewDay] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  // Draft metadata captured on edit so we can submit a review draft
-  // (no direct live-page edits for the mess menu).
-  const [pageId, setPageId] = useState<number | null>(null);
-  const [baseVersion, setBaseVersion] = useState<number>(1);
-  const [pageMetadata, setPageMetadata] = useState<any>({ category: "mess-menu" });
-  const [pageTitle, setPageTitle] = useState<string>("Weekly Mess Menu");
 
   useEffect(() => {
     if (!isOpen) return;
     setEditing(false);
     setError(null);
     setSuccess(null);
-    if (messMenu?.content) {
-      setDays(parseWeeklyMessMenu(messMenu.content));
+    if (messMenu) {
+      setDays(messMenu);
       setActiveDay(WEEK_DAYS[new Date().getDay()]);
     } else {
       setDays([]);
@@ -176,7 +123,9 @@ export default function MessMenuOverlay({
   const removeItem = (mi: number, ii: number) => {
     const meals = selectedDay?.meals ?? [];
     setMeals(
-      meals.map((m, i) => (i === mi ? { ...m, items: m.items.filter((_, j) => j !== ii) } : m))
+      meals.map((m, i) =>
+        i === mi ? { ...m, items: m.items.filter((_, j) => j !== ii) } : m
+      )
     );
   };
 
@@ -189,61 +138,21 @@ export default function MessMenuOverlay({
     setActiveDay(day);
   };
 
+  // ── Save handlers ──────────────────────────────────────────────────────────
   const handleEdit = async () => {
     setError(null);
-    try {
-      // Fetch the freshest content + live page metadata so we can build a
-      // review draft (mess menu changes are never applied directly).
-      const editRes: any = await apiService.getPageForEdit("mess-menu");
-      const fullPage: any = await apiService.getPage("mess-menu");
-      const content = editRes?.content ?? messMenu?.content ?? "";
-      const { header: parsedHeader, days: parsedDays } = splitContent(content);
-      setHeader(parsedHeader);
-      setDays(parsedDays);
-      setPageId(editRes?.page_id ?? fullPage?.page_id ?? messMenu?.page_id ?? null);
-      setBaseVersion(editRes?.versionId ?? fullPage?.version ?? 1);
-      setPageMetadata(fullPage?.metadata ?? { category: "mess-menu" });
-      setPageTitle(editRes?.title ?? fullPage?.title ?? "Weekly Mess Menu");
-      setActiveDay(
-        parsedDays.find((d) => d.day === WEEK_DAYS[new Date().getDay()])?.day ??
-          parsedDays[0]?.day ??
-          WEEK_DAYS[new Date().getDay()]
-      );
-      setNewDay("");
-      setEditing(true);
-    } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || "Failed to load menu for editing");
-    }
+    setEditing(true);
   };
 
   const handleSave = async () => {
-    if (days.length === 0 && !header.trim()) return;
+    if (days.length === 0) return;
     setSaving(true);
     setError(null);
     try {
-      const content = buildContent(header, days);
-      const isStaff = user?.role === "admin" || user?.role === "moderator";
-      
-      if (isStaff) {
-        await apiService.updatePage("mess-menu", {
-          title: pageTitle,
-          content,
-          metadata: pageMetadata,
-        });
-        setEditing(false);
-        setSuccess("Mess menu updated successfully!");
-      } else {
-        await apiService.submitDraft({
-          page_id: pageId,
-          title: pageTitle,
-          content,
-          metadata: pageMetadata,
-          editor_id: user?.user_id ?? 0,
-          base_version: baseVersion,
-        });
-        setEditing(false);
-        setSuccess("Changes submitted for review. A moderator will publish them after approval.");
-      }
+      await apiService.updateMessMenu(days);
+      setEditing(false);
+      setSuccess("Mess menu updated successfully!");
+      if (onSaved) onSaved();
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || "Failed to save menu");
     } finally {
@@ -524,7 +433,7 @@ export default function MessMenuOverlay({
             )}
           </div>
         ) : (
-          <MessMenuView content={messMenu?.content} />
+          <MessMenuView days={days} />
         )}
       </div>
     </GenericOverlayModal>

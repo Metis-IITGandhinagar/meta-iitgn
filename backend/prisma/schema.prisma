@@ -356,5 +356,22 @@ model user_readmes {
   user       users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 }
 
+model mess_menu {
+  mess_id    Int      @id @default(autoincrement())
+  day        String   @unique
+  meals      Json     // e.g. [{ name: "Breakfast", time: "8:00 AM", items: ["Poha", "Tea"] }]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model travel_schedule {
+  travel_id  Int      @id @default(autoincrement())
+  type       String   // e.g. "bus", "shuttle"
+  route      String   // e.g. "IITGN to Visat"
+  schedule   Json     // structured timetable data
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
 
 

@@ -740,11 +740,6 @@ export const createPage = async (req: Request, res: Response) => {
 
       await updateSyncMetadata('updatedpages', 1, tx);
       await updateSyncMetadata('popular', 1, tx);
-      if (slug === 'mess-menu') {
-        await updateSyncMetadata('messmenu', 1, tx);
-      } else if (slug === 'campus-transport') {
-        await updateSyncMetadata('transport', 1, tx);
-      }
 
       return page;
     });
@@ -757,8 +752,6 @@ export const createPage = async (req: Request, res: Response) => {
     invalidateSyncCache('updatedpages');
     invalidateSyncCache('news');
     invalidateSyncCache('popular');
-    if (slug === 'mess-menu') invalidateSyncCache('messmenu');
-    if (slug === 'campus-transport') invalidateSyncCache('transport');
 
     return res.status(201).json(newPage);
   } catch (error: any) {
@@ -919,11 +912,6 @@ export const updatePage = async (req: Request, res: Response) => {
 
       await updateSyncMetadata('updatedpages', 0, tx);
       await updateSyncMetadata('popular', 0, tx);
-      if (slug === 'mess-menu') {
-        await updateSyncMetadata('messmenu', 0, tx);
-      } else if (slug === 'campus-transport') {
-        await updateSyncMetadata('transport', 0, tx);
-      }
 
       return page;
     });
@@ -939,8 +927,6 @@ export const updatePage = async (req: Request, res: Response) => {
     invalidateSyncCache('updatedpages');
     invalidateSyncCache('news');
     invalidateSyncCache('popular');
-    if (slug === 'mess-menu') invalidateSyncCache('messmenu');
-    if (slug === 'campus-transport') invalidateSyncCache('transport');
 
     return res.json(updatedPage);
   } catch (error: any) {
@@ -985,11 +971,6 @@ export const deletePage = async (req: Request, res: Response) => {
 
       await updateSyncMetadata('updatedpages', -1, tx);
       await updateSyncMetadata('popular', -1, tx);
-      if (slug === 'mess-menu') {
-        await updateSyncMetadata('messmenu', -1, tx);
-      } else if (slug === 'campus-transport') {
-        await updateSyncMetadata('transport', -1, tx);
-      }
     });
 
     invalidateCategoriesCache();
@@ -998,8 +979,6 @@ export const deletePage = async (req: Request, res: Response) => {
     invalidateSyncCache('updatedpages');
     invalidateSyncCache('news');
     invalidateSyncCache('popular');
-    if (slug === 'mess-menu') invalidateSyncCache('messmenu');
-    if (slug === 'campus-transport') invalidateSyncCache('transport');
 
     return res.json({ success: true, message: 'Page soft-deleted successfully' });
   } catch (error: any) {
@@ -1271,12 +1250,6 @@ export const revertPageToRevision = async (req: Request, res: Response) => {
 
       await updateSyncMetadata('updatedpages', 0, tx);
       await updateSyncMetadata('popular', 0, tx);
-      const pageSlug = livePage.slug;
-      if (pageSlug === 'mess-menu') {
-        await updateSyncMetadata('messmenu', 0, tx);
-      } else if (pageSlug === 'campus-transport') {
-        await updateSyncMetadata('transport', 0, tx);
-      }
 
       return updatedPage;
     });

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, Trash2, Loader2, FileText } from "lucide-react";
+import { Search, Plus, Trash2, Loader2, FileText, Pencil, Save } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import { apiService } from "@/api";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useViewMode } from "@/hooks/useViewMode";
 import ViewSwitcher from "@/components/helpers/ViewSwitcher";
 import { getGridClass, getIconBoxClass } from "@/lib/viewModes";
+import { toast } from "react-hot-toast";
 
 interface FeaturedEditOverlayProps {
   isOpen: boolean;
@@ -32,6 +33,43 @@ export default function FeaturedEditOverlay({
   const [results, setResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  // Edit featured states
+  const [editingFeatured, setEditingFeatured] = useState<any | null>(null);
+  const [order, setOrder] = useState<number>(0);
+  const [tag, setTag] = useState<string>("Featured");
+  const [location, setLocation] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+
+  const handleOpenEditForm = (f: any) => {
+    setEditingFeatured(f);
+    setOrder(Number(f.order) || 0);
+    setTag(f.tag || "Featured");
+    setLocation(f.location || "");
+    setDescription(f.description || "");
+  };
+
+  const handleUpdateSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFeatured) return;
+    setBusyId(`edit-${editingFeatured.featured_id}`);
+    try {
+      await apiService.updateFeaturedPage(Number(editingFeatured.featured_id), {
+        order: Number(order),
+        tag,
+        location,
+        description
+      });
+      setEditingFeatured(null);
+      await refresh();
+      toast.success("Featured details updated successfully!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to update featured details.");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   // Article-list view (Default / Tiles / Details / Icons S–XL). Persisted to
   // localStorage under a featured-specific key so it's independent of other surfaces.
@@ -121,24 +159,38 @@ export default function FeaturedEditOverlay({
 
   const renderFeatured = (f: any) => {
     const open = () => router.push(`/wiki/page/${f.slug}`);
-    const removeBtn = canManageFeatured ? (
-      <button
-        type="button"
-        disabled={busyId === `remove-${f.featured_id}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleRemove(f.featured_id);
-        }}
-        className="btn btn-ghost btn-sm btn-square text-error hover:bg-error/10 shrink-0 cursor-pointer"
-        aria-label={`Remove ${f.title}`}
-        title="Remove from featured"
-      >
-        {busyId === `remove-${f.featured_id}` ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Trash2 className="h-4 w-4" />
-        )}
-      </button>
+    const actions = canManageFeatured ? (
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenEditForm(f);
+          }}
+          className="btn btn-ghost btn-xs btn-square text-primary hover:bg-primary/10 cursor-pointer"
+          title="Edit featured details"
+          aria-label={`Edit ${f.title}`}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          disabled={busyId === `remove-${f.featured_id}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRemove(f.featured_id);
+          }}
+          className="btn btn-ghost btn-xs btn-square text-error hover:bg-error/10 cursor-pointer"
+          title="Remove from featured"
+          aria-label={`Remove ${f.title}`}
+        >
+          {busyId === `remove-${f.featured_id}` ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="h-3.5 w-3.5" />
+          )}
+        </button>
+      </div>
     ) : null;
 
     if (view.startsWith("icon-")) {
@@ -161,7 +213,7 @@ export default function FeaturedEditOverlay({
           <span className="text-xs font-medium text-base-content/80 group-hover:text-primary transition-colors duration-200 max-w-full break-words text-center">
             {f.title}
           </span>
-          {removeBtn && <div className="absolute top-1 right-1">{removeBtn}</div>}
+          {actions && <div className="absolute top-1 right-1 flex bg-base-100/90 rounded-lg border border-base-200 p-0.5 shadow-xs opacity-0 group-hover:opacity-100 transition-opacity">{actions}</div>}
         </div>
       );
     }
@@ -192,7 +244,7 @@ export default function FeaturedEditOverlay({
               {f.location ? ` · ${f.location}` : ""}
             </p>
           </div>
-          {removeBtn}
+          {actions}
         </div>
       );
     }
@@ -216,7 +268,7 @@ export default function FeaturedEditOverlay({
               {f.location ? ` · ${f.location}` : ""}
             </p>
           </div>
-          {removeBtn}
+          {actions}
         </div>
       );
     }
@@ -243,7 +295,7 @@ export default function FeaturedEditOverlay({
             {f.location ? ` · ${f.location}` : ""}
           </p>
         </div>
-        {removeBtn}
+        {actions}
       </div>
     );
   };
@@ -350,6 +402,79 @@ export default function FeaturedEditOverlay({
           )}
         </div>
       </div>
+
+      {editingFeatured && (
+        <GenericOverlayModal
+          isOpen={!!editingFeatured}
+          onClose={() => setEditingFeatured(null)}
+          title={`Edit Featured: ${editingFeatured.title}`}
+          maxWidthClass="max-w-md"
+        >
+          <form onSubmit={handleUpdateSave} className="space-y-4 font-sans select-none">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-base-content/75 uppercase tracking-wider">Display Tag</label>
+              <input
+                type="text"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                placeholder="e.g. Featured Story"
+                className="input input-bordered w-full bg-base-100 border-base-300 focus:border-primary rounded-xl text-sm"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-base-content/75 uppercase tracking-wider">Display Order</label>
+                <input
+                  type="number"
+                  value={order}
+                  onChange={(e) => setOrder(Number(e.target.value))}
+                  placeholder="e.g. 0"
+                  className="input input-bordered w-full bg-base-100 border-base-300 focus:border-primary rounded-xl text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-base-content/75 uppercase tracking-wider">Location</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Hostel 5"
+                  className="input input-bordered w-full bg-base-100 border-base-300 focus:border-primary rounded-xl text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-base-content/75 uppercase tracking-wider">Description</label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief summary to show on card..."
+                className="textarea textarea-bordered w-full bg-base-100 border-base-300 focus:border-primary rounded-xl text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-base-200">
+              <button
+                type="button"
+                onClick={() => setEditingFeatured(null)}
+                className="btn btn-ghost btn-sm rounded-xl cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={busyId === `edit-${editingFeatured.featured_id}`}
+                className="btn btn-sm btn-primary rounded-xl gap-1.5 cursor-pointer text-primary-content"
+              >
+                <Save className="h-4 w-4" /> Save
+              </button>
+            </div>
+          </form>
+        </GenericOverlayModal>
+      )}
     </GenericOverlayModal>
   );
 }
