@@ -24,7 +24,10 @@ import { GripVertical } from "lucide-react";
 
 export interface MasonryCardConfig {
   id: string;
-  featured?: boolean;
+  /** Number of grid columns this card spans (mock: featured/pending/quickstats = 2). */
+  colSpan?: number;
+  /** Number of grid rows this card spans (mock: featured/popular/new = 2). */
+  rowSpan?: number;
   content: React.ReactNode;
 }
 
@@ -69,14 +72,14 @@ function applyOrder(cards: MasonryCardConfig[], order: string[]): MasonryCardCon
 }
 
 function useContainerCols(ref: React.RefObject<HTMLDivElement | null>): number {
-  const [cols, setCols] = useState(3);
+  const [cols, setCols] = useState(4);
   useEffect(() => {
     if (!ref.current) return;
     const observer = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
-      if (width < 520) setCols(1);
-      else if (width < 900) setCols(2);
-      else setCols(3);
+      if (width < 768) setCols(1);
+      else if (width < 1024) setCols(2);
+      else setCols(4);
     });
     observer.observe(ref.current);
     return () => observer.disconnect();
@@ -88,9 +91,10 @@ interface SortableCardItemProps {
   card: MasonryCardConfig;
   isDraggingOver: boolean;
   reorderEnabled: boolean;
+  cols: number;
 }
 
-function SortableCardItem({ card, isDraggingOver, reorderEnabled }: SortableCardItemProps) {
+function SortableCardItem({ card, isDraggingOver, reorderEnabled, cols }: SortableCardItemProps) {
   const {
     attributes,
     listeners,
@@ -100,45 +104,16 @@ function SortableCardItem({ card, isDraggingOver, reorderEnabled }: SortableCard
     isDragging,
   } = useSortable({ id: card.id, disabled: !reorderEnabled });
 
-  const [span, setSpan] = useState(20);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isDragging) return; // Lock the layout height footprint during active drag
-    const el = contentRef.current;
-    if (!el) return;
-
-    const calculateSpan = () => {
-      const height = el.getBoundingClientRect().height;
-      const rowSpan = Math.ceil((height + 20) / 10);
-      setSpan(rowSpan);
-    };
-
-    calculateSpan();
-
-    const observer = new ResizeObserver(() => {
-      calculateSpan();
-    });
-    observer.observe(el);
-
-    window.addEventListener("load", calculateSpan);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("load", calculateSpan);
-    };
-  }, [isDragging]);
-
-  const colSpan = 1;
+  const colSpan = Math.min(card.colSpan ?? 1, cols);
+  const rowSpan = card.rowSpan ?? 1;
 
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.3 : 1,
     gridColumn: colSpan > 1 ? `span ${colSpan}` : undefined,
-    gridRowEnd: `span ${span}`,
+    gridRow: rowSpan > 1 ? `span ${rowSpan}` : undefined,
     minHeight: 0,
-    marginBottom: "20px", // Acts as the vertical gap
     zIndex: isDragging ? 1 : undefined,
   };
 
@@ -146,7 +121,7 @@ function SortableCardItem({ card, isDraggingOver, reorderEnabled }: SortableCard
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group/card rounded-2xl focus:outline-none ${
+      className={`relative group/card rounded-[2rem] focus:outline-none ${
         isDragging ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-base-100" : ""
       } ${isDraggingOver ? "scale-[0.98]" : ""} transition-transform duration-150`}
     >
@@ -156,21 +131,12 @@ function SortableCardItem({ card, isDraggingOver, reorderEnabled }: SortableCard
           {...listeners}
           tabIndex={0}
           aria-label="Drag to reorder"
-          className={`
-            absolute top-3 right-3 z-10 p-1 rounded-lg
-            opacity-100
-            bg-base-200/80 backdrop-blur-sm border border-base-300
-            text-base-content/50 hover:text-base-content
-            cursor-grab active:cursor-grabbing
-            transition-opacity duration-150 shadow-sm
-          `}
+          className="absolute top-3 right-3 z-30 p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm text-gray-900 hover:bg-gray-100 cursor-grab active:cursor-grabbing transition-opacity duration-150"
         >
           <GripVertical className="w-3.5 h-3.5" />
         </button>
       )}
-      <div ref={contentRef} className="h-fit">
-        {card.content}
-      </div>
+      <div className="h-full">{card.content}</div>
     </div>
   );
 }
@@ -202,21 +168,15 @@ export default function HomeMasonryGrid({
   useEffect(() => {
     const el = gridRef.current;
     if (!el) return;
-
     const measure = () => {
       const width = el.getBoundingClientRect().width;
-      const gapTotal = 20 * (cols - 1);
-      const computedWidth = (width - gapTotal) / cols;
+      const gap = cols === 4 ? 24 : 16;
+      const computedWidth = (width - gap * (cols - 1)) / cols;
       setColWidth(computedWidth);
     };
-
     measure();
-
-    const observer = new ResizeObserver(() => {
-      measure();
-    });
+    const observer = new ResizeObserver(measure);
     observer.observe(el);
-
     return () => observer.disconnect();
   }, [cols]);
 
@@ -260,13 +220,13 @@ export default function HomeMasonryGrid({
     setActiveId(null);
   }, []);
 
-  // Resolve from the live `cards` prop first so the drag overlay reflects the
-  // freshest content, falling back to the (possibly stale) ordered snapshot.
   const activeCard =
     cards.find((c) => c.id === activeId) ??
     items.find((c) => c.id === activeId) ??
     null;
-  const activeFeatured = false;
+
+  const overlayColSpan = activeCard ? Math.min(activeCard.colSpan ?? 1, cols) : 1;
+  const overlayGap = cols === 4 ? 24 : 16;
 
   return (
     <DndContext
@@ -277,20 +237,10 @@ export default function HomeMasonryGrid({
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={items.map((c) => c.id)} strategy={rectSortingStrategy}>
-        <div
-          ref={gridRef}
-          className="grid gap-x-5 gap-y-0"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-            gridAutoRows: "10px",
-          }}
-        >
+        {/* Exact grid from the mock: 4 cols on lg, 2 on md, 1 on mobile,
+            fixed 220px row tracks, dense flow so spans pack like the mock. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 auto-rows-[minmax(220px,auto)] grid-flow-dense">
           {items.map((card) => {
-            // `items` is only the persisted ORDER snapshot; its captured React
-            // elements go stale when a card's data (e.g. featured articles)
-            // loads after mount, because the sync effect above only re-runs when
-            // the SET of card ids changes — not when content updates. Always
-            // render the freshest content from the live `cards` prop.
             const liveCard = cards.find((c) => c.id === card.id) ?? card;
             return (
               <SortableCardItem
@@ -298,6 +248,7 @@ export default function HomeMasonryGrid({
                 card={liveCard}
                 isDraggingOver={!!activeId && activeId !== card.id}
                 reorderEnabled={reorderEnabled}
+                cols={cols}
               />
             );
           })}
@@ -307,9 +258,9 @@ export default function HomeMasonryGrid({
       <DragOverlay dropAnimation={dropAnimation}>
         {activeCard ? (
           <div
-            className="rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.18)] ring-2 ring-primary/40 ring-offset-2 rotate-1 scale-[1.03] opacity-95 pointer-events-none"
+            className="rounded-[2rem] shadow-2xl rotate-1 scale-[1.03] opacity-95 pointer-events-none"
             style={{
-              width: activeFeatured ? `${colWidth * 2 + 20}px` : `${colWidth}px`,
+              width: `${colWidth * overlayColSpan + (overlayColSpan - 1) * overlayGap}px`,
             }}
           >
             {activeCard.content}

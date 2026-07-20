@@ -3,29 +3,31 @@
 import React from "react";
 
 interface HomeCardProps {
-  /** Card title shown in the header */
-  title: string;
-  /** Optional icon rendered next to the title */
+  /** Card title shown in the header (icon renders inside the heading, like the mock). */
+  title?: string;
+  /** Optional icon rendered inside the title heading, next to the text. */
   icon?: React.ReactNode;
-  /** Optional badge/pill rendered on the right side of the header */
+  /** Optional badge/pill rendered on the right side of the header. */
   badge?: React.ReactNode;
-  /** Card body content */
+  /** Card body content (sits directly on the gradient, like the mock). */
   children: React.ReactNode;
-  /** Optional footer content (e.g. CTA button) */
+  /** Optional footer content (e.g. CTA button) placed after the body. */
   footer?: React.ReactNode;
   /** When provided, the whole card becomes clickable (e.g. opens a modal). */
   onClick?: () => void;
-  /** Extra classes on the outer card element */
+  /** Extra classes on the outer card element (gradient + sizing). */
   className?: string;
   /** ID for accessibility */
   id?: string;
-  /** Kept for interface compatibility but ignored visually */
-  accentColor?: string;
+  /** Margin under the header (mock uses mb-6 for most, mb-4 for a few). */
+  headerClassName?: string;
 }
 
 /**
- * Shared daisyUI card used throughout the home masonry grid.
- * Keeps padding, typography, border and shadow consistent.
+ * Shared home card that mirrors the mock 1:1: a bold gradient frame with big
+ * rounded corners, a gentle hover-lift, and content that sits DIRECTLY on the
+ * gradient (no inner white panel). The gradient + sizing are passed via
+ * `className` so each card uses the mock's exact literal utility classes.
  */
 export default function HomeCard({
   title,
@@ -36,7 +38,10 @@ export default function HomeCard({
   onClick,
   className = "",
   id,
+  headerClassName = "mb-6",
 }: HomeCardProps) {
+  const showHeader = title || icon || badge;
+
   return (
     <div
       id={id}
@@ -53,31 +58,23 @@ export default function HomeCard({
             }
           : undefined
       }
-      className={`card card-bordered bg-base-100 border-base-200 shadow-depth shadow-depth-hover flex flex-col text-left w-full h-full ${onClick ? "cursor-pointer transition-colors hover:border-secondary/50" : ""} ${className}`}
+      className={`rounded-[2rem] overflow-hidden card-hover flex flex-col p-6 h-full font-inter ${
+        onClick ? "cursor-pointer" : ""
+      } ${className}`}
     >
-      {/* Card header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-        <div className="flex items-center gap-2">
-          {icon && <span className="shrink-0 text-primary">{icon}</span>}
-          <h3 className="text-sm font-black text-base-content font-serif leading-tight">
+      {showHeader && (
+        <div className={`flex justify-between items-center ${headerClassName}`}>
+          <h3 className="font-display font-bold text-xl flex items-center gap-2 text-gray-900">
+            {icon && <span className="shrink-0 text-gray-900">{icon}</span>}
             {title}
           </h3>
-        </div>
-        {badge && <div className="shrink-0">{badge}</div>}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-base-200 mx-5 shrink-0" />
-
-      {/* Card body */}
-      <div className="px-5 py-4 flex-1 min-h-0">{children}</div>
-
-      {/* Card footer */}
-      {footer && (
-        <div className="px-5 pb-5 shrink-0">
-          {footer}
+          {badge && <div className="shrink-0">{badge}</div>}
         </div>
       )}
+
+      <div className="flex-1 flex flex-col min-h-0 font-inter">{children}</div>
+
+      {footer}
     </div>
   );
 }

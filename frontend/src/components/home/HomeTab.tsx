@@ -10,19 +10,17 @@ import {
   FlaskConical,
   Trophy,
   Calendar,
-  BookOpen,
-  Languages,
-  ChevronLeft,
-  ChevronRight,
-  Compass,
+  CalendarDays,
+  Dices,
   MapPinned,
   Newspaper,
-  CalendarDays,
   TrendingUp,
-  Zap,
   Clock,
   Eye,
   SlidersHorizontal,
+  RefreshCw,
+  User,
+  Pencil,
 } from "lucide-react";
 
 import ParallaxBackground from "@/components/helpers/ParallaxBackground";
@@ -73,6 +71,7 @@ const CARD_LABELS: Record<string, string> = {
   "random-page": "Random Page",
   "photo-of-week": "Photo of the Week",
   events: "Upcoming Events",
+  "quick-stats": "Quick Stats",
 };
 
 // Logical groupings for the "Customize cards" panel.
@@ -84,7 +83,7 @@ const CARD_GROUPS: { title: string; ids: string[] }[] = [
   },
   {
     title: "Community",
-    ids: ["photo-of-week", "events"],
+    ids: ["photo-of-week", "events", "quick-stats"],
   },
 ];
 
@@ -117,10 +116,6 @@ export default function HomeTab({
   const router = useRouter();
 
   // ── Card visibility preferences (local only) ───────────────────────────────
-  // Start empty so the first client render matches the server render (the server
-  // has no localStorage). Reading it in the initializer would cause a hydration
-  // mismatch, which makes React regenerate the tree and races the home-data
-  // load. We hydrate the persisted set in an effect right after mount instead.
   const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -157,8 +152,6 @@ export default function HomeTab({
     }
   };
   const [categoriesCount, setCategoriesCount] = useState(11);
-  const carouselBase = `featured-${useId().replace(/:/g, "")}`;
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   // Derived / computed states from cached store/Dexie props
   const featuredSlides = (featuredPages && featuredPages.length > 0) ? featuredPages : [];
@@ -174,30 +167,23 @@ export default function HomeTab({
       const candidates = [...(newPages || []), ...(updatedPages || [])].filter(Boolean);
       if (candidates.length > 0) {
         const randomItem = candidates[Math.floor(Math.random() * candidates.length)];
-        const cat = (randomItem.metadata as any)?.category || 'campus';
+        const cat = (randomItem.metadata as any)?.category || "campus";
         router.push(`/wiki/${cat}/${randomItem.slug}`);
         return;
       }
-      // Fallback: pick from popular pages
       if (popularPages.length > 0) {
         const randomPop = popularPages[Math.floor(Math.random() * popularPages.length)];
-        const cat = (randomPop.metadata as any)?.category || 'campus';
+        const cat = (randomPop.metadata as any)?.category || "campus";
         router.push(`/wiki/${cat}/${randomPop.slug}`);
         return;
       }
-      router.push('/wiki/page/campuses-and-surroundings');
+      router.push("/wiki/page/campuses-and-surroundings");
     } catch {
-      router.push('/wiki/page/campuses-and-surroundings');
+      router.push("/wiki/page/campuses-and-surroundings");
     }
   };
 
   // ── Seamless (cyclic) featured carousel ────────────────────────────────────
-  // Transform-based infinite carousel. The track renders
-  // [clone(last), ...realSlides, clone(first)] and is shifted with translateX by
-  // `featuredIndex` (a DOM index into that track). Real slide r sits at index r+1.
-  // Moving past either clone lets the animation finish, then jumps instantly
-  // (transition off) to the identical real slide — so it always continues in the
-  // same direction with no visible rewind. `featuredIndex` also drives the dots.
   const featuredPausedRef = useRef(false);
   const featuredCount = (featuredPages && featuredPages.length > 0) ? featuredPages.length : 0;
   const hasClones = featuredCount > 1;
@@ -205,7 +191,6 @@ export default function HomeTab({
   const [featuredIndex, setFeaturedIndex] = useState(1);
   const [featuredAnim, setFeaturedAnim] = useState(true);
 
-  // Reset to the first real slide whenever the data set changes.
   useEffect(() => {
     setFeaturedAnim(false);
     setFeaturedIndex(hasClones ? 1 : 0);
@@ -223,13 +208,11 @@ export default function HomeTab({
     setFeaturedIndex((i) => i - 1);
   };
 
-  // Jump to a real slide (used by the dot indicators).
   const scrollToIndex = (realIndex: number) => {
     setFeaturedAnim(true);
     setFeaturedIndex(hasClones ? realIndex + 1 : realIndex);
   };
 
-  // When a slide animation ends on a clone, snap instantly to its real twin.
   const handleFeaturedTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
     if (!hasClones) return;
     if (e.target !== e.currentTarget || e.propertyName !== "transform") return;
@@ -242,8 +225,6 @@ export default function HomeTab({
     }
   };
 
-  // Auto-advance every 2s. Pauses while the pointer is over the card (checked via
-  // a ref so hovering never tears the timer down). Stops when there's <2 slides.
   useEffect(() => {
     if (!hasClones) return;
     const id = setInterval(() => {
@@ -253,454 +234,483 @@ export default function HomeTab({
     return () => clearInterval(id);
   }, [featuredPages, hasClones]);
 
-  // Active real slide for the dot indicators, derived from the track index.
   const activeFeatured = hasClones
     ? (((featuredIndex - 1) % featuredCount) + featuredCount) % featuredCount
     : featuredIndex;
 
+  const activeSlide = featuredSlides[activeFeatured];
+  const activeTarget =
+    activeSlide?.slug
+      ? `/wiki/page/${activeSlide.slug}`
+      : (activeSlide?.href || null);
+
   // ─── Card definitions ──────────────────────────────────────────────────────
-  // Display order for the home feed. Featured first, the activity
-  // cards (new / updated / pending) last.
+  // Order + spans reproduce the mock: Featured 2x2, Popular/New 1x2,
+  // Pending/Quick Stats 2x1, the rest 1x1.
   const CARD_ORDER: Record<string, number> = {
-    "featured-article": 3,
-    "in-the-news": 4,
-    "popular-pages": 8,
-    events: 9,
-    "random-page": 10,
-    "photo-of-week": 11,
-    "new-pages": 16,
-    "updated-pages": 17,
-    "pending-pages": 18,
+    "featured-article": 0,
+    "popular-pages": 1,
+    "new-pages": 2,
+    "in-the-news": 3,
+    events: 4,
+    "updated-pages": 5,
+    "random-page": 6,
+    "pending-pages": 7,
+    "quick-stats": 8,
   };
 
   const cards: MasonryCardConfig[] = [
-    // ── 1. Featured Article (DaisyUI carousel with next/prev buttons) ──────────
+    // ── 1. Featured Article (full-bleed hero, 2x2) ───────────────────────────
     {
       id: "featured-article",
-      featured: true,
+      colSpan: 2,
+      rowSpan: 2,
       content: (
         <div
           onMouseEnter={() => { featuredPausedRef.current = true; }}
           onMouseLeave={() => { featuredPausedRef.current = false; }}
+          className="group col-span-1 md:col-span-2 row-span-2 rounded-[2rem] relative overflow-hidden card-hover flex flex-col justify-between p-8 min-h-[460px] h-full font-inter"
         >
-        <HomeCard
-          title="Featured Article"
-          icon={<Award className="h-4 w-4" />}
-          accentColor="primary"
-          badge={
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-primary/10 border border-primary/20 text-primary font-sans font-bold text-[9px] rounded-full uppercase tracking-wider select-none">
-                <Sparkles className="h-3 w-3" />
-                Special Feature
-              </span>
+          {featuredSlides.length === 0 ? (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-secondary/15 flex items-center justify-center">
+              <div className="text-center px-6">
+                <Award className="h-8 w-8 mx-auto text-white/70 mb-2" />
+                <p className="text-white font-bold">No featured articles yet</p>
+              </div>
             </div>
-          }
-          footer={
-            <div className="flex items-center justify-between gap-3 pt-1">
+          ) : (
+            <div
+              className="absolute inset-0 flex"
+              style={{
+                transform: `translateX(-${featuredIndex * 100}%)`,
+                transition: featuredAnim ? "transform 0.5s ease" : "none",
+              }}
+              onTransitionEnd={handleFeaturedTransitionEnd}
+            >
+              {(hasClones
+                ? [featuredSlides[featuredSlides.length - 1], ...featuredSlides, featuredSlides[0]]
+                : featuredSlides
+              ).map((slide, index) => (
+                <div
+                  key={`featured-slide-${index}`}
+                  className="relative w-full h-full shrink-0 overflow-hidden"
+                >
+                  <img
+                    src={slide?.image || "/homepage_bg.png"}
+                    alt={slide?.title || "Featured"}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Top badges */}
+          <div className="relative z-10 flex justify-between items-start w-full">
+            <div className="flex items-center gap-2 text-white bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold shadow-sm">
+              <Award className="w-4 h-4" /> Featured Article
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setShowEditFeatured(true)}
-                className="inline-flex items-center gap-1 text-[11px] font-extrabold text-primary hover:text-primary/80 uppercase tracking-wider cursor-pointer"
+                aria-label="Edit featured articles"
+                className="p-2 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-colors cursor-pointer"
               >
-                Read all <ArrowRight className="h-3.5 w-3.5" />
+                <Pencil className="w-4 h-4" />
               </button>
-              <div className="flex gap-2">
-                {featuredSlides.map((_, index) => (
-                  <button
-                    key={`featured-dot-${index}`}
-                    type="button"
-                    onClick={() => scrollToIndex(index)}
-                    className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                      activeFeatured === index
-                        ? "w-6 bg-primary"
-                        : "w-2.5 bg-base-300 hover:bg-primary/60"
-                    }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
+              <span className="bg-[#e879f9] text-white text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg shadow-purple-500/30">
+                ✨ Special Feature
+              </span>
             </div>
-          }
-        >
-          {featuredSlides.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-base-300 bg-base-200/40 px-4 py-12 text-center">
-              <Award className="h-6 w-6 text-base-content/30" />
-              <p className="text-sm font-bold text-base-content/60">No featured articles yet</p>
-              <p className="text-xs text-base-content/40">Featured articles will appear here once they&rsquo;re added.</p>
+          </div>
+
+          {/* Bottom content */}
+          <div className="relative z-10 mt-auto">
+            <p className="text-blue-300 font-black tracking-widest uppercase text-xs mb-3 flex items-center gap-2">
+              <User className="w-3 h-3" />
+              {activeSlide?.location || "Campus"}
+            </p>
+            <h2 className="text-white font-display font-black text-6xl md:text-7xl leading-none tracking-tight mb-6 group-hover:-translate-y-2 transition-transform drop-shadow-lg">
+              {activeSlide?.title || "Campus Article"}
+            </h2>
+            {activeTarget ? (
+              <Link
+                href={activeTarget}
+                className="inline-flex items-center gap-2 text-gray-900 font-black bg-white hover:bg-gray-100 px-6 py-3.5 rounded-full transition-colors shadow-lg"
+              >
+                Read All <ArrowRight className="w-4 w-4" />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowEditFeatured(true)}
+                className="inline-flex items-center gap-2 text-gray-900 font-black bg-white hover:bg-gray-100 px-6 py-3.5 rounded-full transition-colors shadow-lg cursor-pointer"
+              >
+                Read All <ArrowRight className="w-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Slide dots (bottom-right) */}
+          {featuredSlides.length > 0 && (
+            <div className="absolute bottom-8 right-8 z-10 flex gap-2">
+              {featuredSlides.map((_, index) => (
+                <button
+                  key={`featured-dot-${index}`}
+                  type="button"
+                  onClick={() => scrollToIndex(index)}
+                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                    activeFeatured === index
+                      ? "w-6 bg-white"
+                      : "w-2.5 bg-white/50 hover:bg-white/80"
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
-          ) : (
-          <div className="w-full overflow-hidden">
-          <div
-            ref={carouselRef}
-            className="flex w-full"
-            style={{
-              transform: `translateX(-${featuredIndex * 100}%)`,
-              transition: featuredAnim ? "transform 0.5s ease" : "none",
-            }}
-            onTransitionEnd={handleFeaturedTransitionEnd}
-          >
-            {(hasClones
-              ? [featuredSlides[featuredSlides.length - 1], ...featuredSlides, featuredSlides[0]]
-              : featuredSlides
-            ).map((slide, index) => {
-              const targetUrl = slide?.slug
-                ? `/wiki/page/${slide.slug}`
-                : slide?.href || null;
-              return (
-                <div
-                  key={`featured-slide-${index}`}
-                  id={`${carouselBase}-${index + 1}`}
-                  className="w-full shrink-0"
-                >
-                  <div className="w-full">
-                    <div className="relative overflow-hidden rounded-xl">
-                      {targetUrl ? (
-                        <Link href={targetUrl} className="block cursor-pointer">
-                          <img
-                            src={slide?.image || '/homepage_bg.png'}
-                            alt={slide?.title || 'Featured'}
-                            className="w-full h-52 object-cover"
-                          />
-                        </Link>
-                      ) : (
-                        <img
-                          src={slide?.image || '/homepage_bg.png'}
-                          alt={slide?.title || 'Featured'}
-                          className="w-full h-52 object-cover"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none rounded-xl" />
-
-                      {/* DaisyUI next/prev buttons */}
-                      <div className="absolute left-3 right-3 top-1/2 flex -translate-y-1/2 transform justify-between z-10">
-                        <button type="button" onClick={goPrev} className="btn btn-circle btn-sm bg-base-100/80 border-0 shadow-sm hover:bg-base-100 cursor-pointer">
-                          <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <button type="button" onClick={goNext} className="btn btn-circle btn-sm bg-base-100/80 border-0 shadow-sm hover:bg-base-100 cursor-pointer">
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 space-y-2">
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-base-content/60">
-                        <MapPinned className="h-3.5 w-3.5" />
-                        {slide?.location || 'Campus'}
-                      </div>
-                      <h3 className="text-lg font-black text-base-content font-serif">
-                        {targetUrl ? (
-                          <Link href={targetUrl} className="hover:text-primary transition-colors cursor-pointer">
-                            {slide?.title || 'Campus Article'}
-                          </Link>
-                        ) : (
-                          slide?.title || 'Campus Article'
-                        )}
-                      </h3>
-                      <p className="text-xs text-base-content/75 leading-relaxed font-semibold">
-                        {slide?.description || ''}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          </div>
           )}
-        </HomeCard>
         </div>
       ),
     },
 
-    // ── 2. In the News ────────────────────────────────────────────────────────
+    // ── 2. Popular Pages (1x2, pink gradient) ────────────────────────────────
     {
-      id: "in-the-news",
+      id: "popular-pages",
+      rowSpan: 2,
       content: (
         <HomeCard
-          title="In the News"
-          icon={<Newspaper className="h-4 w-4" />}
-          accentColor="secondary"
+          className="bg-gradient-to-br from-[#fce7f3] to-[#fbcfe8]"
+          title="Popular Pages"
+          icon={<TrendingUp className="h-5 w-5 text-pink-500" />}
           badge={
-            <button onClick={() => setShowAllNews(true)} className="btn btn-ghost btn-xs text-primary font-bold cursor-pointer">
-              View all
-            </button>
-          }
-          footer={
-            <button onClick={() => setShowAllNews(true)} className="btn btn-ghost btn-xs text-primary font-extrabold uppercase tracking-wider gap-1 cursor-pointer">
-              More campus news <ArrowRight className="h-3.5 w-3.5" />
-            </button>
+            <span className="bg-pink-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">
+              Trending
+            </span>
           }
         >
-          <div className="space-y-3">
-            {newsPages.slice(0, 5).map((item, index) => {
-              const Icons = [Sparkles, FlaskConical, Trophy];
-              const IconComponent = Icons[index % Icons.length];
-              const colors = ["bg-primary/10 text-primary", "bg-success/10 text-success", "bg-secondary/10 text-secondary"];
-              return (
-                <button key={`news-${item.slug || index+Math.random()}`} type="button" onClick={() => setShowAllNews(true)} className="flex items-start gap-3 border-b border-base-200 pb-3 last:border-b-0 last:pb-0 cursor-pointer group text-left w-full">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${colors[index % colors.length]}`}>
-                    <IconComponent className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-xs font-bold text-base-content group-hover:text-primary transition-colors line-clamp-2">{item.title}</h4>
-                    <span className="text-[10px] text-base-content/50 mt-0.5 block font-semibold">{getRelativeTime(item.created_at)}</span>
-                  </div>
-                </button>
-              );
-            })}
-            {newsPages.length === 0 && <p className="text-xs text-base-content/50">No news articles yet.</p>}
+          <div className="flex flex-col gap-3 flex-1">
+            {popularPages.length > 0 ? (
+              popularPages.slice(0, 5).map((page, i) => (
+                <Link
+                  key={page.page_id}
+                  href={`/wiki/${(page.metadata as any)?.category || "campus"}/${page.slug}`}
+                  className="bg-white/70 hover:bg-white p-4 rounded-2xl flex justify-between items-center transition-colors shadow-sm"
+                >
+                  <span className="font-bold text-gray-800 truncate">{page.title}</span>
+                  <span className="flex items-center gap-2 shrink-0 ml-2 text-xs text-gray-500 font-bold">
+                    <Eye className="h-3 w-3" />
+                    {Number(page.view_count ?? 0).toLocaleString()}
+                    <span className="text-pink-400">#{i + 1}</span>
+                  </span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-xs text-gray-500">Pages will appear here as they get views.</p>
+            )}
           </div>
         </HomeCard>
       ),
     },
 
-    // ── 5. Upcoming Events ─────────────────────────────────────────────────
+    // ── 3. New Pages (1x2, blue gradient) ────────────────────────────────────
+    {
+      id: "new-pages",
+      rowSpan: 2,
+      content: (
+        <HomeCard
+          className="bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] border border-blue-100"
+          title="New Pages"
+          icon={<Sparkles className="h-5 w-5 text-blue-500" />}
+          footer={
+            <button
+              onClick={() => setShowAllNew(true)}
+              className="mt-4 w-full font-black text-blue-700 bg-white hover:bg-blue-50 py-3.5 rounded-xl transition-colors text-sm shadow-sm cursor-pointer"
+            >
+              VIEW ALL NEW PAGES
+            </button>
+          }
+        >
+          <div className="flex flex-col gap-4 flex-1">
+            {newPages.length === 0 ? (
+              <p className="text-xs text-gray-500 py-3">No new pages created yet.</p>
+            ) : (
+              newPages.slice(0, 3).map((page) => (
+                <Link
+                  key={page.page_id}
+                  href={`/wiki/${(page.metadata as any)?.category || "campus"}/${page.slug}`}
+                  className="group/item bg-white/50 p-4 rounded-2xl hover:bg-white transition-colors block"
+                >
+                  <h4 className="font-bold text-gray-800 group-hover/item:text-blue-600 transition-colors truncate">
+                    {page.title || "Untitled"}
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-1 font-medium">
+                    Created {getRelativeTime(page.created_at)}
+                  </p>
+                </Link>
+              ))
+            )}
+          </div>
+        </HomeCard>
+      ),
+    },
+
+    // ── 4. In the News (1x1, yellow) ─────────────────────────────────────────
+    {
+      id: "in-the-news",
+      content: (
+        <HomeCard
+          className="bg-[#fef08a] relative overflow-hidden"
+          headerClassName="mb-4"
+          title="In the News"
+          icon={<Newspaper className="h-5 h-5 text-amber-600" />}
+          badge={
+            <button
+              onClick={() => setShowAllNews(true)}
+              className="text-xs font-black text-amber-700 hover:text-amber-900 bg-amber-200/50 px-3 py-1 rounded-full cursor-pointer"
+            >
+              View all
+            </button>
+          }
+          footer={
+            <button
+              onClick={() => setShowAllNews(true)}
+              className="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1 mt-auto group/link hover:text-amber-900 cursor-pointer"
+            >
+              MORE CAMPUS NEWS{" "}
+              <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
+            </button>
+          }
+        >
+          {/* Decorative blur */}
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/40 rounded-full blur-2xl pointer-events-none" />
+          <div className="relative z-10 flex-1 flex items-center justify-center my-4 bg-white/30 rounded-2xl border border-amber-200/50 overflow-hidden">
+            {newsPages.length > 0 ? (
+              <div className="w-full p-3 space-y-2 max-h-full overflow-y-auto no-scrollbar">
+                {newsPages.slice(0, 5).map((item, index) => {
+                  const Icons = [Sparkles, FlaskConical, Trophy];
+                  const IconComponent = Icons[index % Icons.length];
+                  return (
+                    <button
+                      key={`news-${item.slug || index}`}
+                      type="button"
+                      onClick={() => setShowAllNews(true)}
+                      className="flex items-start gap-3 rounded-xl bg-white/60 hover:bg-white px-3 py-2 transition-colors w-full text-left"
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500/15 text-amber-600">
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-gray-800 line-clamp-2">{item.title}</h4>
+                        <span className="text-[10px] text-gray-500 mt-0.5 block font-semibold">
+                          {getRelativeTime(item.created_at)}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-amber-800/60 text-sm font-bold text-center px-4">
+                No news articles yet.
+              </p>
+            )}
+          </div>
+        </HomeCard>
+      ),
+    },
+
+    // ── 5. Upcoming Events (1x1, indigo gradient) ────────────────────────────
     {
       id: "events",
       content: (
-        <div className="flex flex-col rounded-2xl border border-base-200 bg-base-100 p-6 shadow-depth shadow-depth-hover sm:p-7">
-          {/* Header */}
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-primary">
-                <Calendar className="h-5 w-5 stroke-[2.5]" />
-              </span>
-              <h3 className="text-[18px] font-extrabold tracking-tight text-base-content">
-                Upcoming Events
-              </h3>
-            </div>
+        <div className="bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] rounded-[2rem] p-6 flex flex-col card-hover text-white shadow-lg shadow-indigo-200 h-full font-inter">
+          <div className="flex justify-between items-center mb-4 shrink-0">
+            <h3 className="font-display font-bold text-xl flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-indigo-200" />
+              Upcoming Events
+            </h3>
             {upcomingEvents.length > 0 && (
-              <span className="rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1 text-[9px] font-bold uppercase tracking-wide text-primary">
+              <span className="rounded-full bg-white/20 border border-white/30 px-3.5 py-1 text-[9px] font-bold uppercase tracking-wide">
                 {upcomingEvents.length} {upcomingEvents.length === 1 ? "Event" : "Events"}
               </span>
             )}
           </div>
 
-          {/* Event items */}
-          {upcomingEvents && upcomingEvents.length > 0 ? (
-            <div className="space-y-4">
-              {upcomingEvents.slice(0, 3).map((event, i) => {
-                const dateObj = new Date(event.event_date);
-                const day = isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleDateString("en-US", { day: "numeric" });
-                const month = isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
-                
-                return (
-                  <div key={event.event_id || i} className="flex gap-4 items-start pb-3 border-b border-base-200 last:border-0 last:pb-0">
-                    {/* Date Block */}
-                    <div className="flex flex-col items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-primary/5 border border-primary/10 text-primary">
-                      <span className="text-xs font-black leading-none">{day}</span>
-                      <span className="text-[9px] font-bold tracking-wider leading-none mt-1">{month}</span>
-                    </div>
-
-                    {/* Details */}
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <h4 className="text-xs font-black text-base-content leading-snug line-clamp-1">
-                        {event.title}
-                      </h4>
-                      <p className="text-[11px] text-base-content/60 font-semibold line-clamp-2">
-                        {event.description}
-                      </p>
-                      
-                      <div className="flex flex-wrap items-center gap-3 pt-0.5 text-[10px] text-base-content/40 font-bold uppercase tracking-wider">
-                        <span className="flex items-center gap-1">
-                          <MapPinned className="h-3.5 w-3.5" />
-                          {event.location}
-                        </span>
-                        {event.is_recurring ? (
-                          <span className="rounded bg-secondary/10 px-1.5 py-0.5 text-secondary text-[9px] font-black tracking-widest">
-                            RECURRING
-                          </span>
-                        ) : (
-                          event.recur_time || event.recur_day ? null : (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {new Date(event.event_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                            </span>
-                          )
-                        )}
-                        {event.is_recurring && event.recur_time && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            {event.recur_time}
-                          </span>
-                        )}
+          <div className="flex-1 flex items-center justify-center my-2 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10 overflow-hidden">
+            {upcomingEvents && upcomingEvents.length > 0 ? (
+              <div className="w-full p-4 space-y-3 overflow-y-auto no-scrollbar">
+                {upcomingEvents.slice(0, 3).map((event, i) => {
+                  const dateObj = new Date(event.event_date);
+                  const day = isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleDateString("en-US", { day: "numeric" });
+                  const month = isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+                  return (
+                    <div key={event.event_id || i} className="flex gap-3 items-start pb-3 border-b border-white/10 last:border-0 last:pb-0">
+                      <div className="flex flex-col items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-white/15 text-white font-black">
+                        <span className="text-xs leading-none">{day}</span>
+                        <span className="text-[8px] leading-none mt-1 opacity-80">{month}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-black leading-snug line-clamp-1">{event.title}</h4>
+                        <p className="text-[10px] text-indigo-100 font-semibold line-clamp-1 flex items-center gap-1 mt-0.5">
+                          <MapPinned className="w-3 h-3" /> {event.location}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="py-4 text-center">
-              <p className="text-xs text-base-content/50">No upcoming events listed.</p>
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-indigo-100 text-sm font-bold text-center px-4">
+                No upcoming events listed.
+              </p>
+            )}
+          </div>
 
-          {/* Action button */}
           <button
             onClick={() => setShowEventsManager(true)}
-            className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary py-4 text-[14px] font-bold tracking-wide text-primary-content shadow-lg shadow-primary/30 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-primary/40"
+            className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 py-3.5 text-xs font-black uppercase tracking-wider shadow-md transition-colors cursor-pointer shrink-0"
           >
-            <CalendarDays className="h-[18px] w-[18px]" />
+            <CalendarDays className="w-4 h-4" />
             VIEW ALL EVENTS
           </button>
         </div>
       ),
     },
 
-    // ── 6. New Pages ──────────────────────────────────────────────────────────
-    {
-      id: "new-pages",
-      content: (
-        <HomeCard
-          title="New Pages"
-          icon={<Sparkles className="h-4 w-4" />}
-          accentColor="warning"
-          footer={
-            <button onClick={() => setShowAllNew(true)} className="btn btn-ghost btn-xs text-primary font-bold uppercase tracking-wider cursor-pointer">
-              View all new pages
-            </button>
-          }
-        >
-          {newPages.length === 0 ? (
-            <p className="text-xs text-base-content/50 py-3">No new pages created yet.</p>
-          ) : (
-            <ul className="space-y-3">
-              {newPages.slice(0, 3).map((page, index) => (
-                <li key={`new-page-${page.page_id || index+Math.random()}`}>
-                  <Link href={`/wiki/${(page.metadata as any)?.category || 'campus'}/${page.slug}`} className="block text-xs font-semibold text-base-content/85 hover:text-primary transition-colors truncate">
-                    {page.title || "Untitled"}
-                  </Link>
-                  <span className="text-[9px] text-base-content/50 font-semibold block">Created {getRelativeTime(page.created_at)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </HomeCard>
-      ),
-    },
-
-    // ── 7. Updated Pages ──────────────────────────────────────────────────────
+    // ── 6. Updated Pages (1x1, mint green) ───────────────────────────────────
     {
       id: "updated-pages",
       content: (
         <HomeCard
+          className="bg-[#34d399] relative overflow-hidden"
+          headerClassName="mb-4"
           title="Updated Pages"
-          accentColor="error"
+          icon={<RefreshCw className="h-5 h-5 text-emerald-700" />}
           footer={
-            <button onClick={() => setShowAllUpdated(true)} className="btn btn-ghost btn-xs text-primary font-bold uppercase tracking-wider cursor-pointer">
-              View all edits
+            <button
+              onClick={() => setShowAllUpdated(true)}
+              className="mt-4 text-xs font-black text-emerald-900 uppercase tracking-wider text-left hover:text-emerald-950 cursor-pointer"
+            >
+              VIEW ALL EDITS
             </button>
           }
         >
-          {updatedPages.length === 0 ? (
-            <p className="text-xs text-base-content/50 py-3">No pages updated yet.</p>
-          ) : (
-            <ul className="space-y-3">
-              {updatedPages.slice(0, 3).map((page, index) => (
-                <li key={`updated-page-${page.page_id || index+Math.random()}`}>
-                  <Link href={`/wiki/${(page.metadata as any)?.category || 'campus'}/${page.slug}`} className="block text-xs font-semibold text-base-content/85 hover:text-primary transition-colors truncate">
-                    {page.title || "Untitled"}
-                  </Link>
-                  <span className="text-[9px] text-base-content/50 font-semibold block">Updated {getRelativeTime(page.updated_at)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </HomeCard>
-      ),
-    },
-
-    // ── 8. Pending Pages ──────────────────────────────────────────────────────
-    {
-      id: "pending-pages",
-      content: (
-        <HomeCard
-          title="Pending Review"
-          accentColor="warning"
-          footer={
-            <button onClick={() => setShowAllPending(true)} className="btn btn-primary btn-sm w-full font-bold text-xs rounded-xl shadow-sm cursor-pointer">
-              Review Pending Changes
-            </button>
-          }
-        >
-          {pendingPages.length === 0 ? (
-            <p className="text-xs text-base-content/50 py-3">No pending pages.</p>
-          ) : (
-            <ul className="space-y-3">
-              {pendingPages.slice(0, 3).map((pending, index) => {
-                return (
-                  <li key={`pending-page-${pending.pending_id || index+1}`}>
-                    <span className="block text-xs font-semibold text-base-content/85 truncate">{pending.title}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </HomeCard>
-      ),
-    },
-
-    // ── 10. Popular Pages ─────────────────────────────────────────────────────
-    {
-      id: "popular-pages",
-      content: (
-        <HomeCard
-          title="Popular Pages"
-          icon={<TrendingUp className="h-4 w-4" />}
-          accentColor="primary"
-          badge={<span className="badge badge-secondary badge-sm rounded-2xl">Trending</span>}
-        >
-          <div className="space-y-3">
-            {popularPages.length > 0 ? (
-              popularPages.slice(0, 5).map((page, i) => (
-                <Link
-                  key={page.page_id+Math.random()}
-                  href={`/wiki/${(page.metadata as any)?.category || 'campus'}/${page.slug}`}
-                  className="flex items-center justify-between rounded-xl border border-base-200 bg-base-200/40 p-3 text-xs font-semibold text-base-content/80 hover:border-primary/40 hover:text-primary transition-colors"
-                >
-                  <span className="truncate">{page.title}</span>
-                  <span className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className="flex items-center gap-1 text-[10px] font-semibold text-base-content/50">
-                      <Eye className="h-3 w-3" />
-                      {Number(page.view_count ?? 0).toLocaleString()}
-                    </span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40">
-                      #{i + 1}
-                    </span>
-                  </span>
-                </Link>
-              ))
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-emerald-300 rounded-full blur-3xl opacity-50 pointer-events-none" />
+          <div className="relative z-10 flex-1 flex flex-col gap-2 bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+            {updatedPages.length === 0 ? (
+              <p className="text-xs text-emerald-900/70 py-2">No pages updated yet.</p>
             ) : (
-              <p className="text-xs text-base-content/50">Pages will appear here as they get views.</p>
+              updatedPages.slice(0, 3).map((page, index) => (
+                <React.Fragment key={page.page_id}>
+                  <div className="flex justify-between items-center">
+                    <Link
+                      href={`/wiki/${(page.metadata as any)?.category || "campus"}/${page.slug}`}
+                      className="font-bold text-emerald-950 text-sm hover:text-emerald-800 truncate transition-colors"
+                    >
+                      {page.title || "Untitled"}
+                    </Link>
+                    <p className="text-[10px] text-emerald-800 font-bold shrink-0 ml-2">
+                      {getRelativeTime(page.updated_at)}
+                    </p>
+                  </div>
+                  {index < Math.min(updatedPages.length, 3) - 1 && (
+                    <div className="h-px w-full bg-emerald-700/10" />
+                  )}
+                </React.Fragment>
+              ))
             )}
           </div>
         </HomeCard>
       ),
     },
 
-    // ── 11. Random Page ───────────────────────────────────────────────────────
+    // ── 7. Random Page (1x1, rainbow ring) ───────────────────────────────────
     {
       id: "random-page",
       content: (
-        <HomeCard
-          title="Random Page"
-          icon={<Compass className="h-4 w-4" />}
-          accentColor="accent"
-          footer={
-            <button type="button" onClick={handleRandomPage} className="btn btn-primary btn-sm w-full rounded-xl font-bold">
+        <div className="bg-gradient-to-tr from-[#7dd3fc] via-[#e879f9] to-[#fde047] rounded-[2rem] p-1.5 card-hover h-full font-inter">
+          <div className="bg-white/95 backdrop-blur-xl w-full h-full rounded-[1.6rem] p-6 flex flex-col justify-between">
+            <div>
+              <h3 className="font-display font-bold text-xl flex items-center gap-2 text-gray-900 mb-3">
+                <Dices className="w-6 h-6 text-fuchsia-500" /> Random Page
+              </h3>
+              <p className="text-sm text-gray-600 font-medium leading-relaxed">
+                Jump into a fresh article from the wiki and discover something new around campus.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleRandomPage}
+              className="mt-4 w-full font-black text-white bg-gray-900 hover:bg-black py-3.5 rounded-xl transition-transform active:scale-95 text-sm shadow-xl shadow-gray-900/20 cursor-pointer"
+            >
               Open a random page
             </button>
-          }
-        >
-          <p className="text-xs text-base-content/70 leading-relaxed">
-            Jump into a fresh article from the wiki and discover something new around campus.
-          </p>
-        </HomeCard>
+          </div>
+        </div>
       ),
     },
 
+    // ── 8. Pending Review (2x1, grey) ────────────────────────────────────────
+    {
+      id: "pending-pages",
+      colSpan: 2,
+      content: (
+        <div className="bg-gray-50 rounded-[2rem] p-6 flex flex-col md:flex-row items-center justify-between card-hover border-2 border-gray-100 gap-6 h-full font-inter">
+          <div className="flex-1 text-center md:text-left">
+            <h3 className="font-display font-bold text-xl flex items-center justify-center md:justify-start gap-2 text-gray-900 mb-2">
+              <Clock className="h-5 w-5 text-gray-400" /> Pending Review
+            </h3>
+            <p className="text-gray-500 text-sm font-medium">
+              {pendingPages.length > 0
+                ? `${pendingPages.length} page${pendingPages.length === 1 ? "" : "s"} pending your review.`
+                : "No pending pages currently require your attention."}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAllPending(true)}
+            className="w-full md:w-auto font-black text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 py-3.5 px-8 rounded-xl transition-all active:scale-95 text-sm shadow-sm whitespace-nowrap cursor-pointer"
+          >
+            Review Pending Changes
+          </button>
+        </div>
+      ),
+    },
 
+    // ── 9. Quick Stats (2x1, dark) ───────────────────────────────────────────
+    {
+      id: "quick-stats",
+      colSpan: 2,
+      content: (
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-[2rem] p-6 flex items-center justify-between card-hover text-white overflow-hidden relative h-full font-inter">
+          <svg viewBox="0 0 200 100" className="absolute inset-0 w-full h-full opacity-10" preserveAspectRatio="none">
+            <path d="M0 50 Q 50 10, 100 50 T 200 50" fill="none" stroke="white" strokeWidth="2" />
+            <path d="M0 70 Q 50 30, 100 70 T 200 70" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+
+          <div className="relative z-10 flex gap-8 items-center w-full justify-around">
+            <div className="text-center">
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Total Articles</p>
+              <p className="font-display font-black text-4xl text-white">
+                {totalPagesCount !== null ? totalPagesCount.toLocaleString() : "…"}
+              </p>
+            </div>
+            <div className="w-px h-12 bg-gray-700" />
+            <div className="text-center">
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Categories</p>
+              <div className="flex items-center justify-center gap-2">
+                <p className="font-display font-black text-4xl text-[#34d399]">{categoriesCount}</p>
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34d399] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#34d399]" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
   ];
 
   // Sort the feed by the explicit display order above.
@@ -766,11 +776,7 @@ export default function HomeTab({
             <div className="mt-3 space-y-4 rounded-2xl border border-base-200 bg-base-100 p-4 shadow-depth">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-black text-base-content">Visible cards</h4>
-                <button
-                  type="button"
-                  onClick={() => setShowPrefs(false)}
-                  className="btn btn-ghost btn-xs"
-                >
+                <button type="button" onClick={() => setShowPrefs(false)} className="btn btn-ghost btn-xs">
                   Done
                 </button>
               </div>
@@ -789,7 +795,7 @@ export default function HomeTab({
                 return (
                   <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-3">
                     {columns.map((col, ci) => (
-                      <div key={ci+Math.random()} className="space-y-4">
+                      <div key={ci} className="space-y-4">
                         {col.map((group) => (
                           <div key={group.title}>
                             <div className="mb-3.5 flex items-center justify-between">
@@ -808,7 +814,7 @@ export default function HomeTab({
                                 const visible = !hiddenCards.has(c.id);
                                 return (
                                   <label
-                                    key={c.id+1}
+                                    key={c.id}
                                     className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-base-200/60"
                                   >
                                     <span className="text-sm font-medium text-base-content/80">
@@ -849,25 +855,6 @@ export default function HomeTab({
           cards={cards.filter((c) => !hiddenCards.has(c.id))}
           reorderEnabled={showPrefs}
         />
-
-        {/* ── Statistics Strip ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-          <div className="stat bg-base-200/60 border border-base-300 rounded-2xl place-items-center py-4">
-            <div className="stat-figure text-primary"><BookOpen className="h-5 w-5" /></div>
-            <div className="stat-title text-[9px] font-bold uppercase tracking-wider">Total Articles</div>
-            <div className="stat-value text-xl">{totalPagesCount !== null ? totalPagesCount.toLocaleString() : "…"}</div>
-          </div>
-          <div className="stat bg-base-200/60 border border-base-300 rounded-2xl place-items-center py-4">
-            <div className="stat-figure text-success"><Languages className="h-5 w-5" /></div>
-            <div className="stat-title text-[9px] font-bold uppercase tracking-wider">Categories</div>
-            <div className="stat-value text-xl">{categoriesCount}</div>
-          </div>
-          <div className="stat bg-base-200/60 border border-base-300 rounded-2xl place-items-center py-4">
-            <div className="stat-figure text-warning"><Zap className="h-5 w-5" /></div>
-            <div className="stat-title text-[9px] font-bold uppercase tracking-wider">Events</div>
-            <div className="stat-value text-xl">{upcomingEvents.length || "…"}</div>
-          </div>
-        </div>
 
         {/* Mobile footer */}
         <div className="pt-4 border-t border-base-200 flex md:hidden flex-col items-center text-center gap-1.5 select-none w-full">

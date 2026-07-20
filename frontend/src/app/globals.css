@@ -969,3 +969,63 @@ html[data-compact="true"] .card.grid,
 html[data-compact="true"] div.grid > .card {
   gap: 0.5rem !important;
 }
+
+/* ===========================================================================
+   Home card system (soft gradient style)
+   ---------------------------------------------------------------------------
+   Matches the revised mock: bold pastel gradient frames, big rounded corners,
+   a gentle hover-lift, and translucent white inner panels. No heavy borders or
+   hard offset shadows. Gradients stay light in both themes; inner panels use
+   translucent white so content stays readable on any theme.
+   =========================================================================== */
+
+.font-display {
+  font-family: var(--font-display), "Space Grotesk", sans-serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+/* Gentle hover-lift (mirrors the mock's .card-hover). */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+/* Card gradients — exact stops from the mock. */
+.bg-grad-blue {
+  background: linear-gradient(to bottom right, #e0f2fe 0%, #bae6fd 100%);
+}
+.bg-grad-pink {
+  background: linear-gradient(to bottom right, #fce7f3 0%, #fbcfe8 100%);
+}
+.bg-grad-yellow {
+  background: #fef08a;
+}
+.bg-grad-indigo {
+  background: linear-gradient(to bottom right, #6366f1 0%, #8b5cf6 100%);
+}
+.bg-grad-mint {
+  background: #34d399;
+}
+.bg-grad-rainbow {
+  background: linear-gradient(to top right, #7dd3fc 0%, #e879f9 50%, #fde047 100%);
+}
+.bg-grad-gray {
+  background: #f8fafc;
+  border: 2px solid #f1f5f9;
+}
+
+/* Hide scrollbar helper (used by inner feeds/carousels). */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
