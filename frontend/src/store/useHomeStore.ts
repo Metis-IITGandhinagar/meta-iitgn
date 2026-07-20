@@ -23,6 +23,11 @@ export interface HomeState {
   // Slug of the category shown by the "portal" overlay (opened from Quick Portals)
   activePortalCategory: string | null;
 
+  // When true, the next portal overlay open starts maximized. Set only when a
+  // category is opened from the left sidebar; reset once the overlay closes so
+  // Quick Portals and other entry points open at their normal size.
+  portalMaximized: boolean;
+
   // Pagination states
   newPageNumber: number;
   newPagesHasMore: boolean;
@@ -65,6 +70,7 @@ export interface HomeState {
   setLoading: (loading: boolean) => void;
   setActiveOverlay: (overlay: "new" | "updated" | "pending" | "news" | "trivia" | "history" | "featured-edit" | "portal" | "categories" | null) => void;
   setActivePortalCategory: (slug: string | null) => void;
+  setPortalMaximized: (maximized: boolean) => void;
 
   setNewPageNumber: (num: number) => void;
   setNewPagesHasMore: (hasMore: boolean) => void;
@@ -99,7 +105,7 @@ export interface HomeState {
   handleReview: (args: { pendingId: number; action: "approve" | "reject"; userId: number }) => Promise<void>;
   handleAddTrivia: (args: { title: string; content: string }) => Promise<void>;
   handleAddHistory: (args: { title: string; content: string; videoUrl: string }) => Promise<void>;
-  addBookmark: (args: { slug: string; title: string; category: string; user: any }) => Promise<{ ok: boolean; already?: boolean; error?: string }>;
+  addBookmark: (args: { slug: string; title: string; category: string; user: any; icon?: string | null; color?: string | null }) => Promise<{ ok: boolean; already?: boolean; error?: string }>;
   removeBookmark: (id: string) => Promise<void>;
   // Drop every in-memory cached collection so the UI reflects a freshly cleared cache.
   resetCacheData: () => void;
@@ -127,6 +133,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   // Overlays initial state
   activeOverlay: null,
   activePortalCategory: null,
+  portalMaximized: false,
 
   // Pagination initial state
   newPageNumber: 1,
@@ -170,6 +177,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
   setActiveOverlay: (activeOverlay) => set({ activeOverlay }),
   setActivePortalCategory: (activePortalCategory) => set({ activePortalCategory }),
+  setPortalMaximized: (portalMaximized) => set({ portalMaximized }),
 
   setNewPageNumber: (newPageNumber) => set({ newPageNumber }),
   setNewPagesHasMore: (newPagesHasMore) => set({ newPagesHasMore }),
@@ -830,7 +838,7 @@ ${content}`,
     }
   },
 
-  addBookmark: async ({ slug, title, category, user }) => {
+  addBookmark: async ({ slug, title, category, user, icon, color }) => {
     const { bookmarks } = get();
     try {
       // Guard against duplicates. `slug` is not a Dexie index, so filter in JS
@@ -852,6 +860,8 @@ ${content}`,
           category,
           slug,
           description: `Bookmarked article: ${title}`,
+          icon,
+          color,
         };
       }
 

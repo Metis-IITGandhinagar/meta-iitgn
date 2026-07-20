@@ -3,6 +3,7 @@
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import CategoryPage from "@/components/wiki/CategoryPage";
 import { useAuth } from "@/hooks/useAuth";
+import { useHomeStore } from "@/store/useHomeStore";
 
 interface PortalOverlayProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function PortalOverlay({
   categorySlug,
 }: PortalOverlayProps) {
   const { categories } = useAuth();
+  const { portalMaximized } = useHomeStore();
   if (!isOpen || !categorySlug) return null;
 
   const category = categories?.find((c) => c.slug === categorySlug);
@@ -34,6 +36,7 @@ export default function PortalOverlay({
       onClose={onClose}
       title={title}
       maxWidthClass="max-w-5xl"
+      defaultMaximized={portalMaximized}
     >
       <CategoryPage categorySlug={categorySlug} embedded />
     </GenericOverlayModal>

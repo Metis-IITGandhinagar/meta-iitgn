@@ -7,6 +7,8 @@ export interface BookmarkItem {
   category: string;
   slug: string;
   description: string;
+  icon?: string | null;
+  color?: string | null;
 }
 
 export const getBookmarksList = async (): Promise<BookmarkItem[]> => {

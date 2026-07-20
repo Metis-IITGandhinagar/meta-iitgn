@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { X, Eye, Layout, ChevronLeft, Search, HelpCircle, HardDrive, Cpu, Maximize2, Minimize2, PenLine, Trash2, RotateCcw, Check } from "lucide-react";
+import { ArrowLeft, Eye, Layout, ChevronLeft, Search, HelpCircle, HardDrive, Cpu, Maximize2, Minimize2, PenLine, Trash2, RotateCcw, Check } from "lucide-react";
 import { WIKI_THEMES, DARK_THEMES } from "@/lib/constants";
 import ProfilePopover from "@/components/navs/ProfilePopover";
 import { db } from "@/lib/db";
@@ -373,10 +373,10 @@ export default function SettingsModal({ onClose, initialTab = "appearance" }: Se
             )}
             <button
               onClick={onClose}
-              className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
-              aria-label="Close settings"
+              className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+              aria-label="Back"
             >
-              <X className="w-5 h-5 shrink-0" />
+              <ArrowLeft className="w-5 h-5 shrink-0" />
             </button>
           </div>
 

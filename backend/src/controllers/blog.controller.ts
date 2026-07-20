@@ -10,11 +10,17 @@ export const getBlogs = async (req: Request, res: Response) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 6;
+    const authorId = Number(req.query.author_id) || undefined;
     const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deleted_at: null,
+      ...(authorId ? { original_author_id: authorId } : {}),
+    };
 
     const [blogsList, totalCount] = await Promise.all([
       prisma.blogs.findMany({
-        where: { deleted_at: null },
+        where: whereClause,
         orderBy: { created_at: "desc" },
         skip,
         take: limit,
@@ -29,7 +35,7 @@ export const getBlogs = async (req: Request, res: Response) => {
         },
       }),
       prisma.blogs.count({
-        where: { deleted_at: null },
+        where: whereClause,
       }),
     ]);
 

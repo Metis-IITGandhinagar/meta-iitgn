@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, FolderPlus } from "lucide-react";
+import { ArrowLeft, FolderPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiService } from "@/api";
 import { Category } from "@/context/AuthContext";
@@ -72,10 +72,10 @@ export default function CategoryCreateForm({
         <button
           type="button"
           onClick={onCancel}
-          className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
-          aria-label="Close"
+          className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+          aria-label="Back"
         >
-          <X className="h-5 w-5 shrink-0" />
+          <ArrowLeft className="h-5 w-5 shrink-0" />
         </button>
       </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Link2, Check, Copy, Mail, MessageCircle, Send, Share2 } from "lucide-react";
+import { ArrowLeft, Link2, Check, Copy, Mail, MessageCircle, Send, Share2 } from "lucide-react";
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -99,10 +99,10 @@ export default function ShareModal({ isOpen, onClose, url, title }: ShareModalPr
           <button
             type="button"
             onClick={onClose}
-            className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
-            aria-label="Close"
+            className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+            aria-label="Back"
           >
-            <X className="h-5 w-5 shrink-0" />
+            <ArrowLeft className="h-5 w-5 shrink-0" />
           </button>
         </div>
 

@@ -27,7 +27,9 @@ export const getBookmarks = async (req: Request, res: Response) => {
         title: item.live_page.title,
         category: (item.live_page.metadata as any)?.category || "General",
         slug: item.live_page.slug,
-        description: snippet
+        description: snippet,
+        icon: item.live_page.icon,
+        color: item.live_page.color
       };
     }));
   } catch (error: any) {
@@ -97,7 +99,9 @@ export const createBookmark = async (req: Request, res: Response) => {
       title: newBookmark.live_page.title,
       category: (newBookmark.live_page.metadata as any)?.category || "General",
       slug: newBookmark.live_page.slug,
-      description: snippet
+      description: snippet,
+      icon: newBookmark.live_page.icon,
+      color: newBookmark.live_page.color
     });
   } catch (error: any) {
     console.error('Error in createBookmark:', error);

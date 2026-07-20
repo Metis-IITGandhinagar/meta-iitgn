@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, Maximize2, Minimize2 } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2 } from "lucide-react";
 import ProfilePopover from "@/components/navs/ProfilePopover";
 
 interface GenericOverlayModalProps {
@@ -50,7 +50,36 @@ export default function GenericOverlayModal({
   // to maximize there).
   const lastTapRef = useRef(0);
 
-  const toggleMaximize = () => setIsMaximized((m) => !m);
+  // Mirror of `isMaximized` kept in a ref so the drag/move handlers (which are
+  // registered once per drag and therefore capture a stale closure) always read
+  // the live maximized state.
+  const isMaxRef = useRef(defaultMaximized);
+
+  // Position the window had before it was last maximized, so dragging it back
+  // down from the top edge can restore it (like a regular OS window).
+  const preMaxPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // How close to the top viewport edge (px) the pointer must get for the
+  // window to snap-maximize while dragging.
+  const TOP_SNAP_THRESHOLD = 8;
+
+  useEffect(() => {
+    isMaxRef.current = isMaximized;
+  }, [isMaximized]);
+
+  const setMax = (val: boolean) => {
+    isMaxRef.current = val;
+    setIsMaximized(val);
+  };
+
+  const maximize = () => {
+    preMaxPos.current = { x: position.x, y: position.y };
+    setMax(true);
+  };
+
+  const restore = () => setMax(false);
+
+  const toggleMaximize = () => (isMaxRef.current ? restore() : maximize());
 
   const handleHeaderDoubleTap = (e: React.TouchEvent) => {
     // Don't hijack taps on header buttons (close, maximize, actions).
@@ -79,7 +108,7 @@ export default function GenericOverlayModal({
   }, [isOpen]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (window.innerWidth < 640 || isMaximized) return;
+    if (window.innerWidth < 640) return;
     const target = e.target as HTMLElement;
     if (
       target.closest("button") ||
@@ -103,11 +132,33 @@ export default function GenericOverlayModal({
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!dragRef.current.isDragging) return;
-    const deltaX = e.clientX - dragRef.current.startX;
-    const deltaY = e.clientY - dragRef.current.startY;
+    const d = dragRef.current;
+    const atTop = e.clientY <= TOP_SNAP_THRESHOLD;
+
+    // Pointer at the top edge: snap-maximize (remember where we were so we can
+    // restore on the way back down).
+    if (atTop) {
+      if (!isMaxRef.current) {
+        preMaxPos.current = { x: d.startPos.x, y: d.startPos.y };
+        setMax(true);
+      }
+      return;
+    }
+
+    // Pointer below the top edge while maximized (e.g. dragging a maximized
+    // window down): un-maximize and keep following the cursor from where it was.
+    if (isMaxRef.current) {
+      setMax(false);
+      d.startPos = { x: preMaxPos.current.x, y: preMaxPos.current.y };
+      d.startX = e.clientX;
+      d.startY = e.clientY;
+    }
+
+    const deltaX = e.clientX - d.startX;
+    const deltaY = e.clientY - d.startY;
     setPosition({
-      x: dragRef.current.startPos.x + deltaX,
-      y: dragRef.current.startPos.y + deltaY,
+      x: d.startPos.x + deltaX,
+      y: d.startPos.y + deltaY,
     });
   };
 
@@ -151,17 +202,17 @@ export default function GenericOverlayModal({
           }}
           onTouchEnd={handleHeaderDoubleTap}
           className={`flex items-center justify-between px-4 py-2.5 border-b border-base-300 bg-base-200 text-base-content select-none shrink-0 ${
-            "cursor-default"
+            isDragging ? "cursor-grabbing" : "cursor-grab"
           }`}
         >
           {/* Left: Close Button */}
           <div className="flex items-center justify-start">
             <button
               onClick={onClose}
-              className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
-              aria-label="Close"
+              className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+              aria-label="Back"
             >
-              <X className="w-5 h-5 shrink-0" />
+              <ArrowLeft className="w-5 h-5 shrink-0" />
             </button>
           </div>
 
@@ -173,7 +224,7 @@ export default function GenericOverlayModal({
             ) : null}
             {headerTrailing ?? <ProfilePopover />}
             <button
-              onClick={() => setIsMaximized(!isMaximized)}
+              onClick={toggleMaximize}
               className="hidden sm:inline-flex p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
               aria-label={isMaximized ? "Restore" : "Maximize"}
             >

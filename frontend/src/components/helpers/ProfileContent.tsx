@@ -26,8 +26,14 @@ import {
   LogIn,
   LogOut,
   Settings,
+  PlusCircle,
+  Calendar,
 } from "lucide-react";
 import Avatar from "@/components/helpers/Avatar";
+import UnifiedViewItem from "@/components/helpers/UnifiedViewItem";
+import ViewSwitcher from "@/components/helpers/ViewSwitcher";
+import { useViewMode } from "@/hooks/useViewMode";
+import { getGridClass } from "@/lib/viewModes";
 import { useAuth } from "@/hooks/useAuth";
 import { apiService } from "@/api";
 import { db } from "@/lib/db";
@@ -35,6 +41,19 @@ import { useHomeStore } from "@/store/useHomeStore";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/context/ProfileContext";
 import AdminDashboardOverlay from "@/components/overlays/AdminDashboardOverlay";
+
+const formatBlogDate = (dateString: string) => {
+  try {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  } catch {
+    return "Unknown Date";
+  }
+};
 
 export default function ProfileContent() {
   const { user: currentUser, loading: authLoading } = useAuth();
@@ -97,10 +116,16 @@ export default function ProfileContent() {
   const [profileReadme, setProfileReadme] = useState<string | null>(null);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "bookmarks">(
-    "overview"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "bookmarks" | "blogs"
+  >("overview");
   const [targetBookmarks, setTargetBookmarks] = useState<any[]>([]);
+
+  // Blogs tab state (lazy-loaded when the tab is opened)
+  const [userBlogs, setUserBlogs] = useState<any[]>([]);
+  const [blogsLoading, setBlogsLoading] = useState(false);
+  const [blogsLoaded, setBlogsLoaded] = useState(false);
+  const [blogView, setBlogView] = useViewMode("meta_iitgn_profile_blogs_view");
 
   useEffect(() => {
     if (!targetUserId) return;
@@ -238,6 +263,37 @@ export default function ProfileContent() {
 
     fetchProfileData();
   }, [targetUserId, currentUser, userIdParam, profileCache, setProfileData]);
+
+  // Lazy-load authored blogs when the Blogs tab is first opened
+  const loadUserBlogs = async () => {
+    if (!targetUserId) return;
+    setBlogsLoading(true);
+    try {
+      const res = await apiService.getBlogs({
+        author_id: targetUserId,
+        limit: 50,
+      });
+      if (res && res.success) {
+        setUserBlogs(res.blogs || []);
+      }
+    } catch (err) {
+      console.error("Error loading user blogs:", err);
+    } finally {
+      setBlogsLoading(false);
+      setBlogsLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      activeTab === "blogs" &&
+      !blogsLoaded &&
+      !blogsLoading &&
+      targetUserId
+    ) {
+      loadUserBlogs();
+    }
+  }, [activeTab, targetUserId, blogsLoaded, blogsLoading]);
 
   if (authLoading) {
     return (
@@ -393,7 +449,7 @@ export default function ProfileContent() {
 
         {/* Tab bar */}
         <div className="flex border-t border-base-200 px-5 sm:px-8">
-          {["overview", "bookmarks"].map((tab) => (
+          {["overview", "bookmarks", "blogs"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -687,6 +743,132 @@ export default function ProfileContent() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === "blogs" && (
+        <section className="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-sm sm:p-6">
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div>
+              <h2 className="text-base font-black text-base-content">
+                Written Blogs
+              </h2>
+              <p className="mt-0.5 text-xs text-base-content/55">
+                {blogsLoaded
+                  ? `${userBlogs.length} published ${userBlogs.length === 1 ? "post" : "posts"}`
+                  : "Blog posts by this author"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <ViewSwitcher view={blogView} onChange={setBlogView} />
+              {isOwner && (
+                <Link
+                  href="/blog/new/edit"
+                  className="btn btn-primary btn-sm font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer text-primary-content"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Write a Blog
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {blogsLoading ? (
+            <div className={getGridClass(blogView)}>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="card card-compact card-bordered w-full h-32 bg-base-100 border-base-200 shadow-xs animate-pulse"
+                />
+              ))}
+            </div>
+          ) : userBlogs.length === 0 ? (
+            <div className="text-center py-12 border border-dashed border-base-300 rounded-2xl">
+              <BookOpen className="h-10 w-10 mx-auto text-base-content/30 mb-3" />
+              <p className="text-sm font-bold text-base-content/60">
+                No blogs yet
+              </p>
+              <p className="text-xs text-base-content/40 mt-1">
+                {isOwner
+                  ? "Share your first story with the community."
+                  : "This user hasn't published any blogs."}
+              </p>
+              {isOwner && (
+                <Link
+                  href="/blog/new/edit"
+                  className="btn btn-primary btn-sm mt-4 rounded-xl text-primary-content cursor-pointer"
+                >
+                  <PlusCircle className="h-4 w-4" /> Write a Blog
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className={getGridClass(blogView)}>
+              {userBlogs.map((blog: any) => {
+                const href = `/blog/${blog.slug}`;
+                const metaContent = (
+                  <div className="flex items-center justify-between text-[10px] text-base-content/40 uppercase font-black tracking-wider">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {formatBlogDate(blog.created_at)}
+                    </span>
+                    <span>{blog.view_count} views</span>
+                  </div>
+                );
+
+                const actionContent = (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Avatar
+                        seed={String(blog.original_author?.user_id ?? targetUserId)}
+                        name={blog.original_author?.name ?? name}
+                        className="h-6 w-6 rounded-full object-cover border border-base-300"
+                      />
+                      <span className="text-[11px] font-bold text-base-content/70 truncate max-w-[120px]">
+                        {blog.original_author?.name ?? name}
+                      </span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 text-[10px] font-black text-primary hover:underline transition-colors uppercase tracking-wider cursor-pointer">
+                      <span>Read Blog</span>
+                      <ArrowRight className="h-3 w-3 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </>
+                );
+
+                const authorAvatar = (
+                  <Avatar
+                    seed={String(blog.original_author?.user_id ?? targetUserId)}
+                    name={blog.original_author?.name ?? name}
+                    className="h-full w-full object-cover rounded-md"
+                  />
+                );
+
+                return (
+                  <UnifiedViewItem
+                    key={blog.blog_id}
+                    view={blogView}
+                    href={href}
+                    title={blog.title}
+                    description={blog.description}
+                    avatar={authorAvatar}
+                    meta={blogView === "tiles" ? metaContent : undefined}
+                    subtitle={
+                      blogView === "details" || blogView === "default" ? (
+                        <span className="flex items-center gap-2 text-[10px] text-base-content/40 uppercase font-black tracking-wider mt-1 flex-wrap">
+                          <span>By {blog.original_author?.name ?? name}</span>
+                          <span>•</span>
+                          <span>{formatBlogDate(blog.created_at)}</span>
+                          <span>•</span>
+                          <span>{blog.view_count} views</span>
+                        </span>
+                      ) : undefined
+                    }
+                    action={blogView === "tiles" ? actionContent : undefined}
+                  />
+                );
+              })}
             </div>
           )}
         </section>

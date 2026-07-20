@@ -10,7 +10,7 @@ export interface UnifiedViewItemProps {
   view: ViewMode;
   href?: string;
   onClick?: () => void;
-  title: string;
+  title: ReactNode;
   subtitle?: ReactNode;
   description?: ReactNode;
   icon?: ReactNode;
@@ -23,6 +23,14 @@ export interface UnifiedViewItemProps {
   noIcon?: boolean; // Suppress rendering of the icon box in tiles/details/default layouts
   className?: string;
 }
+
+// Fallback icon-box styling used when a caller doesn't supply its own
+// `iconBoxClassName`. Deliberately neutral (base surface + base content
+// colour) so the glyph stays visible in every DaisyUI theme — the old
+// hardcoded `bg-primary/10 text-primary` vanished on themes whose
+// `primary` is light. Callers pass `iconBoxClassName` for per-category
+// colour, which now overrides this in every view branch.
+const DEFAULT_ICON_BOX = "bg-base-200 border-base-300 text-base-content";
 
 export default function UnifiedViewItem({
   view,
@@ -58,7 +66,7 @@ export default function UnifiedViewItem({
       >
         <div
           className={`${iconSizeClass} rounded-xl border flex items-center justify-center shrink-0 transition-all duration-300 ${
-            iconBoxClassName || "border-primary/20 bg-primary/10 text-primary"
+            iconBoxClassName || DEFAULT_ICON_BOX
           }`}
           style={iconBoxStyle}
         >
@@ -92,7 +100,7 @@ export default function UnifiedViewItem({
           {meta && <div className="w-full">{meta}</div>}
           {!meta && !noIcon && (
             <div
-              className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 bg-primary/10 border-primary/20 text-primary"
+              className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 ${iconBoxClassName || DEFAULT_ICON_BOX}`}
               style={iconBoxStyle}
             >
               {avatar || icon || <FileText className="h-[50%] w-[50%]" />}
@@ -132,7 +140,7 @@ export default function UnifiedViewItem({
       >
         {!noIcon && (
           <div
-            className="w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 bg-primary/10 border-primary/20 text-primary"
+            className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 ${iconBoxClassName || DEFAULT_ICON_BOX}`}
             style={iconBoxStyle}
           >
             {avatar || icon || <FileText className="h-[50%] w-[50%]" />}
@@ -172,7 +180,7 @@ export default function UnifiedViewItem({
     >
       {!noIcon && (
         <div
-          className="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 bg-primary/10 border-primary/20 text-primary"
+          className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 ${iconBoxClassName || DEFAULT_ICON_BOX}`}
           style={iconBoxStyle}
         >
           {avatar || icon || <FileText className="h-[50%] w-[50%]" />}

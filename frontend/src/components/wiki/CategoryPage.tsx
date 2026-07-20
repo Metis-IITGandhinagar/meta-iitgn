@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import { PlusCircle, Pencil } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "react-hot-toast";
 import { apiService } from "@/api";
 import CategoryEditModal from "@/components/overlays/CategoryEditModal";
@@ -92,6 +93,11 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   // Edit Category modal state — the form itself lives in <CategoryEditModal />.
   const [isEditing, setIsEditing] = useState(false);
   const handleStartEdit = () => setIsEditing(true);
+
+  // Gate the edit-modal portal on client mount so createPortal never runs during
+  // SSR (where `document` is undefined).
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
 
   // Icon picker popover (admin/moderator only) — opened by clicking the
   // category icon in the header; lets you set an icon+color or an emoji.
@@ -319,7 +325,9 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
           </div>
         )}
 
-        {/* Articles List / Grid (Horizontal Stack) */}
+        {/* Articles List / Grid (Horizontal Stack) — hidden entirely when there
+            are no articles (and we're not still loading them). */}
+        {(loading || articles.length > 0) && (
         <div>
           <div className="flex items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-serif font-bold text-base-content tracking-tight">
@@ -399,12 +407,16 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             </div>
           )}
         </div>
+        )}
 
       </div>
 
-      {/* Edit Category Modal */}
-      {isEditing && category && (
-        <CategoryEditModal category={category} onClose={() => setIsEditing(false)} />
+      {/* Edit Category Modal — portaled to document.body so it renders as a true
+          top-level dialog above the page/portal modal instead of being trapped
+          inside its scrollable body. */}
+      {isMounted && isEditing && category && createPortal(
+        <CategoryEditModal category={category} onClose={() => setIsEditing(false)} />,
+        document.body
       )}
     </main>
   );

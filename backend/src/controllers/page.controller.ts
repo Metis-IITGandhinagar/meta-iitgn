@@ -154,6 +154,10 @@ export const searchPages = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string, 10) || 6;
     const category = ((req.query.category as string) || 'All').trim();
 
+    // Defaults for result/tab icon + color (mirror categoryIcon.tsx).
+    const DEFAULT_ICON = 'BookOpen';
+    const DEFAULT_COLOR = '#4f46e5';
+
     if (!query) {
       return res.json({ results: [], total: 0, hasMore: false });
     }
@@ -178,6 +182,8 @@ export const searchPages = async (req: Request, res: Response) => {
         category: true,
         subcategory: true,
         description: true,
+        icon: true,
+        color: true,
       },
     });
 
@@ -199,12 +205,14 @@ export const searchPages = async (req: Request, res: Response) => {
       },
     });
 
-    // 3. Fetch categories
+    // 3. Fetch categories (incl. their icon/color so results can show them)
     const allCategories = await prisma.categories.findMany({
       select: {
         name: true,
         description: true,
         slug: true,
+        icon: true,
+        color: true,
       }
     });
 
@@ -227,6 +235,18 @@ export const searchPages = async (req: Request, res: Response) => {
         email: true,
       }
     });
+
+    // Lookup helpers so each result can carry its real icon/color/name,
+    // exactly like the category sidebar/wiki surfaces do. `live_pages` and
+    // `pending_pages` also store their own icon/color, which take precedence.
+    const categoryBySlug = new Map<string, any>();
+    for (const c of allCategories) {
+      categoryBySlug.set(c.slug.toLowerCase(), c);
+    }
+    const categoryMetaFor = (slugOrName?: string | null): any => {
+      if (!slugOrName) return null;
+      return categoryBySlug.get(slugOrName.toLowerCase()) || null;
+    };
 
     // Levenshtein edit distance
     const editDistance = (s1: string, s2: string): number => {
@@ -319,6 +339,8 @@ export const searchPages = async (req: Request, res: Response) => {
           type: 'profile',
           description: `View profile details`,
           is_pending: false,
+          icon: 'User',
+          color: '#0ea5e9',
           score: totalScore,
         });
       }
@@ -332,6 +354,7 @@ export const searchPages = async (req: Request, res: Response) => {
       const totalScore = titleScore * 3 + contentScore;
       
       if (totalScore > 15) {
+        const cat = categoryMetaFor(p.category);
         results.push({
           title: p.title || 'Untitled',
           slug: p.slug,
@@ -341,6 +364,9 @@ export const searchPages = async (req: Request, res: Response) => {
           type: 'page',
           description: p.description || cleanContent(p.content),
           is_pending: false,
+          icon: p.icon || cat?.icon || DEFAULT_ICON,
+          color: p.color || cat?.color || DEFAULT_COLOR,
+          categoryName: cat?.name || null,
           score: totalScore,
         });
       }
@@ -356,7 +382,7 @@ export const searchPages = async (req: Request, res: Response) => {
       const titleScore = scoreText(p.title || '', query);
       const contentScore = scoreText(p.content || '', query);
       const totalScore = titleScore * 3 + contentScore;
-      
+
       if (totalScore > 15) {
         const meta = p.metadata as any;
         let draftSlug = meta?.slug;
@@ -394,6 +420,9 @@ export const searchPages = async (req: Request, res: Response) => {
           type: 'category',
           description: c.description,
           is_pending: false,
+          icon: c.icon || DEFAULT_ICON,
+          color: c.color || DEFAULT_COLOR,
+          categoryName: c.name,
           score: totalScore,
         });
       }
@@ -413,6 +442,8 @@ export const searchPages = async (req: Request, res: Response) => {
           type: 'news',
           description: cleanContent(n.content),
           is_pending: false,
+          icon: 'Newspaper',
+          color: '#f59e0b',
           score: totalScore,
         });
       }
@@ -446,11 +477,29 @@ export const searchPages = async (req: Request, res: Response) => {
     ])
   );
 
+  // Per-tab icon/color so the search filter bar can show the same glyphs
+  // as the result rows. Keyed by the (Title-cased) category label, derived
+  // from the results themselves (each already carries its real icon/color).
+  const categoryMeta: Record<string, { icon: string; color: string }> = {
+    All: { icon: 'Sparkles', color: DEFAULT_COLOR },
+  };
+  for (const item of resultsToPaginate) {
+    const raw = item.category || 'Campus';
+    const label = raw.charAt(0).toUpperCase() + raw.slice(1);
+    if (!categoryMeta[label]) {
+      categoryMeta[label] = {
+        icon: item.icon || DEFAULT_ICON,
+        color: item.color || DEFAULT_COLOR,
+      };
+    }
+  }
+
   return res.json({
     results: paginatedResults,
     total: categoryFiltered.length,
     hasMore: offset + limit < categoryFiltered.length,
     categories: availableCategories,
+    categoryMeta,
   });
   } catch (error: any) {
     console.error('Error in searchPages:', error);

@@ -12,8 +12,9 @@ import {
 import { db } from "@/lib/db";
 import { useViewMode } from "@/hooks/useViewMode";
 import ViewSwitcher from "@/components/helpers/ViewSwitcher";
-import { getGridClass } from "@/lib/viewModes";
+import { getGridClass, getIconSize } from "@/lib/viewModes";
 import UnifiedViewItem from "@/components/helpers/UnifiedViewItem";
+import { CategoryIcon } from "@/lib/categoryIcon";
 
 interface BookmarkItem {
   id: string;
@@ -21,6 +22,8 @@ interface BookmarkItem {
   category: string;
   description: string;
   slug?: string;
+  icon?: string | null;
+  color?: string | null;
 }
 
 interface BookmarksTabProps {
@@ -134,7 +137,18 @@ export default function BookmarksTab({
 
   const renderBookmark = (item: BookmarkItem) => {
     const pagePath = getPagePath(item);
-    const initial = (item.title.trim().charAt(0) || "?").toUpperCase();
+
+    // Each page carries its own icon+color (emoji or Lucide key); fall back to
+    // a neutral brand colour when a page hasn't set one, mirroring CategoryPage.
+    const pageColor = item.color || "#4f46e5";
+    const iconBoxStyle = {
+      backgroundColor: `${pageColor}1a`,
+      borderColor: `${pageColor}33`,
+      color: pageColor,
+    };
+    const pageIcon = (
+      <CategoryIcon icon={item.icon ?? undefined} size={getIconSize(view)} />
+    );
 
     return (
       <UnifiedViewItem
@@ -142,15 +156,8 @@ export default function BookmarksTab({
         view={view}
         onClick={() => handleCardClick(pagePath)}
         title={item.title}
-        avatar={
-          view.startsWith("icon-") ? (
-            <span className="text-base-content/70 group-hover:text-primary transition-colors">
-              {initial}
-            </span>
-          ) : undefined
-        }
-        iconBoxClassName="border-base-300 bg-base-200 text-primary font-bold"
-        noIcon={!view.startsWith("icon-")}
+        icon={pageIcon}
+        iconBoxStyle={iconBoxStyle}
         topRightAction={view === "tiles" || view.startsWith("icon-") ? renderDeleteBtn(item.id) : undefined}
         action={view === "details" || view === "default" ? renderDeleteBtn(item.id) : undefined}
       />

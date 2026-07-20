@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { X, Search as SearchIcon } from "lucide-react";
+import { ArrowLeft, Search as SearchIcon } from "lucide-react";
 import {
   EmojiPicker,
   type EmojiPickerListComponents,
@@ -77,10 +77,10 @@ export default function CategoryIconPicker({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 hover:bg-error/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
-            aria-label="Close"
+            className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+            aria-label="Back"
           >
-            <X className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
           </button>
         </div>
 

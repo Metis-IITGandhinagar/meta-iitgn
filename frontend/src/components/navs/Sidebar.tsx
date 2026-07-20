@@ -57,8 +57,13 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, categories } = useAuth();
-  const { setActiveOverlay, setActivePortalCategory, activeOverlay, activePortalCategory } = useHomeStore();
+  const { setActiveOverlay, setActivePortalCategory, setPortalMaximized, activeOverlay, activePortalCategory } = useHomeStore();
   const [showAllCategories, setShowAllCategories] = useState(false);
+
+  // Only show root-level categories (those without a parent) on the sidebar.
+  const rootCategories = categories.filter(
+    (category) => category.parent_id == null
+  );
 
   // Helper to render Lucide icons dynamically from their string names
   const renderIcon = (iconName: string, isActive: boolean) => {
@@ -125,32 +130,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <div className="space-y-0.5">
                 {section.items.map((item) => {
                   const isActive = pathname === item.path;
-                  // "All Categories" is now a modal, not a route — open the
-                  // categories overlay instead of navigating.
-                  const isCategoryBrowser = item.path === "/wiki/categories";
 
-                  const itemClass = `group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
+                  const itemClass = `group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg select-none transition-all duration-200 ${
                     isActive
                       ? "bg-primary/10 text-primary font-bold"
                       : "text-base-content/75 hover:text-base-content hover:bg-base-200"
                   }`;
-
-                  if (isCategoryBrowser) {
-                    return (
-                      <button
-                        key={item.name}
-                        type="button"
-                        onClick={() => {
-                          setActiveOverlay("categories");
-                          if (window.innerWidth < 1024) onClose();
-                        }}
-                        className={itemClass}
-                      >
-                        {renderIcon(item.iconName, isActive)}
-                        <span className="truncate">{item.name}</span>
-                      </button>
-                    );
-                  }
 
                   return (
                     <Link
@@ -175,13 +160,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Categories — sourced dynamically from the live categories API so the
               sidebar always reflects the current set of categories. */}
-          {categories.length > 0 && (
+          {rootCategories.length > 0 && (
             <div className="space-y-1.5">
               <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/50 uppercase">
                 Categories
               </h3>
               <div className="space-y-0.5">
-                {(showAllCategories ? categories : categories.slice(0, 4)).map(
+                {(showAllCategories
+                  ? rootCategories
+                  : rootCategories.slice(0, 4)
+                ).map(
                   (category) => {
                     const isActive =
                       activeOverlay === "portal" && activePortalCategory === category.slug;
@@ -192,12 +180,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         type="button"
                         onClick={() => {
                           // Open the category in the portal modal instead of
-                          // navigating to a (now-removed) category route.
+                          // navigating to a (now-removed) category route. Mark it
+                          // to open maximized (Quick Portals don't set this).
                           setActivePortalCategory(category.slug);
+                          setPortalMaximized(true);
                           setActiveOverlay("portal");
                           if (window.innerWidth < 1024) onClose();
                         }}
-                        className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
+                        className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg select-none transition-all duration-200 ${
                           isActive
                             ? "bg-primary/10 text-primary font-bold"
                             : "text-base-content/75 hover:text-base-content hover:bg-base-200"
@@ -217,7 +207,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     );
                   }
                 )}
-                {categories.length > 4 && (
+                {rootCategories.length > 4 && (
                   <button
                     type="button"
                     onClick={() => setShowAllCategories(!showAllCategories)}
@@ -226,7 +216,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <span>
                       {showAllCategories
                         ? "Show Less"
-                        : `+ ${categories.length - 4} More`}
+                        : `+ ${rootCategories.length - 4} More`}
                     </span>
                   </button>
                 )}

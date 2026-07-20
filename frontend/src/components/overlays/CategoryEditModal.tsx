@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { Pencil, X, Maximize2, Minimize2 } from "lucide-react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { ArrowLeft, Maximize2, Minimize2, ChevronDown, FolderOpen, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import { apiService } from "@/api";
@@ -24,6 +25,173 @@ interface CategoryEditModalProps {
 // works for every colour format (unlike the old `${color}1a` hex-append trick).
 const tint = (color: string, pct: number) =>
   `color-mix(in srgb, ${color} ${pct}%, transparent)`;
+
+/**
+ * A searchable, hierarchical replacement for the native <select> used to pick a
+ * parent category. Options are indented by depth and filterable by name, which
+ * is far easier to use than a flat native <select> once there are many
+ * categories. The panel is portaled to document.body and positioned with fixed
+ * coordinates so it can't be clipped by the editor's scrollable body. Closes on
+ * outside click, Escape, or when the page scrolls/resizes.
+ */
+function ParentCategoryPicker({
+  value,
+  onChange,
+  options,
+  depthById,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  options: { category_id: number; name: string }[];
+  depthById: Map<number, number>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const openMenu = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setCoords({ top: r.bottom + 4, left: r.left, width: r.width });
+    setOpen(true);
+  }, []);
+
+  const closeMenu = useCallback(() => setOpen(false), []);
+
+  // Close on outside click / Escape, and close on scroll or resize (the panel is
+  // fixed against the trigger, so it would drift out of alignment otherwise).
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onReflow = () => setOpen(false);
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onReflow, true);
+    window.addEventListener("resize", onReflow);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onReflow, true);
+      window.removeEventListener("resize", onReflow);
+    };
+  }, [open]);
+
+  // Focus the filter box once the panel mounts.
+  useEffect(() => {
+    if (open) searchRef.current?.focus();
+  }, [open]);
+
+  const selected = value ? options.find((o) => String(o.category_id) === value) : undefined;
+  const q = query.trim().toLowerCase();
+  const filtered = q ? options.filter((o) => o.name.toLowerCase().includes(q)) : options;
+
+  const select = (next: string) => {
+    onChange(next);
+    setOpen(false);
+    setQuery("");
+  };
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => (open ? closeMenu() : openMenu())}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-left text-sm text-base-content transition-colors hover:border-primary/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
+      >
+        <span className="flex min-w-0 items-center gap-2 truncate">
+          {selected ? (
+            <>
+              <FolderOpen className="h-4 w-4 shrink-0 text-base-content/50" />
+              <span className="truncate">{selected.name}</span>
+            </>
+          ) : (
+            <span className="text-base-content/50">None (top-level)</span>
+          )}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-base-content/50 transition-transform duration-150 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && coords && createPortal(
+        <div
+          ref={panelRef}
+          className="fixed z-[22000] overflow-hidden rounded-xl border border-base-200 bg-base-100 shadow-2xl"
+          style={{ top: coords.top, left: coords.left, width: coords.width }}
+        >
+          <div className="border-b border-base-200 p-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/40" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search categories..."
+                className="w-full rounded-lg border border-base-300 bg-base-100 py-1.5 pl-8 pr-2 text-sm text-base-content placeholder-base-content/40 focus:border-primary focus:outline-none"
+              />
+            </div>
+          </div>
+          <ul className="max-h-60 overflow-y-auto py-1" role="listbox">
+            <li>
+              <button
+                type="button"
+                onClick={() => select("")}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-base-200 ${
+                  !value ? "font-semibold text-primary" : "text-base-content"
+                }`}
+              >
+                <FolderOpen className="h-4 w-4 shrink-0 text-base-content/50" />
+                None (top-level)
+              </button>
+            </li>
+            {filtered.map((o) => {
+              const depth = depthById.get(o.category_id) ?? 0;
+              const active = String(o.category_id) === value;
+              return (
+                <li key={o.category_id}>
+                  <button
+                    type="button"
+                    onClick={() => select(String(o.category_id))}
+                    style={{ paddingLeft: `${0.75 + depth * 1.1}rem` }}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-base-200 ${
+                      active ? "font-semibold text-primary" : "text-base-content"
+                    }`}
+                  >
+                    <FolderOpen className="h-4 w-4 shrink-0 text-base-content/40" />
+                    <span className="truncate">{o.name}</span>
+                  </button>
+                </li>
+              );
+            })}
+            {filtered.length === 0 && (
+              <li className="px-3 py-3 text-center text-xs text-base-content/40">
+                No categories match &ldquo;{query}&rdquo;
+              </li>
+            )}
+          </ul>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
 
 export default function CategoryEditModal({ category, onClose }: CategoryEditModalProps) {
   const { categories, updateCategoryState } = useAuth();
@@ -192,10 +360,10 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
             <button
               type="button"
               onClick={onClose}
-              className="p-1 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-red-400 hover:text-red-500"
-              aria-label="Close"
+              className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
+              aria-label="Back"
             >
-              <X className="h-5 w-5 shrink-0" />
+              <ArrowLeft className="h-5 w-5 shrink-0" />
             </button>
           </div>
         </div>
@@ -269,21 +437,12 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
             <label className="text-xs font-bold text-base-content/70 uppercase">
               Parent Category
             </label>
-            <select
+            <ParentCategoryPicker
               value={editParentId}
-              onChange={(e) => setEditParentId(e.target.value)}
-              className="select select-bordered w-full text-base-content focus:border-primary"
-            >
-              <option value="">None (top-level)</option>
-              {parentOptions.map((c) => {
-                const depth = depthById.get(c.category_id) ?? 0;
-                return (
-                  <option key={c.category_id} value={c.category_id}>
-                    {depth > 0 ? `${"— ".repeat(depth)}${c.name}` : c.name}
-                  </option>
-                );
-              })}
-            </select>
+              onChange={setEditParentId}
+              options={parentOptions}
+              depthById={depthById}
+            />
             <p className="text-[10px] text-base-content/50">
               If set, this category is shown inside its parent instead of the All Categories page.
             </p>

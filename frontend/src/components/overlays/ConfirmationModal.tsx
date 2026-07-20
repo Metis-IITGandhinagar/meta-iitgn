@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, AlertCircle, Info, X } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, ArrowLeft } from "lucide-react";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -78,9 +78,9 @@ export default function ConfirmationModal({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1 rounded-xl text-base-content/40 hover:text-base-content/80 hover:bg-base-200 transition-all active:scale-95 duration-100"
-          aria-label="Close"
+          aria-label="Back"
         >
-          <X className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" />
         </button>
 
         {/* Content Row */}

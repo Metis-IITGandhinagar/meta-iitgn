@@ -1,53 +1,53 @@
 "use client";
 
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { apiService } from "@/api";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   Search,
-  Building2,
-  BookOpen,
-  Users2,
-  Trophy,
-  FlaskConical,
-  Shield,
-  Sparkles,
   User,
   Newspaper,
   FolderOpen,
+  FileText,
   ArrowLeft,
-  LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 import { BeautifulSearchBox, BeautifulTabBar } from "@/components/helpers/SearchDesign";
 import { getSearchHistory, addSearchHistory, clearSearchHistory } from "@/lib/searchHistory";
 import Avatar from "@/components/helpers/Avatar";
+import { useViewMode } from "@/hooks/useViewMode";
+import ViewSwitcher from "@/components/helpers/ViewSwitcher";
+import { getGridClass, getIconSize } from "@/lib/viewModes";
+import UnifiedViewItem from "@/components/helpers/UnifiedViewItem";
+import {
+  CategoryIcon,
+  CATEGORY_ICON_SET,
+  isEmojiIcon,
+} from "@/lib/categoryIcon";
 
-const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
-  Campus: Building2,
-  Academics: BookOpen,
-  Clubs: Users2,
-  Fests: Trophy,
-  Research: FlaskConical,
-  Policies: Shield,
-  Profile: User,
-  News: Newspaper,
-  Category: FolderOpen,
-  All: Sparkles,
-};
+// Tint any CSS color (hex, theme name, …) the same way the category
+// editor does, so icon boxes read consistently across every surface.
+const tint = (color: string, pct: number) =>
+  `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
-const CATEGORY_COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
-  Campus: { bg: "bg-success/15", text: "text-success", border: "border-success/20" },
-  Academics: { bg: "bg-primary/15", text: "text-primary", border: "border-primary/20" },
-  Clubs: { bg: "bg-secondary/15", text: "text-secondary", border: "border-secondary/20" },
-  Fests: { bg: "bg-warning/15", text: "text-warning", border: "border-warning/20" },
-  Research: { bg: "bg-error/15", text: "text-error", border: "border-error/20" },
-  Policies: { bg: "bg-info/15", text: "text-info", border: "border-info/20" },
-  News: { bg: "bg-accent/15", text: "text-accent", border: "border-accent/20" },
-  Profile: { bg: "bg-info/15", text: "text-info", border: "border-info/20" },
-  Category: { bg: "bg-secondary/15", text: "text-secondary", border: "border-secondary/20" },
-  All: { bg: "bg-primary text-primary-content", text: "text-primary-content", border: "border-primary" },
+// Resolve a search result to a Lucide/emoji glyph. The API now returns each
+// result's real `icon` (a Lucide key or emoji) for pages/categories; type-only
+// results (profile/news) and category fallbacks use fixed glyphs.
+const getResultIcon = (item: SearchResult, size: number): React.ReactNode => {
+  if (item.type === "profile") return <User size={size} />;
+  if (item.type === "news") return <Newspaper size={size} />;
+  if (item.type === "category") {
+    if (item.icon && (isEmojiIcon(item.icon) || CATEGORY_ICON_SET[item.icon])) {
+      return <CategoryIcon icon={item.icon} size={size} />;
+    }
+    return <FolderOpen size={size} />;
+  }
+  // page — use its own/category icon when present, else a neutral doc glyph
+  if (item.icon && (isEmojiIcon(item.icon) || CATEGORY_ICON_SET[item.icon])) {
+    return <CategoryIcon icon={item.icon} size={size} />;
+  }
+  return <FileText size={size} />;
 };
 
 const SearchResultSkeleton = () => (
@@ -68,10 +68,14 @@ const SearchResultSkeleton = () => (
 interface SearchResult {
   title: string;
   path: string;
+  slug?: string;
   category: string;
   description: string;
   type?: string;
   is_pending?: boolean;
+  icon?: string;
+  color?: string;
+  categoryName?: string | null;
 }
 
 function SearchResultsContent() {
@@ -92,7 +96,24 @@ function SearchResultsContent() {
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [dynamicCategories, setDynamicCategories] = useState<string[]>(["All"]);
+  const [categoryMeta, setCategoryMeta] = useState<Record<string, { icon: string; color: string }>>({});
   const [history, setHistory] = useState<string[]>([]);
+
+  // Article-list view (Default / Tiles / Details / Icons S–XL), persisted
+  // independently from the other surfaces via a search-specific key.
+  const [view, setView] = useViewMode("meta_iitgn_search_view");
+
+  // Map the API's per-category meta (icon key + color) into the Lucide
+  // components the tab bar expects. Emoji icons can't be a component, so
+  // those tabs fall back to a text label (handled by BeautifulTabBar).
+  const categoryIconMap = useMemo<Record<string, LucideIcon>>(() => {
+    const map: Record<string, LucideIcon> = {};
+    for (const [label, meta] of Object.entries(categoryMeta)) {
+      const comp = CATEGORY_ICON_SET[meta.icon];
+      if (comp) map[label] = comp;
+    }
+    return map;
+  }, [categoryMeta]);
 
   useEffect(() => {
     setHistory(getSearchHistory());
@@ -111,6 +132,7 @@ function SearchResultsContent() {
         setTotal(data.total || 0);
         setHasMore(data.hasMore || false);
         setDynamicCategories(data.categories || ["All"]);
+        setCategoryMeta(data.categoryMeta || {});
         setPage(1);
       } catch (err) {
         console.error("Failed to fetch search results:", err);
@@ -140,6 +162,9 @@ function SearchResultsContent() {
       setPage(nextPage);
       if (data.categories) {
         setDynamicCategories(data.categories);
+      }
+      if (data.categoryMeta) {
+        setCategoryMeta(data.categoryMeta);
       }
     } catch (err) {
       console.error("Failed to fetch more search results:", err);
@@ -217,7 +242,7 @@ function SearchResultsContent() {
             categories={dynamicCategories}
             activeCategory={category}
             onCategoryChange={selectCategory}
-            categoryIconMap={CATEGORY_ICON_MAP}
+            categoryIconMap={categoryIconMap}
           />
         </div>
       </div>
@@ -254,61 +279,77 @@ function SearchResultsContent() {
             </>
           )}
         </div>
-        <div className="flex items-center justify-between mb-4 select-none">
+        <div className="flex items-center justify-between gap-2 mb-4 select-none">
           <p className="text-[10px] font-black text-base-content/50 uppercase tracking-widest">
             {loading ? "Searching…" : `${total} result${total !== 1 ? "s" : ""} found`}
           </p>
-          {queryParam && (
-            <p className="text-[10px] font-semibold text-base-content/40">
-              for &ldquo;{queryParam}&rdquo;
-            </p>
-          )}
+          <div className="flex items-center gap-2">
+            {queryParam && (
+              <p className="text-[10px] font-semibold text-base-content/40">
+                for &ldquo;{queryParam}&rdquo;
+              </p>
+            )}
+            <ViewSwitcher view={view} onChange={setView} />
+          </div>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className={getGridClass(view)}>
             {[1,2,3,4].map(i => <SearchResultSkeleton key={i} />)}
           </div>
         ) : results.length > 0 ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className={getGridClass(view)}>
               {results.map((item) => {
-                const colors = CATEGORY_COLOR_MAP[item.category] || {
-                  bg: "bg-base-200",
-                  text: "text-base-content/70",
-                  border: "border-base-300",
+                const displayCategory = item.category
+                  ? item.category.charAt(0).toUpperCase() + item.category.slice(1)
+                  : "All";
+                // The API now returns each result's real icon/color (a Lucide
+                // key or emoji) plus a human categoryName, so glyph + tint come
+                // straight from the data instead of a name-keyed fallback map.
+                const color = item.color || "#4f46e5";
+                const iconBoxStyle: React.CSSProperties = {
+                  backgroundColor: tint(color, 12),
+                  color,
+                  borderColor: tint(color, 25),
                 };
+                // Category results have no real route (/wiki/<slug> 404s); they
+                // open via the home PortalOverlay, so deep-link to it instead.
+                const href =
+                  item.type === "category"
+                    ? `/?overlay=portal&category=${encodeURIComponent(item.slug || "")}`
+                    : openInNewTab
+                      ? undefined
+                      : item.path;
                 return (
-                  <Link
+                  <UnifiedViewItem
                     key={item.path}
-                    href={item.path}
-                    target={openInNewTab ? "_blank" : undefined}
-                    rel={openInNewTab ? "noopener noreferrer" : undefined}
-                    className="p-5 bg-base-100 border border-base-200 hover:border-primary/30 rounded-2xl flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md group text-left cursor-pointer"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-3.5">
-                        <span className={`text-[9px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-lg border ${colors.bg} ${colors.text} ${colors.border}`}>
-                          {item.category}
-                        </span>
-                        {item.is_pending && (
-                          <span className="badge badge-warning badge-xs">Pending</span>
-                        )}
-                      </div>
-                      <h4 className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors leading-snug flex items-center gap-2.5">
-                        {item.type === "profile" && (
-                          <Avatar
-                            name={item.title}
-                            className="h-7 w-7 rounded-full object-cover ring-1 ring-base-300 shrink-0"
-                          />
-                        )}
-                        {highlightText(item.title, queryParam)}
-                      </h4>
-                      <p className="text-xs text-base-content/50 leading-relaxed mt-2 line-clamp-3">
-                        {highlightText(item.description, queryParam)}
-                      </p>
-                    </div>
-                  </Link>
+                    view={view}
+                    href={href}
+                    onClick={
+                      openInNewTab
+                        ? () => window.open(href || item.path, "_blank", "noopener,noreferrer")
+                        : undefined
+                    }
+                    title={highlightText(item.title, queryParam)}
+                    subtitle={item.categoryName || displayCategory}
+                    description={highlightText(item.description, queryParam)}
+                    icon={getResultIcon(item, getIconSize(view))}
+                    iconBoxStyle={iconBoxStyle}
+                    avatar={
+                      item.type === "profile" ? (
+                        <Avatar
+                          name={item.title}
+                          className="h-7 w-7 rounded-full object-cover ring-1 ring-base-300 shrink-0"
+                        />
+                      ) : undefined
+                    }
+                    topRightAction={
+                      item.is_pending ? (
+                        <span className="badge badge-warning badge-xs">Pending</span>
+                      ) : undefined
+                    }
+                  />
                 );
               })}
             </div>
