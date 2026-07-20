@@ -1,5 +1,59 @@
 # Changelog
 
+## [1.3.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.2.0...frontend-v1.3.0) (2026-07-20)
+
+
+### Features
+
+* added admin daashboard and role chanching ([9119d61](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/9119d61a7196f2f90b39cfa26a64efdf5bd4aae3))
+* added history and revidon in blogs and wiki ([259ae6f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/259ae6fbd16553b443ec67bce6d8bf9509050114))
+* added map and calender page ([c86d211](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c86d2110b9a0cb61fa65c1e4c1dc581093a6237b))
+* added react toast for pop ups ([a6643ec](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a6643ecd5a616380a1b257f5b38a11e1bee8d4f1))
+* added web app mainfest and service worker ([c33b373](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c33b373604256a01605ffb3901b299d94f461ee1))
+* overhaul categories ([86bd3e1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/86bd3e14e0f2943a33572da4b738f393438e3a32))
+* overhaul categories ([4f9dd39](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4f9dd391ebf816dbb7a839a127f05a1d8a159b99))
+* reader folding ([bacad71](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/bacad7162d2e2913125db835766e0c5357b879ee))
+* small changes to search, bookmarks ([a71efac](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a71efac8a6d21e238121dc762e6461e605588bc0))
+* view switcher ([1be79ce](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/1be79ce9dafe1c1f0f57c466e3427104406798d6))
+* wikilinks with [[ ([03cafb9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/03cafb9bf6bad765e5e45e45ce6ee6d30e57ac78))
+
+
+### Bug Fixes
+
+* added news edit and delete options ([4f2003f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4f2003f73cd28b143e92e56ddfbb9f953ffb5944))
+* blog add condtion ([68fc130](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/68fc13058671dcc4ce04d1808a4aa88f84576775))
+* border fixes ([b44f2f3](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b44f2f358c27c8776e7d66b44309a8c06f07a8ba))
+* category loads only titles ([d7281f6](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/d7281f63bb87d3c89e4c650c14cab30bfc19a2d2))
+* commit message ([3f4f50e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3f4f50e1048ebb2e86a130daa577a86630c86654))
+* disable email access, avatar changes ([4ee4932](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4ee4932f79d820046d9fff70243f5a23a5458c40))
+* editing and draft contols in admin panels ([35c96b6](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/35c96b6c6f1cdd55228ff93d87c9a39c6347b8ad))
+* fixed bookmarks on profiles ([e058471](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e058471fd5c4c4ca9651a65cc3ebf978ebd4bd81))
+* fixed clear cache ([5494643](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5494643f8656458221de06bf8def8af4ff2c738c))
+* fixed review page ([7af7eba](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/7af7eba05c2ccba72b88b2653404fbf74fe4302b))
+* fixed revision model ([696cb90](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/696cb90453b5aa840576c0d5b8fb6efb996d07c8))
+* fixed toasts, category colors ([0655eab](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/0655eab96aa302932dddaead75ea1e26e7bc7e01))
+* hide create category from user ([dadcae9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/dadcae90ef31ce7faf94f69df0baf5cb00d1939f))
+* home page stats card ([48b74ec](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/48b74ec39d18e93d6c9ae4e5dcbebeba4c6aca2b))
+* last react hook fixes ([5aa4317](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5aa43176548007505c1c0ae4c8fcec9434437cac))
+* more react hook fix ([5d356ed](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5d356edb54a4eb4176823e8c23004e1eee69480c))
+* navbar dropdown and setting buttons spacing ([aaad1a7](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/aaad1a7f633ebde6a3830f290c5ff479e8acf00f))
+* react hook fix ([8596626](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/85966269f524a05e55ede0ab476144272352567b))
+* search shifting ([79ce17e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/79ce17ef67370b9ada05dea61ab79119139792eb))
+* simplified transport ([3180fa3](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3180fa392cca51162da7596be9e56137990094c9))
+* tier issues ([38a80a2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/38a80a24eae81b031e91c85eea9c61e078a96262))
+
+
+### Code Refactoring
+
+* added mess menu and events table and clean wiki -client ([e27f3ae](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e27f3ae738542a2be512d0b2f6bd4c0a3ed5a940))
+* categories route and controller ([654f807](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/654f8077c96b16b046f19f91fa4996e312e96fa3))
+* grouped all components in one file ([3d0324a](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3d0324a32632341bdb75ce1836712084e53eb496))
+* grouped all components in one file ([dfbf5f4](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/dfbf5f48a4b099bca3181587171353475ac33042))
+* made user readme to remove saving in live_pages ([35a8771](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/35a8771b9f37b9441ca4ec03ad56061f1e8f4b7b))
+* removed mess menu and bus ([21eef5b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/21eef5b7b4cfc080719f9652a6ff3ba4ed94011f))
+* simplified useView hook ([46a38dc](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/46a38dc978dbe757afdef29b5c2665a4bc87fa07))
+* simplified useView hook ([f87f234](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f87f23457e7a8ed3b1ff28e79a0c729bb56298c0))
+
 ## [1.2.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.1.0...frontend-v1.2.0) (2026-07-17)
 
 
