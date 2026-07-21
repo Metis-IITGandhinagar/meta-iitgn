@@ -75,42 +75,6 @@ export default function CompetitionsPage() {
         })}
       </div>
 
-      {/* ── Mobile section header (visible below lg) ── */}
-      <div className="lg:hidden flex items-center gap-2 px-4 pt-3 pb-1">
-        {(() => {
-          const current = TABS.find((t) => t.id === activeSection)!;
-          const Icon    = current.icon;
-          return (
-            <>
-              <Icon className="h-5 w-5 text-primary" />
-              <span className="text-lg font-bold">{current.label}</span>
-            </>
-          );
-        })()}
-      </div>
-
-      {/* ── Mobile horizontal tab scroller (visible below lg) ── */}
-      <div className="lg:hidden flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar">
-        {TABS.map((tab) => {
-          const Icon     = tab.icon;
-          const isActive = activeSection === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveSection(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${
-                isActive
-                  ? "bg-primary text-primary-content shadow-sm"
-                  : "bg-base-200 text-base-content/60 hover:bg-base-300"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
       {/* ── Scrollable content area ── */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto px-4 py-5 pb-32 lg:pb-8">
