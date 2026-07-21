@@ -288,7 +288,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         : "text-base-content/50 group-hover:text-base-content/80"
                     }`}
                   />
-                  <span className="truncate">Competitions & Oppurtunities</span>
+                  <span className="truncate">Competitions</span>
                 </Link>
               </div>
             </div>

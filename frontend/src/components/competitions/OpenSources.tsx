@@ -180,7 +180,7 @@ function RepoCard({ repo, featured }: RepoCardProps) {
 
         {/* Topics */}
         {repo.topics && repo.topics.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="md:flex hidden flex-wrap gap-1">
             {repo.topics.slice(0, 4).map((t) => (
               <span key={t} className="badge badge-ghost badge-xs">{t}</span>
             ))}
@@ -207,7 +207,7 @@ function RepoCard({ repo, featured }: RepoCardProps) {
             <Eye className="h-3 w-3" />
             {formatCount(repo.watchers_count)}
           </span>
-          <span className="ml-auto text-[11px]">Updated {timeAgo(repo.updated_at)}</span>
+          <span className="ml-auto hidden md:flex text-[11px]">Updated {timeAgo(repo.updated_at)}</span>
         </div>
       </div>
     </a>
@@ -371,7 +371,7 @@ export default function GitHubExplorer() {
 
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full sm:w-auto">
-          <label className="input input-bordered input-sm flex items-center gap-2 grow sm:w-64">
+          <label className="input input-bordered input-sm flex items-center gap-2 grow sm:w-64 rounded-2xl">
             <Search className="h-3.5 w-3.5 opacity-50 shrink-0" />
             <input
               type="text"
@@ -390,7 +390,7 @@ export default function GitHubExplorer() {
               </button>
             )}
           </label>
-          <button type="submit" className="btn btn-sm btn-primary">
+          <button type="submit" className="btn btn-sm btn-primary rounded-2xl">
             Go
           </button>
           <button

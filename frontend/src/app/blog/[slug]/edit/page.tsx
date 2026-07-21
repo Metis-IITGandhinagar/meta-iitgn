@@ -5,13 +5,10 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { apiService } from "@/api";
-import Link from "next/link";
 import { toast } from "react-hot-toast";
 import {
   X,
   Check,
-  ArrowLeft,
-  PanelRight,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import BottomNavbar from "@/components/navs/BottomNavbar";
@@ -36,7 +33,6 @@ export default function BlogEditPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   // BlockNote integration states
@@ -73,8 +69,6 @@ export default function BlogEditPage() {
         if (res && res.success) {
           setTitle(res.blog.title);
           setDescription(res.blog.description || "");
-
-
 
           if (res.blog.content) {
             setInitialContent(res.blog.content);
@@ -142,8 +136,7 @@ export default function BlogEditPage() {
 
   const handleSave = async () => {
     if (!title.trim()) {
-      setError("Title is required (configure in right settings panel)");
-      setRightSidebarOpen(true);
+      setError("Title is required.");
       return;
     }
 
@@ -207,23 +200,14 @@ export default function BlogEditPage() {
       onClick: handleSave,
       colorClass: "bg-success text-success-content hover:bg-success/90",
     },
-    {
-      id: "sidebar",
-      label: "Sidebar",
-      icon: PanelRight,
-      onClick: () => setRightSidebarOpen(!rightSidebarOpen),
-      colorClass: rightSidebarOpen 
-        ? "bg-primary text-primary-content hover:bg-primary/90" 
-        : "text-base-content/70 hover:bg-base-200 hover:text-base-content",
-    },
   ];
 
   return (
     <main className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)] w-full mt-16 bg-transparent relative">
       {/* Editor Main Workspace */}
-      <div className="flex-1 flex flex-col overflow-y-auto  sm:p-6 md:p-8 pb-32">
+      <div className="flex-1 flex flex-col overflow-y-auto p-4 sm:p-6 md:p-8 pb-32">
         <div className="max-w-5xl w-full mx-auto space-y-3 sm:space-y-6">
-                    {/* Header */}
+          {/* Header */}
           <div className="flex justify-between items-start gap-4 p-2">
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
@@ -241,8 +225,38 @@ export default function BlogEditPage() {
             </div>
           )}
 
+          {/* Title & Description Inputs */}
+          <div className="space-y-4 bg-base-100 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-base-200 hover:border-base-300 transition-colors">
+            <div className="space-y-1.5">
+              <label className="text-xs uppercase font-bold text-base-content/60 tracking-wider">
+                Blog Title <span className="text-error">*</span>
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter blog post title..."
+                className="input input-bordered w-full text-base-content text-base sm:text-lg font-bold rounded-xl focus:outline-none focus:border-primary"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5 font-sans">
+              <label className="text-xs uppercase font-bold text-base-content/60 tracking-wider">
+                Short Description / Summary
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Write a brief overview of your blog post..."
+                className="textarea textarea-bordered w-full text-base-content text-xs sm:text-sm rounded-xl min-h-[90px] focus:outline-none focus:border-primary resize-none leading-relaxed"
+                rows={3}
+              />
+            </div>
+          </div>
+
           {/* BlockNote editor container */}
-          <div className="border border-base-200 hover:border-base-300 sm:rounded-3xl overflow-hidden focus-within:border-primary/40 transition-colors select-text bg-base-100 pl-8 sm:p-6 min-h-[500px]">
+          <div className="border border-base-200 hover:border-base-300 sm:rounded-3xl overflow-hidden focus-within:border-primary/40 transition-colors select-text bg-base-100 pl-8 sm:p-6 min-h-[500px] mb-20">
             {isContentReady ? (
               <BlockNoteEditor
                 initialContent={initialContent}
@@ -260,52 +274,6 @@ export default function BlogEditPage() {
           </div>
         </div>
       </div>
-
-      {/* Right Settings Sidebar */}
-      {rightSidebarOpen && (
-        <aside className="w-80 border-l border-base-200 bg-base-100 p-6 flex flex-col gap-6 overflow-y-auto shrink-0 select-none animate-in slide-in-from-right duration-200 h-full fixed lg:relative top-16 lg:top-0 bottom-0 right-0 z-[999] shadow-2xl lg:shadow-none">
-          <div className="flex items-center justify-between border-b border-base-200 pb-4">
-            <h3 className="text-xs font-bold text-base-content/60 uppercase tracking-wider">
-              Blog Settings
-            </h3>
-            <button
-              onClick={() => setRightSidebarOpen(false)}
-              className="btn btn-ghost btn-xs btn-circle text-base-content/50 hover:text-base-content"
-              title="Close sidebar"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Title */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-bold text-base-content/50 tracking-wider">
-              Blog Title
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Post title..."
-              className="input input-bordered w-full text-base-content text-sm rounded-xl focus:outline-none focus:border-primary font-semibold"
-              required
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-1.5 font-sans">
-            <label className="text-[10px] uppercase font-bold text-base-content/50 tracking-wider">
-              Short Description / Summary
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Write a brief overview..."
-              className="textarea textarea-bordered w-full text-base-content text-xs rounded-xl min-h-[140px] focus:outline-none focus:border-primary resize-none leading-relaxed"
-            />
-          </div>
-        </aside>
-      )}
 
       {/* Floating Action Bar */}
       <BottomNavbar tabs={tabs} activeTab={saving ? "save" : undefined} />

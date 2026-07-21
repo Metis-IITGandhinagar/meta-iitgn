@@ -75,3 +75,14 @@ export async function uploadPaper(
     setUploading(false);
   }
 }
+
+export async function getUserPapers(): Promise<{ success: boolean; data: { papers: Paper[] } }> {
+  const response = await api.get<{ success: boolean; data: { papers: Paper[] } }>("/paper/my");
+  return response.data;
+}
+
+export async function deletePaper(paperId: number): Promise<{ success: boolean; data: { message: string } }> {
+  const response = await api.delete<{ success: boolean; data: { message: string } }>(`/paper/${paperId}`);
+  return response.data;
+}
+

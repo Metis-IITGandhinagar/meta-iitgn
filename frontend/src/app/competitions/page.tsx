@@ -130,31 +130,10 @@ export default function CompetitionsPage() {
         })}
       </div>
 
-      {/* ── Mobile horizontal tab scroller ── */}
-      <div className="lg:hidden flex gap-1.5 px-4 pt-3 pb-2 overflow-x-auto no-scrollbar shrink-0">
-        {TABS.map((tab) => {
-          const Icon     = tab.icon;
-          const isActive = activeSection === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${
-                isActive
-                  ? "bg-primary text-primary-content shadow-sm"
-                  : "bg-base-200 text-base-content/60 hover:bg-base-300"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
 
       {/* ── Scrollable content area (scroll listener attached here) ── */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-4 py-5 pb-32 lg:pb-8">
+        <div className="max-w-7xl mx-auto px-4 py-5 pb-32 lg:pb-8">
           {/* Desktop: extra top padding to clear the floating pill nav */}
           <div className="hidden lg:block h-8" />
 
