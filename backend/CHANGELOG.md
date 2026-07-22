@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.7.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.6.0...backend-v1.7.0) (2026-07-22)
+
+
+### Features
+
+* added competition page ([83a74e9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/83a74e98c6abc501f56ae6ba75fe80d63f1afb08))
+* added competition page ([f1a1a22](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f1a1a2290b7fe96799f9b1d21ac776421cf85d13))
+* added post section and ui ([b245195](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b245195e54297bea4ac55a1b6d17457cefc5c8e7))
+* blogs in profile, icons consitency ([321ca97](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/321ca970f75db742916e99ec9e6e721ecdcff294))
+* SWR saving card layout globally ([f787506](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f787506c38fe8dc5fb199b4d1a40df5582c16739))
+
+
+### Bug Fixes
+
+* fixed padding and some ui imporvements ([2500a31](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/2500a311f28b83755d35843c34831a3491a16458))
+* various fixes, category, emoji ([e01099e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e01099e860efcc0c98691dfd9b0e408e28c13e90))
+
+
+### Performance Improvements
+
+* better caching ([15164ac](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/15164acda98486fbc58f031347ef55f62f6ddc70))
+
 ## [1.6.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.5.0...backend-v1.6.0) (2026-07-20)
 
 
