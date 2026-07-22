@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.4.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.3.0...frontend-v1.4.0) (2026-07-22)
+
+
+### Features
+
+* added competition page ([83a74e9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/83a74e98c6abc501f56ae6ba75fe80d63f1afb08))
+* added competition page ([f1a1a22](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f1a1a2290b7fe96799f9b1d21ac776421cf85d13))
+* added post section and ui ([b245195](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b245195e54297bea4ac55a1b6d17457cefc5c8e7))
+* added pyq feature ([98e1e7f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/98e1e7f2a3e89e7668cbaf8b92aafbbde4a85432))
+* blogs in profile, icons consitency ([321ca97](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/321ca970f75db742916e99ec9e6e721ecdcff294))
+* cards redesign ([721d287](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/721d287d5b36bcf59acecf3a40bf24442db4bee8))
+* homepage update ([c8586e9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c8586e98df4efdd9abdb2ff4d4ab5e028ab9a32b))
+* initalized interview page ([ae61b0d](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ae61b0d594609fdc17c227f2abdcc98729f23563))
+* redesigned quick portals ([385d4ef](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/385d4efc7bcc0ff05e84968d21683ad5e35f3e87))
+* responsive cards ([cde8277](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/cde82776ba6aa0fd2280dad1c9fd67d52888f420))
+* SWR saving card layout globally ([f787506](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f787506c38fe8dc5fb199b4d1a40df5582c16739))
+
+
+### Bug Fixes
+
+* added dsa notes ([87ed15a](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/87ed15a78baa321130f62b6d60302db86e1c0ede))
+* category colors ([8a999db](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/8a999dba6d8d7a6691a0eb014ab575ef2f500e63))
+* fixed padding and some ui imporvements ([2500a31](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/2500a311f28b83755d35843c34831a3491a16458))
+* layout updates with swr ([b62334a](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b62334a02615ca14f0baca0a0b0ab92787780ae5))
+* left panel layout ([857699b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/857699b050a4f33a61fa48a5c49134548ab52ec5))
+* minor changes ([46eb94c](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/46eb94c5557b1be5e2c42d4e1d401ab5d6b8bcb5))
+* removed sidebar from blog edit page ([c8a316b](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c8a316b56c196fff6d3b6a11e633d54555f2ada0))
+* various fixes, category, emoji ([e01099e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e01099e860efcc0c98691dfd9b0e408e28c13e90))
+
+
+### Performance Improvements
+
+* better caching ([15164ac](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/15164acda98486fbc58f031347ef55f62f6ddc70))
+
 ## [1.3.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.2.0...frontend-v1.3.0) (2026-07-20)
 
 
