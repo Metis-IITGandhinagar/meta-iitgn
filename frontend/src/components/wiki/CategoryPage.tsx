@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import { PlusCircle, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, useMemo } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import { toast } from "react-hot-toast";
 import { apiService } from "@/api";
@@ -61,9 +61,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   const queryClient = useQueryClient();
   const category = categories?.find(c => c.slug === categorySlug);
   const childCategories = (categories || []).filter(c => category && c.parent_id === category.category_id);
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+
 
   // Article-list view (Default / Tiles / Details / Icons S–XL). Persisted to
   // localStorage under a category-page-specific key; hydrated after mount to
@@ -104,43 +102,40 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   // "Add Subcategory" inline form state.
   const [showAddSub, setShowAddSub] = useState(false);
 
-  const { data, isLoading, isFetching } = useQuery({
-    queryKey: ["categoryArticles", categorySlug, page],
-    queryFn: () => apiService.getCategoryArticles(categorySlug, { page, limit: 6 }),
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["categoryArticles", categorySlug],
+    queryFn: ({ pageParam }) =>
+      apiService.getCategoryArticles(categorySlug, { page: pageParam as number, limit: 6 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     enabled: !!categorySlug,
   });
 
-  const loading = isLoading && page === 1;
-  const loadingMore = isFetching && page > 1;
-
-  useEffect(() => {
-    if (data && data.articles) {
-      const mapped: Article[] = data.articles.map((art: any) => ({
+  const articles = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap((page: any) =>
+      (page.articles || []).map((art: any) => ({
         slug: art.slug,
         title: art.title,
         icon: art.icon,
-        color: art.color
-      }));
+        color: art.color,
+      }))
+    );
+  }, [data]);
 
-      setArticles((prev) => {
-        if (page === 1) return mapped;
-        const existingSlugs = new Set(prev.map((a) => a.slug));
-        const newArticles = mapped.filter((a) => !existingSlugs.has(a.slug));
-        return [...prev, ...newArticles];
-      });
-      setHasMore(data.hasMore);
-    }
-  }, [data, page]);
-
-  // Reset page when category changes
-  useEffect(() => {
-    setPage(1);
-    setArticles([]);
-  }, [categorySlug]);
+  const loading = isLoading;
+  const loadingMore = isFetchingNextPage;
+  const hasMore = hasNextPage;
 
   const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      setPage((prev) => prev + 1);
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage();
     }
   };
 
