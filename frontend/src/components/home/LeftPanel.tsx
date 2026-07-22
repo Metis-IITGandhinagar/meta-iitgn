@@ -46,16 +46,68 @@ export default function LeftPanel({
   const [layout, setLayout] = useState<Layout[]>([]);
   const { width, containerRef, mounted } = useContainerWidth();
 
+  // Calculate portals first (before any useEffect that uses it)
+  const portalsToDisplay = useMemo(() => {
+    const pinned = categories.filter((c) => c.is_pinned);
+
+    return pinned.map((c, index) => {
+      const color = (!c.color || c.color === "#4f46e5")
+        ? CATEGORY_COLORS[index % CATEGORY_COLORS.length]
+        : c.color;
+
+      return {
+        name: c.name,
+        slug: c.slug,
+        path: `/wiki/${c.slug}`,
+        iconName: c.icon,
+        color: color,
+      };
+    });
+  }, [categories]);
+
+  // Load saved layout or initialize default
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("meta_iitgn_portal_layout");
+      const saved = localStorage.getItem("meta_iitgn_portal_layout_v3");
       if (saved) {
         setLayout(JSON.parse(saved));
+      } else {
+        const defaultPattern = [
+          { w: 2, h: 2, x: 0, y: 0 },
+          { w: 1, h: 1, x: 2, y: 0 },
+          { w: 1, h: 1, x: 2, y: 1 },
+          { w: 3, h: 1, x: 0, y: 2 },
+          { w: 1, h: 2, x: 0, y: 3 },
+          { w: 2, h: 1, x: 1, y: 3 },
+          { w: 2, h: 1, x: 1, y: 4 },
+        ];
+        const defaultLayout = portalsToDisplay.slice(0, 10).map((portal, index) => {
+          const p = defaultPattern[index % defaultPattern.length];
+          const yOffset = Math.floor(index / 7) * 5;
+          return {
+            i: portal.slug,
+            x: p.x !== undefined ? p.x : (index * 2) % 3,
+            y: p.y !== undefined ? p.y + yOffset : index,
+            w: p.w,
+            h: p.h,
+            minW: 1,
+            maxW: 3,
+            minH: 1,
+            maxH: 3,
+          };
+        });
+        setLayout(defaultLayout);
+        try {
+          localStorage.setItem("meta_iitgn_portal_layout_v3", JSON.stringify(defaultLayout));
+        } catch (e) {
+          console.error("Failed to save default portal layout:", e);
+        }
       }
     } catch (e) {
       console.error("Failed to load portal layout:", e);
+      setLayout([]);
     }
-  }, []);
+  }, [portalsToDisplay, categories]);
 
   // Enforce lock state dynamically, ignoring whatever was saved in local storage
   const enforcedLayout = useMemo(() => {
@@ -72,30 +124,13 @@ export default function LeftPanel({
     const cleanLayout = currentLayout.map(({ static: _s, isDraggable: _d, isResizable: _r, ...rest }) => rest);
     setLayout(cleanLayout);
     try {
-      localStorage.setItem("meta_iitgn_portal_layout", JSON.stringify(cleanLayout));
+      localStorage.setItem("meta_iitgn_portal_layout_v3", JSON.stringify(cleanLayout));
     } catch (e) {
       console.error("Failed to save portal layout:", e);
     }
   };
 
-  const portalsToDisplay = useMemo(() => {
-    const pinned = categories.filter((c) => c.is_pinned);
 
-    return pinned.map((c, index) => {
-      // If color is missing or matches the default indigo, cycle them to keep them varied and vibrant like the mock
-      const color = (!c.color || c.color === "#4f46e5")
-        ? CATEGORY_COLORS[index % CATEGORY_COLORS.length]
-        : c.color;
-
-      return {
-        name: c.name,
-        slug: c.slug,
-        path: `/wiki/${c.slug}`,
-        iconName: c.icon,
-        color: color,
-      };
-    });
-  }, [categories]);
 
   useEffect(() => {
     async function loadStats() {
@@ -253,7 +288,7 @@ export default function LeftPanel({
 
       {/* Left Panel: Fixed Dashboard on Desktop */}
       <div
-        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4 bg-base-100  h-auto lg:h-full mb-10 md:mb-0 overflow-y-visible lg:overflow-hidden select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"
+        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4 bg-base-100 h-auto lg:h-full min-h-0 mb-10 md:mb-0 overflow-y-auto select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"
           }`}
       >
         <div className="space-y-2">
@@ -361,24 +396,22 @@ export default function LeftPanel({
                   measureBeforeMount={false}
                 >
                 {portalsToDisplay.slice(0, 10).map((portal, index) => {
-                  const pattern = [
-                    { w: 2, h: 2 },
-                    { w: 1, h: 1 },
-                    { w: 2, h: 1 },
-                    { w: 1, h: 1 },
-                    { w: 1, h: 1 },
-                    { w: 1, h: 2 },
-                    { w: 2, h: 1 },
-                    { w: 1, h: 1 },
-                    { w: 2, h: 2 },
-                    { w: 1, h: 1 },
+                  const defaultPattern = [
+                    { w: 2, h: 2, x: 0, y: 0 },
+                    { w: 1, h: 1, x: 2, y: 0 },
+                    { w: 1, h: 1, x: 2, y: 1 },
+                    { w: 3, h: 1, x: 0, y: 2 },
+                    { w: 1, h: 2, x: 0, y: 3 },
+                    { w: 2, h: 1, x: 1, y: 3 },
+                    { w: 2, h: 1, x: 1, y: 4 },
                   ];
-                  const p = pattern[index % pattern.length];
+                  const p = defaultPattern[index % defaultPattern.length];
+                  const yOffset = Math.floor(index / 7) * 5;
                   
                   // Initial layout structure if not in saved state
                   const dataGrid = {
-                    x: (index * 2) % 3,
-                    y: index, // Sequential Y ensures they stack correctly before compaction
+                    x: p.x !== undefined ? p.x : (index * 2) % 3,
+                    y: p.y !== undefined ? p.y + yOffset : index,
                     w: p.w,
                     h: p.h,
                     minW: 1,

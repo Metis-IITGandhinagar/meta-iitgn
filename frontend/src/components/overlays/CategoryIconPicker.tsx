@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ArrowLeft, Search as SearchIcon } from "lucide-react";
+import { CATEGORY_COLORS } from "@/lib/categoryIcon";
 import {
   EmojiPicker,
   type EmojiPickerListComponents,
@@ -11,15 +12,16 @@ import {
 } from "frimousse";
 
 interface CategoryIconPickerProps {
+  currentIcon?: string | null;
   currentColor: string;
   onSave: (icon: string, color: string) => Promise<void> | void;
   onClose: () => void;
 }
 
-// Pure emoji picker built on frimousse's primitives (no Lucide-icon tab, no
-// color picker). Selecting an emoji persists it via onSave (color is passed
-// through unchanged) and closes the popover; the backdrop or X cancels.
+// Emoji picker built on frimousse's primitives, now with a color palette.
+// Selecting an emoji or color persists it via onSave and closes the popover.
 export default function CategoryIconPicker({
+  currentIcon,
   currentColor,
   onSave,
   onClose,
@@ -34,6 +36,18 @@ export default function CategoryIconPicker({
       onClose();
     } catch (err) {
       console.error("Failed to save category icon:", err);
+      setSaving(false);
+    }
+  };
+
+  const handleColorSelect = async (newColor: string) => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(currentIcon || "", newColor);
+      onClose();
+    } catch (err) {
+      console.error("Failed to save category color:", err);
       setSaving(false);
     }
   };
@@ -73,7 +87,7 @@ export default function CategoryIconPicker({
 
       <div className="absolute left-0 top-full mt-2 z-[20501] w-80 max-w-[calc(100vw-2rem)] bg-base-100 border border-base-200 rounded-2xl shadow-xl animate-in zoom-in-95 duration-150 p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-bold text-base-content">Set Icon</span>
+          <span className="text-sm font-bold text-base-content">Set Icon & Color</span>
           <button
             type="button"
             onClick={onClose}
@@ -83,6 +97,25 @@ export default function CategoryIconPicker({
             <ArrowLeft className="h-4 w-4" />
           </button>
         </div>
+
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORY_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => handleColorSelect(c)}
+                className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 active:scale-95 ${
+                  currentColor === c ? "border-base-content shadow-md scale-110" : "border-transparent"
+                }`}
+                style={{ backgroundColor: c }}
+                title={`Set color to ${c}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="h-px bg-base-200" />
 
         <EmojiPicker.Root
           columns={8}
@@ -103,7 +136,7 @@ export default function CategoryIconPicker({
             />
           </div>
 
-          <EmojiPicker.Viewport className="h-64 overflow-y-auto rounded-lg">
+          <EmojiPicker.Viewport className="h-64 overflow-y-auto rounded-lg mt-2">
             <EmojiPicker.Loading className="flex items-center justify-center h-full text-xs text-base-content/50">
               Loading emojis…
             </EmojiPicker.Loading>

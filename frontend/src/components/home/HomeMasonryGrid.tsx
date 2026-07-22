@@ -36,9 +36,10 @@ export default function HomeMasonryGrid({
   const { data: globalSetting } = useSWR("site_settings_homepage_layout", async () => {
     try {
       const res = await apiService.getSetting("homepage_layout");
+      console.log("SWR fetched global setting:", res);
       return res;
     } catch (e) {
-      // ignore
+      console.error("SWR global setting error:", e);
     }
     return null;
   });
@@ -140,6 +141,7 @@ export default function HomeMasonryGrid({
       `}</style>
       {mounted && layouts && (
         <ResponsiveGridLayout
+          key={globalSetting ? "has-global" : "no-global"}
           className={`home-layout ${reorderEnabled ? 'is-editing' : ''}`}
           width={width}
           layouts={layouts}

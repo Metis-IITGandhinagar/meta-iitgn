@@ -230,6 +230,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
               )}
               {iconPickerOpen && canManage && (
                 <CategoryIconPicker
+                  currentIcon={category.icon}
                   currentColor={category.color || "#4f46e5"}
                   onSave={handleIconSave}
                   onClose={() => setIconPickerOpen(false)}
