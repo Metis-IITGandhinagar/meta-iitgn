@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.5.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-07-22)
+
+
+### Features
+
+* added tanstack query ([bb29ce9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/bb29ce9c380f47886d488ac6e218d425ed30c860))
+
+
+### Bug Fixes
+
+* backend deployment fix ([a3cd0f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a3cd0f896477b486d2b6d614b674e26aa79e8a32))
+* card font fix ([8c2a3cb](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/8c2a3cbf3cb19a74c4bd69867bd21a25ba9abcbc))
+* category pages missing fix ([4764c76](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4764c76805d54ce0011208039d91c4210bfb8f68))
+* deafult card layout ([7272fec](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/7272fec19d37a3ccfab946d44e95462b375915d8))
+* deployment fixes ([40030ad](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/40030ada74575ea6ce6c877ce0700a0cf6bf1c72))
+* drag fix and separate mobile layout ([5f6f3c6](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5f6f3c6e0e603bb3c3164dc86dc9de2e6cc720cb))
+* fixed featured ([e7c3256](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e7c3256c4beff7ceb08abd7c72540417167b6355))
+* make store for common details to use from there ([c68e7f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c68e7f8874f933481210cd6b75d49ad6e1dfd3d0))
+* minor changes ([62e76a2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/62e76a21eba00ecac81d9c591c4f41028e4fa2b8))
+
+
+### Code Refactoring
+
+* added better caching ([48a7fc8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/48a7fc82998ab70caab0da3cb35134a7c4fa2d88))
+
 ## [1.4.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.3.0...frontend-v1.4.0) (2026-07-22)
 
 
