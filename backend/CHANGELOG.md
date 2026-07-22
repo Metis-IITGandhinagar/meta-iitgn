@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.1](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.7.0...backend-v1.7.1) (2026-07-22)
+
+
+### Bug Fixes
+
+* backend deployment fix ([a3cd0f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a3cd0f896477b486d2b6d614b674e26aa79e8a32))
+* deployment fixes ([40030ad](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/40030ada74575ea6ce6c877ce0700a0cf6bf1c72))
+
+
+### Code Refactoring
+
+* added better caching ([48a7fc8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/48a7fc82998ab70caab0da3cb35134a7c4fa2d88))
+
 ## [1.7.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.6.0...backend-v1.7.0) (2026-07-22)
 
 
