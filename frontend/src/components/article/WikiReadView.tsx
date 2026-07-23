@@ -31,7 +31,6 @@ export default function WikiReadView({ markdown, className }: WikiReadViewProps)
     headings.forEach((h, i) => {
       if (flatIds[i]) h.id = flatIds[i];
     });
-    setLoaded(true);
   }, [parsed]);
 
   return (

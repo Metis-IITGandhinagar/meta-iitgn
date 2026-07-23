@@ -33,7 +33,6 @@ export default function LeftPanel({
   setSearchQuery,
   handleSearchSubmit,
   activeTab,
-  setActiveTab,
   spawnHearts,
 }: LeftPanelProps) {
   const { categories, setSettingsTab, auth } = useAuth();

@@ -24,6 +24,7 @@ import { WIKI_THEMES, DARK_THEMES } from "@/lib/constants";
 import ProfilePopover from "@/components/navs/ProfilePopover";
 import { db } from "@/lib/db";
 import { useHomeStore } from "@/store/useHomeStore";
+import Image from "next/image";
 
 // Real build info shown in the Help & About tab.
 const APP_VERSION = "1.1.0";
@@ -50,6 +51,8 @@ export default function SettingsModal({
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [dev1Src, setDev1Src] = useState("https://github.com/msparsh.png");
+  const [dev2Src, setDev2Src] = useState("https://github.com/himanshuraj-demon.png");
 
   // Mobile view navigation layer state: "list" shows settings categories, "details" shows the setting controls
   const [mobileView, setMobileView] = useState<"list" | "details">("list");
@@ -1054,13 +1057,14 @@ export default function SettingsModal({
                       {/* Developer 1 */}
 
                       <div className="flex items-center gap-4 p-4 rounded-2xl bg-base-200/40 border border-base-200 hover:border-primary/30 transition-all duration-300 group">
-                        <img
-                          src="https://github.com/msparsh.png"
+                        <Image
+                          src={dev1Src}
                           alt="Technical Council Dev"
-                          className="w-14 h-14 rounded-full border border-base-300 shrink-0 group-hover:scale-105 transition-transform duration-300 object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150";
+                          width={56}
+                          height={56}
+                          className="rounded-full border border-base-300 shrink-0 group-hover:scale-105 transition-transform duration-300 object-cover"
+                          onError={() => {
+                            setDev1Src("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150");
                           }}
                         />
                         <div className="min-w-0 flex-1">
@@ -1093,13 +1097,14 @@ export default function SettingsModal({
 
                       {/* Developer 2 */}
                       <div className="flex items-center gap-4 p-4 rounded-2xl bg-base-200/40 border border-base-200 hover:border-primary/30 transition-all duration-300 group">
-                        <img
-                          src="https://github.com/himanshuraj-demon.png"
+                        <Image
+                          src={dev2Src}
                           alt="Himanshu Raj"
-                          className="w-14 h-14 rounded-full border border-base-300 shrink-0 group-hover:scale-105 transition-transform duration-300 object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150";
+                          width={56}
+                          height={56}
+                          className="rounded-full border border-base-300 shrink-0 group-hover:scale-105 transition-transform duration-300 object-cover"
+                          onError={() => {
+                            setDev2Src("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150");
                           }}
                         />
                         <div className="min-w-0 flex-1">
@@ -1176,10 +1181,12 @@ export default function SettingsModal({
                           key={idx}
                           className="flex items-center gap-3 p-3.5 rounded-2xl bg-base-200/20 border border-base-200/80 hover:bg-base-200/45 transition-colors"
                         >
-                          <img
+                          <Image
                             src={`https://api.dicebear.com/7.x/initials/svg?seed=${member.name}`}
                             alt={member.name}
-                            className="w-10 h-10 rounded-full shrink-0 border border-base-300 object-cover"
+                            width={40}
+                            height={40}
+                            className="rounded-full shrink-0 border border-base-300 object-cover"
                           />
                           <div className="min-w-0 flex-1">
                             <span className="block text-xs font-bold text-base-content truncate">

@@ -20,7 +20,6 @@ interface GenericOverlayModalProps {
 export default function GenericOverlayModal({
   isOpen,
   onClose,
-  title,
   children,
   maxWidthClass = "max-w-4xl",
   headerActions,

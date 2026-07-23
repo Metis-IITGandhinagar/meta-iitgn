@@ -5,7 +5,7 @@ import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, FileText, Settings, Users, ArrowUpRight } from "lucide-react";
+import { Shield, FileText, Users } from "lucide-react";
 import PendingChangesView from "@/components/wiki/PendingChangesView";
 import BlogPendingChangesView from "@/components/blog/BlogPendingChangesView";
 import InterviewPendingChangesView from "@/components/interviews/InterviewPendingChangesView";
@@ -62,8 +62,7 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
   const [usersHasMore, setUsersHasMore] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
-  // Role Update State
-  const [updatingRole, setUpdatingRole] = useState(false);
+
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     userId: number | null;
@@ -181,7 +180,6 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
     const { userId, userName, newRole } = confirmModal;
     if (userId === null) return;
     try {
-      setUpdatingRole(true);
       await apiService.updateUserRole(userId, newRole as any);
       alert(`Successfully updated ${userName}'s role to ${newRole}.`);
 
@@ -195,7 +193,6 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
     } catch (err: any) {
       alert(err.response?.data?.error || err.message || "Failed to change user role.");
     } finally {
-      setUpdatingRole(false);
       setConfirmModal({ isOpen: false, userId: null, userName: "", oldRole: "", newRole: "" });
     }
   };

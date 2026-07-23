@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { getGithubRepos, type GitHubRepo } from "@/api/competition";
 import {
   Star,
@@ -158,10 +159,12 @@ function RepoCard({ repo, featured }: RepoCardProps) {
       <div className="card-body p-4 gap-3">
         {/* Header */}
         <div className="flex items-start gap-3">
-          <img
+          <Image
             src={repo.owner.avatar_url}
             alt={repo.owner.login}
-            className="h-10 w-10 rounded-lg shrink-0 object-cover ring-1 ring-base-300"
+            width={40}
+            height={40}
+            className="rounded-lg shrink-0 object-cover ring-1 ring-base-300"
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
@@ -231,10 +234,12 @@ function SidebarRow({ repo }: SidebarRowProps) {
       rel="noreferrer"
       className="group flex items-center gap-2.5 p-2 rounded-lg hover:bg-base-200/60 transition-colors"
     >
-      <img
+      <Image
         src={repo.owner.avatar_url}
         alt={repo.owner.login}
-        className="h-9 w-9 rounded-full shrink-0"
+        width={36}
+        height={36}
+        className="rounded-full shrink-0"
       />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
@@ -270,7 +275,6 @@ export default function GitHubExplorer() {
   const [loading,     setLoading]     = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error,       setError]       = useState<string | null>(null);
-  const [fromCache,   setFromCache]   = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -287,7 +291,7 @@ export default function GitHubExplorer() {
     setPage(1);
 
     getGithubRepos(category.id, level.id, 1)
-      .then(({ repos: items, total_count, from_cache }) => {
+      .then(({ repos: items, total_count }) => {
         // Client-side search filter (backend doesn't accept freetext; filter here)
         const filtered = search.trim()
           ? items.filter(
@@ -299,7 +303,6 @@ export default function GitHubExplorer() {
         setRepos(filtered);
         setTotalCount(total_count);
         setHasMore(items.length >= 15);
-        setFromCache(from_cache);
       })
       .catch((err: Error) => {
         if (err.name !== "AbortError") {
@@ -322,14 +325,13 @@ export default function GitHubExplorer() {
     setError(null);
     const nextPage = page + 1;
     try {
-      const { repos: items, from_cache } = await getGithubRepos(category.id, level.id, nextPage);
+      const { repos: items } = await getGithubRepos(category.id, level.id, nextPage);
       setRepos((prev) => {
         const existingIds = new Set(prev.map((r) => r.id));
         return [...prev, ...items.filter((r) => !existingIds.has(r.id))];
       });
       setPage(nextPage);
       setHasMore(items.length >= 15);
-      setFromCache(from_cache);
     } catch (err) {
       setError((err as Error).message);
     } finally {

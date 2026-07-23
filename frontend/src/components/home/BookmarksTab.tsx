@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bookmark as BookmarkIcon,
@@ -80,7 +80,7 @@ export default function BookmarksTab({
     return () => window.removeEventListener("wiki_settings_changed", syncCompact);
   }, []);
 
-  const fetchLocalBookmarks = async (currentLimit: number) => {
+  const fetchLocalBookmarks = useCallback(async (currentLimit: number) => {
     try {
       let allItems = await db.bookmarks.toArray();
       
@@ -100,11 +100,11 @@ export default function BookmarksTab({
     } catch (e) {
       console.error("Failed to fetch bookmarks from Dexie:", e);
     }
-  };
+  }, [selectedCategory, searchQuery]);
 
   useEffect(() => {
     fetchLocalBookmarks(limit);
-  }, [searchQuery, selectedCategory, limit, bookmarks]);
+  }, [searchQuery, selectedCategory, limit, bookmarks, fetchLocalBookmarks]);
 
   // Categories list
   const categories = useMemo(() => {

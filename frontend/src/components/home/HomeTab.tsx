@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Award,
   ArrowDown,
@@ -111,7 +112,7 @@ export default function HomeTab({
   upcomingEvents,
   setShowEditFeatured,
 }: HomeTabProps) {
-  const { categories, user } = useAuth();
+  const { categories } = useAuth();
   const router = useRouter();
 
   // ── Card visibility preferences (local only) ───────────────────────────────
@@ -201,17 +202,11 @@ export default function HomeTab({
     setFeaturedIndex(hasClones ? 1 : 0);
   }, [featuredPages, hasClones]);
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     if (featuredCount < 2) return;
     setFeaturedAnim(true);
     setFeaturedIndex((i) => i + 1);
-  };
-
-  const goPrev = () => {
-    if (featuredCount < 2) return;
-    setFeaturedAnim(true);
-    setFeaturedIndex((i) => i - 1);
-  };
+  }, [featuredCount]);
 
   const scrollToIndex = (realIndex: number) => {
     setFeaturedAnim(true);
@@ -239,7 +234,7 @@ export default function HomeTab({
       goNext();
     }, 2000);
     return () => clearInterval(id);
-  }, [featuredPages, hasClones]);
+  }, [hasClones, goNext]);
 
   const activeFeatured = hasClones
     ? (((featuredIndex - 1) % featuredCount) + featuredCount) % featuredCount
@@ -309,10 +304,14 @@ export default function HomeTab({
                   key={`featured-slide-${index}`}
                   className="relative w-full h-full shrink-0 overflow-hidden"
                 >
-                  <img
+                  <Image
                     src={slide?.image || "/homepage_bg.png"}
                     alt={slide?.title || "Featured"}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    fill
+                    sizes="100vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    priority={index === 0}
+                    unoptimized={true}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
                 </div>

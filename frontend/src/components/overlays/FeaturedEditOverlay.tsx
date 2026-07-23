@@ -8,6 +8,7 @@ import { useHomeStore } from "@/store/useHomeStore";
 import { apiService } from "@/api";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import Link from "next/link";
+import Image from "next/image";
 import { useViewMode } from "@/hooks/useViewMode";
 import ViewSwitcher from "@/components/helpers/ViewSwitcher";
 import { getGridClass, getIconBoxClass } from "@/lib/viewModes";
@@ -201,11 +202,17 @@ export default function FeaturedEditOverlay({
           className="group relative flex flex-col items-center justify-center gap-2 p-2 rounded-xl hover:bg-primary/5 hover:border hover:border-primary cursor-pointer text-center"
         >
           <div
-            className={`${getIconBoxClass(view)} rounded-xl overflow-hidden border border-base-300 bg-base-200 flex items-center justify-center`}
+            className={`${getIconBoxClass(view)} rounded-xl overflow-hidden border border-base-300 bg-base-200 flex items-center justify-center relative`}
           >
             {f.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={f.image} alt={f.title || "Featured"} className="w-full h-full object-cover" />
+              <Image
+                src={f.image}
+                alt={f.title || "Featured"}
+                fill
+                sizes="100px"
+                className="object-cover"
+                unoptimized={true}
+              />
             ) : (
               <FileText className={getIconBoxClass(view)} />
             )}
@@ -225,10 +232,16 @@ export default function FeaturedEditOverlay({
           onClick={open}
           className="flex flex-col gap-2 p-3 border border-base-300 bg-base-100 rounded-2xl shadow-xs hover:border-primary transition-all duration-150 cursor-pointer text-left"
         >
-          <div className="w-full h-24 rounded-lg overflow-hidden border border-base-300 bg-base-200">
+          <div className="w-full h-24 rounded-lg overflow-hidden border border-base-300 bg-base-200 relative">
             {f.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={f.image} alt={f.title || "Featured"} className="w-full h-full object-cover" />
+              <Image
+                src={f.image}
+                alt={f.title || "Featured"}
+                fill
+                sizes="200px"
+                className="object-cover"
+                unoptimized={true}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-base-content/40">
                 <FileText className="h-6 w-6" />
@@ -280,11 +293,13 @@ export default function FeaturedEditOverlay({
         onClick={open}
         className="flex items-center gap-3 rounded-xl border border-base-300 bg-base-100 p-2.5 shadow-xs hover:border-primary transition-all duration-150 cursor-pointer"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={f.image || "/homepage_bg.png"}
           alt={f.title || "Featured"}
-          className="w-14 h-14 object-cover rounded-lg shrink-0 bg-base-200"
+          width={56}
+          height={56}
+          className="object-cover rounded-lg shrink-0 bg-base-200"
+          unoptimized={true}
         />
         <div className="flex-1 min-w-0">
           <span className="text-sm font-bold text-base-content hover:text-primary transition-colors block truncate">

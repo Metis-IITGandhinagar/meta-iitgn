@@ -90,7 +90,7 @@ export default function WikiClient({
   slug,
 }: WikiClientProps) {
   // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
@@ -177,8 +177,7 @@ export default function WikiClient({
     return categorySlug === "profile";
   }, [categorySlug]);
 
-  const isStaff = user?.role === "admin" || user?.role === "moderator";
-  const isSelfProfile = false;
+
 
   const isNews = useMemo(() => {
     return (
@@ -217,7 +216,7 @@ export default function WikiClient({
   // Refetch pending count when dbPageId changes
   useEffect(() => {
     fetchPendingCount();
-  }, [dbPageId]);
+  }, [dbPageId, fetchPendingCount]);
 
   // Set up event listener for pending count updates (runs once because fetchPendingCount is stable)
   useEffect(() => {

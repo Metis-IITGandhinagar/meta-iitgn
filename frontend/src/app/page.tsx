@@ -317,25 +317,23 @@ export default function HomePage() {
     );
   }, [handleReview, user, setTotalPagesCount, loadHomeData]);
 
-  const handleAddTriviaCallback = useCallback((e: React.FormEvent) => {
+  const handleAddTriviaCallback = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    handleAddTrivia({
+    await handleAddTrivia({
       title: newTriviaTitle,
       content: newTriviaContent,
-    }).then(() =>
-      loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
-    );
+    });
+    await loadHomeData({ user, setTotalPagesCount, forceRefresh: true });
   }, [handleAddTrivia, newTriviaTitle, newTriviaContent, user, setTotalPagesCount, loadHomeData]);
 
-  const handleAddHistoryCallback = useCallback((e: React.FormEvent) => {
+  const handleAddHistoryCallback = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    handleAddHistory({
+    await handleAddHistory({
       title: newHistoryTitle,
       content: newHistoryContent,
       videoUrl: newHistoryVideoUrl,
-    }).then(() =>
-      loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
-    );
+    });
+    await loadHomeData({ user, setTotalPagesCount, forceRefresh: true });
   }, [handleAddHistory, newHistoryTitle, newHistoryContent, newHistoryVideoUrl, user, setTotalPagesCount, loadHomeData]);
 
   const setShowAllNew = useCallback((val: boolean) => setActiveOverlay(val ? "new" : null), [setActiveOverlay]);

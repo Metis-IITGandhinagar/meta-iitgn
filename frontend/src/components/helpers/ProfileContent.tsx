@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
@@ -35,7 +35,6 @@ import {
   Heading1,
   Heading2,
   Link2,
-  Image as ImageIcon,
   Code,
   List,
 } from "lucide-react";
@@ -332,10 +331,10 @@ export default function ProfileContent() {
     };
 
     fetchProfileData();
-  }, [targetUserId, currentUser, userIdParam, profileCache, setProfileData]);
+  }, [targetUserId, currentUser, userIdParam, profileCache, setProfileData, isOwnProfile]);
 
   // Lazy-load authored blogs when the Blogs tab is first opened
-  const loadUserBlogs = async () => {
+  const loadUserBlogs = useCallback(async () => {
     if (!targetUserId) return;
     setBlogsLoading(true);
     try {
@@ -352,7 +351,7 @@ export default function ProfileContent() {
       setBlogsLoading(false);
       setBlogsLoaded(true);
     }
-  };
+  }, [targetUserId]);
 
   useEffect(() => {
     if (
@@ -363,10 +362,10 @@ export default function ProfileContent() {
     ) {
       loadUserBlogs();
     }
-  }, [activeTab, targetUserId, blogsLoaded, blogsLoading]);
+  }, [activeTab, targetUserId, blogsLoaded, blogsLoading, loadUserBlogs]);
 
   // Lazy-load uploaded papers when the Papers tab is first opened
-  const loadUserPapers = async () => {
+  const loadUserPapers = useCallback(async () => {
     if (!targetUserId) return;
     setPapersLoading(true);
     try {
@@ -380,7 +379,7 @@ export default function ProfileContent() {
       setPapersLoading(false);
       setPapersLoaded(true);
     }
-  };
+  }, [targetUserId]);
 
   useEffect(() => {
     if (
@@ -391,10 +390,10 @@ export default function ProfileContent() {
     ) {
       loadUserPapers();
     }
-  }, [activeTab, targetUserId, papersLoaded, papersLoading]);
+  }, [activeTab, targetUserId, papersLoaded, papersLoading, loadUserPapers]);
 
   // Lazy-load interview posts when tab opened
-  const loadUserInterviews = async () => {
+  const loadUserInterviews = useCallback(async () => {
     if (!targetUserId) return;
     setInterviewsLoading(true);
     try {
@@ -410,7 +409,7 @@ export default function ProfileContent() {
       setInterviewsLoading(false);
       setInterviewsLoaded(true);
     }
-  };
+  }, [targetUserId, isOwnProfile]);
 
   useEffect(() => {
     if (
@@ -421,7 +420,7 @@ export default function ProfileContent() {
     ) {
       loadUserInterviews();
     }
-  }, [activeTab, targetUserId, interviewsLoaded, interviewsLoading]);
+  }, [activeTab, targetUserId, interviewsLoaded, interviewsLoading, loadUserInterviews]);
 
   const handleDeletePaper = async (paperId: number) => {
     try {
