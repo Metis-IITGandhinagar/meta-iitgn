@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useId, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -26,7 +26,6 @@ import {
 
 import ParallaxBackground from "@/components/helpers/ParallaxBackground";
 import { useAuth } from "@/hooks/useAuth";
-import { apiService } from "@/api";
 import EventsOverlay from "@/components/overlays/EventsOverlay";
 import HomeCard from "@/components/home/HomeCard";
 import HomeMasonryGrid, {
@@ -819,7 +818,7 @@ export default function HomeTab({
         />
 
         {/* Floating Bento Badges */}
-        <div className="hidden lg:flex absolute top-16 left-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-[1.5rem] p-4 items-center gap-4 animate-[bounce_6s_infinite] shadow-2xl">
+        <div className="hidden lg:flex absolute z-20 top-16 left-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-[1.5rem] p-4 items-center gap-4 animate-[bounce_6s_infinite] shadow-2xl">
           <div className="bg-linear-to-br from-fuchsia-400 to-pink-500 text-white p-3 rounded-[1rem] shadow-inner">
             <Sparkles className="w-6 h-6" />
           </div>
@@ -833,7 +832,7 @@ export default function HomeTab({
           </div>
         </div>
 
-        <div className="hidden lg:flex absolute bottom-24 right-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-[1.5rem] p-4 items-center gap-4 animate-[bounce_7s_infinite_reverse] shadow-2xl">
+        <div className="hidden lg:flex absolute z-20 bottom-24 right-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-[1.5rem] p-4 items-center gap-4 animate-[bounce_7s_infinite_reverse] shadow-2xl">
           <div className="text-right text-white drop-shadow-md">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-90">
               Active Readers
@@ -856,7 +855,7 @@ export default function HomeTab({
 
         {/* Hero Main Content */}
         <div
-          className={`relative z-10 flex flex-col items-center w-full max-w-4xl ${imageLoaded ? "animate-hero-content" : "opacity-0"}`}
+          className={`relative z-20 flex flex-col items-center w-full max-w-4xl ${imageLoaded ? "animate-hero-content" : "opacity-0"}`}
         >
           <div className="bg-white/10 backdrop-blur-2xl border border-white/20 text-white px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest mb-8 shadow-lg flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>{" "}
@@ -878,7 +877,7 @@ export default function HomeTab({
 
         {/* Scroll cue */}
         <div
-          className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105"
+          className="absolute z-20 bottom-20 left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105"
           onClick={scrollToFeed}
         >
           <div className="relative w-14 h-14 rounded-full bg-white/15 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] animate-bounce before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-b before:from-white/30 before:to-transparent before:opacity-50">

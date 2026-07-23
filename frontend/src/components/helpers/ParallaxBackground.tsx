@@ -1,98 +1,59 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
 interface ParallaxBackgroundProps {
-  imageSrc: string;
+  imageSrc: string; // Left for backwards compatibility, will be used as the first slide
   overlayClass?: string;
 }
+
+const SLIDESHOW_IMAGES = [
+  "/homepage_bg.png",
+  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1600&auto=format&fit=crop",
+  "https://plus.unsplash.com/premium_photo-1661761077411-d50cba031848?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1536925155833-43e9c2b2f499?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1600&auto=format&fit=crop",
+];
 
 export default function ParallaxBackground({
   imageSrc,
   overlayClass = "bg-linear-to-b via-slate-900/45 to-slate-950/65",
 }: ParallaxBackgroundProps) {
-  const [isMobile, setIsMobile] = useState(false);
-  const bgRef = useRef<HTMLDivElement>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Rotate background images every 10 seconds (10000ms)
   useEffect(() => {
-    const checkMobile = () => {
-      const hasNoHover = window.matchMedia("(hover: none)").matches;
-      setIsMobile(hasNoHover || window.innerWidth < 1024);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDESHOW_IMAGES.length);
+    }, 10000);
+
+    return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (isMobile) return;
-
-    let rafId: number;
-    let currentX = 0;
-    let currentY = 0;
-    let targetX = 0;
-    let targetY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      // Calculate target translation based on cursor position relative to center
-      targetX = (e.clientX / window.innerWidth - 0.5) * 45;
-      targetY = (e.clientY / window.innerHeight - 0.5) * 45;
-    };
-
-    const updatePosition = () => {
-      // Linear interpolation (lerp) for buttery smooth motion
-      currentX += (targetX - currentX) * 0.1;
-      currentY += (targetY - currentY) * 0.1;
-
-      if (bgRef.current) {
-        bgRef.current.style.transform = `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0) scale(1.15)`;
-      }
-      rafId = requestAnimationFrame(updatePosition);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    rafId = requestAnimationFrame(updatePosition);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(rafId);
-    };
-  }, [isMobile]);
+  // Use the imageSrc prop as the fallback/first slide if provided, otherwise default
+  const slides = [imageSrc || SLIDESHOW_IMAGES[0], ...SLIDESHOW_IMAGES.slice(1)];
 
   return (
     <>
-      <style>{`
-        @keyframes mobileParallax {
-          0%, 100% {
-            transform: translate3d(0, 0, 0) scale(1.15);
-          }
-          25% {
-            transform: translate3d(12px, -8px, 0) scale(1.15);
-          }
-          50% {
-            transform: translate3d(-8px, 12px, 0) scale(1.15);
-          }
-          75% {
-            transform: translate3d(-12px, -12px, 0) scale(1.15);
-          }
-        }
-        .animate-mobile-parallax {
-          animation: mobileParallax 18s ease-in-out infinite;
-        }
-      `}</style>
-      {/* Parallax Background Image */}
-      <div
-        ref={bgRef}
-        className={`absolute top-0 inset-0 bg-cover bg-center bg-no-repeat will-change-transform ${
-          isMobile ? "animate-mobile-parallax" : ""
-        }`}
-        style={{
-          backgroundImage: `url('${imageSrc}')`,
-          transform: isMobile ? undefined : "translate3d(0, 0, 0) scale(1.15)",
-        }}
-      />
+      {/* Container holding all slideshow layers */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden select-none">
+        {slides.map((src, index) => {
+          const isActive = currentSlide === index;
+          return (
+            <div
+              key={`${src}-${index}`}
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out transform scale-105"
+              style={{
+                backgroundImage: `url('${src}')`,
+                opacity: isActive ? 1 : 0,
+                zIndex: isActive ? 1 : 0,
+              }}
+            />
+          );
+        })}
+      </div>
       {/* Dark Wash Overlay */}
-      <div className={`absolute inset-0 z-0 ${overlayClass}`} />
+      <div className={`absolute inset-0 z-10 ${overlayClass}`} />
     </>
   );
 }
