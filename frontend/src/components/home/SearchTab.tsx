@@ -42,14 +42,16 @@ export default function SearchTab({
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black tracking-tight text-base-content leading-none">
             <span className="text-7xl sm:text-8xl lg:text-9xl">Search</span>{' '}
             <br />
-            <span className="text-rotate text-4xl sm:text-5xl lg:text-6xl duration-3500">
-              <span className="justify-items-center">
+            <span className="inline-block overflow-hidden align-bottom h-[1.25em] leading-[1.25em] text-center w-full">
+              <span className="flex flex-col items-center animate-[text-rotate-slide_12s_cubic-bezier(0.76,0,0.24,1)_infinite]">
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">META IITGN</span>
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">PEOPLE</span>
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">CLUBS</span>
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">NEWS</span>
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">EVENTS</span>
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">COURSES</span>
+                {/* Duplicate first item for seamless infinite loop */}
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">META IITGN</span>
               </span>
             </span>
           </h1>
@@ -115,6 +117,15 @@ const styleBlock = (
     }
     .animate-hero-content {
       animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes text-rotate-slide {
+      0%, 12% { transform: translateY(0); }
+      16%, 28% { transform: translateY(-14.28%); }
+      32%, 44% { transform: translateY(-28.57%); }
+      48%, 60% { transform: translateY(-42.85%); }
+      64%, 76% { transform: translateY(-57.14%); }
+      80%, 92% { transform: translateY(-71.42%); }
+      96%, 100% { transform: translateY(-85.71%); }
     }
   `}</style>
 );
