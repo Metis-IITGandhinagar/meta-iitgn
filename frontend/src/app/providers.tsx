@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { parseModalParams, buildQuery } from "@/lib/modalUrl";
+import { useCommonStore } from "@/store/useCommonStore";
 
 const SettingsModal = dynamic(() => import("@/components/overlays/SettingsModal"), {
   ssr: false,
@@ -101,46 +102,36 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
+  const {
+    theme,
+    interfaceFontStyle,
+    zoomLevel,
+    animations,
+    compactLayout,
+  } = useCommonStore();
+
   React.useEffect(() => {
-    const savedTheme = localStorage.getItem("wiki_daisyui_theme") || "light";
-    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.documentElement.setAttribute("data-theme", theme);
     
-    if (DARK_THEMES.includes(savedTheme)) {
+    if (DARK_THEMES.includes(theme)) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
 
-    const updateFontSettings = () => {
-      const size = localStorage.getItem("wiki_interface_font_size") || "normal";
-      const style = localStorage.getItem("wiki_interface_font_style") || "sans";
-      const zoom = localStorage.getItem("wiki_zoom_level") || "100%";
-      const animations = localStorage.getItem("wiki_animations") !== "false";
-      const compact = localStorage.getItem("wiki_compact_layout") === "true";
+    document.documentElement.setAttribute("data-interface-font-size", "normal");
+    document.documentElement.setAttribute("data-font-style", interfaceFontStyle);
+    document.documentElement.setAttribute("data-reduce-motion", animations ? "false" : "true");
+    document.documentElement.setAttribute("data-compact", compactLayout ? "true" : "false");
 
-      document.documentElement.setAttribute("data-interface-font-size", size);
-      document.documentElement.setAttribute("data-font-style", style);
-      document.documentElement.setAttribute("data-reduce-motion", animations ? "false" : "true");
-      document.documentElement.setAttribute("data-compact", compact ? "true" : "false");
-
-      if (zoom === "90%") {
-        document.documentElement.style.fontSize = "12px";
-      } else if (zoom === "110%") {
-        document.documentElement.style.fontSize = "20px";
-      } else {
-        document.documentElement.style.fontSize = "16px";
-      }
-    };
-    
-    updateFontSettings();
-    window.addEventListener("storage", updateFontSettings);
-    window.addEventListener("wiki_settings_changed", updateFontSettings);
-
-    return () => {
-      window.removeEventListener("storage", updateFontSettings);
-      window.removeEventListener("wiki_settings_changed", updateFontSettings);
-    };
-  }, []);
+    if (zoomLevel === "90%") {
+      document.documentElement.style.fontSize = "12px";
+    } else if (zoomLevel === "110%") {
+      document.documentElement.style.fontSize = "20px";
+    } else {
+      document.documentElement.style.fontSize = "16px";
+    }
+  }, [theme, interfaceFontStyle, zoomLevel, animations, compactLayout]);
 
   return (
     <QueryClientProvider client={queryClient}>

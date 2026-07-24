@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { toast } from "react-hot-toast";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import { createInterviewPost } from "@/api/interviews";
@@ -265,7 +266,14 @@ export default function CreateInterviewModal({ isOpen, onClose, onPostCreated }:
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
               {mediaList.map((url, idx) => (
                 <div key={idx} className="relative h-20 w-full rounded-xl overflow-hidden border border-base-300 group">
-                  <img src={url} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                  <Image
+                    src={url}
+                    alt={`Preview ${idx + 1}`}
+                    fill
+                    sizes="100px"
+                    className="object-cover"
+                    unoptimized={true}
+                  />
                   <button
                     type="button"
                     onClick={() => removeMedia(idx)}

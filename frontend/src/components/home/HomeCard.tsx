@@ -58,12 +58,12 @@ export default function HomeCard({
             }
           : undefined
       }
-      className={`rounded-[2rem] overflow-hidden flex flex-col p-4 @sm:p-5 @md:p-6 h-full font-inter text-[#111827] ${
+      className={` overflow-hidden flex flex-col p-2.5  h-full font-inter text-[#111827] ${
         onClick ? "cursor-pointer" : ""
       } ${className}`}
     >
       {showHeader && (
-        <div className={`flex justify-between items-center ${headerClassName}`}>
+        <div className={`flex justify-between items-center ${headerClassName} p-1`}>
           <h3 className="font-display font-bold text-xl flex items-center gap-2 text-[#111827]">
             {icon && <span className="shrink-0 text-[#111827]">{icon}</span>}
             {title}

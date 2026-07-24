@@ -8,6 +8,7 @@ interface GetPapersParams {
   search?: string;
   department?: string;
   year?: string;
+  examType?: string;
   page?: number;
   limit?: number;
 }

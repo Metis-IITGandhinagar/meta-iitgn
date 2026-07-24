@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 
 interface InterviewMediaSliderProps {
@@ -91,10 +92,13 @@ export default function InterviewMediaSlider({ media }: InterviewMediaSliderProp
               className="relative h-full w-full flex-shrink-0 cursor-pointer overflow-hidden flex items-center justify-center bg-base-300/20"
               onClick={() => setFullscreenImage(url)}
             >
-              <img
+              <Image
                 src={url}
                 alt={`Post image ${idx + 1}`}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                unoptimized={true}
               />
             </div>
           ))}
@@ -171,10 +175,13 @@ export default function InterviewMediaSlider({ media }: InterviewMediaSliderProp
             className="relative max-h-[90vh] max-w-[95vw] flex items-center justify-center overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
+            <Image
               src={fullscreenImage}
               alt="Enlarged media view"
+              width={1920}
+              height={1080}
               className="max-h-[85vh] max-w-[90vw] w-auto h-auto rounded-xl object-contain shadow-2xl"
+              unoptimized={true}
             />
           </div>
         </div>,

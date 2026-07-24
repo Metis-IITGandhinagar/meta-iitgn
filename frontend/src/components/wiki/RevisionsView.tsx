@@ -7,9 +7,10 @@ import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
 import { parseMarkdown } from "@/lib/utils";
-import { PanelRight, Check, X } from "lucide-react";
+import { PanelRight, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
 const MilkdownEditor = dynamic<any>(() => import("@/components/article/milkdown-editor"), { ssr: false });
 
@@ -25,10 +26,13 @@ const PreviewWikiInfoBox = ({ infobox }: { infobox: any }) => {
       <div className="w-full relative bg-base-200/50 border-b border-base-200 flex items-center justify-center overflow-hidden shrink-0 p-1">
         <div className="w-full h-48 relative overflow-hidden">
           {infobox.image ? (
-            <img
+            <Image
               src={infobox.image}
               alt={infobox.imageAlt || "Infobox image"}
-              className="w-full h-full object-cover rounded-xl"
+              fill
+              sizes="200px"
+              className="object-cover rounded-xl"
+              unoptimized={true}
             />
           ) : (
             <div className="text-base-content/30 text-xs font-medium absolute inset-0 flex items-center justify-center bg-base-200/50 rounded-xl">No Image</div>
@@ -109,12 +113,10 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
 
   const [selectedRevision, setSelectedRevision] = useState<RevisionRecord | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
       if (mobile) setSidebarOpen(false);
     };
     checkMobile();
@@ -126,7 +128,7 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
 
   const isAdminOrMod = user?.role === "admin" || user?.role === "moderator";
 
-  const fetchRevisions = async (pageNum: number, append = false) => {
+  const fetchRevisions = useCallback(async (pageNum: number, append = false) => {
     if (pageNum === 1) {
       setLoading(true);
     } else {
@@ -150,13 +152,13 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [slug]);
 
   useEffect(() => {
     if (slug) {
       fetchRevisions(1, false);
     }
-  }, [slug]);
+  }, [slug, fetchRevisions]);
 
   const loadMore = () => {
     const next = page + 1;

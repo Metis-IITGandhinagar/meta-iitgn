@@ -64,7 +64,7 @@ const analyzeContent = (content: string | null | undefined): ContentAnalysis => 
           return { type: "blocknote", parsedBlocks: parsed };
         }
       }
-    } catch (e) {
+    } catch {
       // Fall through to markdown
     }
   }

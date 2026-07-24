@@ -465,9 +465,3 @@ model interview_post_likes {
 
   @@unique([post_id, user_id], name: "unique_interview_post_user_like")
 }
-
-model site_settings {
-  key        String   @id
-  value      Json
-  updated_at DateTime @default(now()) @updatedAt
-}
