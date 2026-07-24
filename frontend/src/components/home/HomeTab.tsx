@@ -668,7 +668,7 @@ export default function HomeTab({
     {
       id: "random-page",
       content: (
-        <div className="bg-gradient-to-tr from-[#7dd3fc] via-[#e879f9] to-[#fde047] rounded-[2rem] p-1.5 h-full font-inter text-[#111827]">
+        <div className="bg-linear-to-tr from-[#7dd3fc] via-[#e879f9] to-[#fde047]  p-1.5 h-full font-inter text-[#111827]">
           <div className="bg-white/95 backdrop-blur-xl w-full h-full rounded-[1.6rem] p-4 @sm:p-6 flex flex-col justify-between">
             <div>
               <h3 className="font-display font-bold text-lg @sm:text-xl flex items-center gap-2 text-[#111827] mb-2 @sm:mb-3">
@@ -683,7 +683,7 @@ export default function HomeTab({
             <button
               type="button"
               onClick={handleRandomPage}
-              className="mt-3 @sm:mt-4 w-full font-black text-black bg-gray-900 hover:bg-black hover:text-white py-2.5 @sm:py-3.5 rounded-xl transition-transform active:scale-95 text-[12px] @sm:text-sm shadow-xl shadow-gray-900/20 cursor-pointer"
+              className="mt-3 @sm:mt-4 w-full font-black text-white bg-gray-900 hover:bg-white hover:text-black py-2.5 @sm:py-3.5 rounded-xl transition-transform active:scale-95 text-[12px] @sm:text-sm shadow-xl shadow-gray-900/20 cursor-pointer"
             >
               Open a random page
             </button>
