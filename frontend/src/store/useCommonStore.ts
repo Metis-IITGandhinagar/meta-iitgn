@@ -28,6 +28,9 @@ interface CommonState {
   openNewTab: boolean;
   animations: boolean;
 
+  // Home Page Cards Order State
+  homeCardOrder: string[];
+
   // Settings Actions
   setTheme: (theme: string) => void;
   setInterfaceFontStyle: (style: string) => void;
@@ -44,6 +47,7 @@ interface CommonState {
   setHistoryLimit: (limit: number) => void;
   setOpenNewTab: (openNewTab: boolean) => void;
   setAnimations: (animations: boolean) => void;
+  setHomeCardOrder: (order: string[]) => void;
 }
 
 export const useCommonStore = create<CommonState>()(
@@ -69,6 +73,14 @@ export const useCommonStore = create<CommonState>()(
       historyLimit: 10,
       openNewTab: false,
       animations: true,
+      homeCardOrder: [
+        "popular-pages",
+        "new-pages",
+        "in-the-news",
+        "events",
+        "updated-pages",
+        "random-page",
+      ],
 
       loadStats: async (forceRefresh = false) => {
         if (get().stats && !forceRefresh) return;
@@ -104,6 +116,7 @@ export const useCommonStore = create<CommonState>()(
       setHistoryLimit: (historyLimit) => set({ historyLimit }),
       setOpenNewTab: (openNewTab) => set({ openNewTab }),
       setAnimations: (animations) => set({ animations }),
+      setHomeCardOrder: (homeCardOrder) => set({ homeCardOrder }),
     }),
     {
       name: "wiki-settings-storage",

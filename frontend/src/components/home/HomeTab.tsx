@@ -32,6 +32,7 @@ import HomeCard from "@/components/home/HomeCard";
 import HomeMasonryGrid, {
   MasonryCardConfig,
 } from "@/components/home/HomeMasonryGrid";
+import { useCommonStore } from "@/store/useCommonStore";
 
 interface HomeTabProps {
   imageLoaded: boolean;
@@ -114,6 +115,7 @@ export default function HomeTab({
 }: HomeTabProps) {
   const { categories } = useAuth();
   const router = useRouter();
+  const { setHomeCardOrder } = useCommonStore();
 
   // ── Card visibility preferences (local only) ───────────────────────────────
   const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set());
@@ -916,9 +918,9 @@ export default function HomeTab({
                 </button>
               </div>
 
-              <details className="collapse collapse-arrow bg-base-200/50 mt-4 border border-base-200">
+              <details className="collapse  bg-base-200/50 mt-4 border border-base-200">
                 <summary className="collapse-title text-sm font-semibold text-base-content/80">
-                  Hide/Show Cards
+                  Hide-Show Cards
                 </summary>
                 <div className="collapse-content pb-4">
                   {(() => {
@@ -999,6 +1001,14 @@ export default function HomeTab({
                     onClick={() => {
                       localStorage.removeItem(HOME_HIDDEN_CARDS_KEY);
                       localStorage.removeItem("meta_iitgn_home_card_order_v4");
+                      setHomeCardOrder([
+                        "popular-pages",
+                        "new-pages",
+                        "in-the-news",
+                        "events",
+                        "updated-pages",
+                        "random-page",
+                      ]);
                       window.location.reload();
                     }}
                     className="btn btn-outline btn-xs"
