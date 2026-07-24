@@ -246,7 +246,7 @@ export default function LeftPanel({
               <div />
               <div />
             </div>
-            <div className="mt-4">
+            <div className="mt-3">
               <span className="block text-2xl font-serif font-black text-base-content tracking-tight">
                 {pageCount !== null ? pageCount.toLocaleString() : "..."}
               </span>
@@ -266,7 +266,7 @@ export default function LeftPanel({
           />
 
           {/* Category Cards (Modern box type redirecting to category sub-pages) */}
-          <div className="space-y-2 mt-6 lg:mt-8">
+          <div className="space-y-2 mt-4">
             <div className="flex items-center justify-between mb-2">
               <div className="w-12" />
               <h2 className="text-xl font-serif font-bold text-base-content tracking-tight">
@@ -285,7 +285,7 @@ export default function LeftPanel({
             </div>
 
             {/* Premium, unified-size grid for Quick Portals */}
-            <div className="grid grid-cols-2 gap-3 mt-2 w-full">
+            <div className="flex flex-col gap-3 mt-1 w-full">
               {/* Default Portal 1: PYQ Papers */}
               <Link
                 href="/paper"
@@ -335,6 +335,7 @@ export default function LeftPanel({
               </Link>
 
               {/* Pinned Category Portals */}
+              <div className="grid grid-cols-2 gap-2">
               {portalsToDisplay.map((portal) => {
                 const theme = getEmojiCardStyle(portal.color);
                 return (
@@ -353,6 +354,7 @@ export default function LeftPanel({
                   </button>
                 );
               })}
+              </div>
             </div>
 
             {portalsToDisplay.length === 0 && (
