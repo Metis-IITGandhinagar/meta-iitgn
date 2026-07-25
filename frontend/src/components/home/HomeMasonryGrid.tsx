@@ -217,7 +217,7 @@ export default function HomeMasonryGrid({
         >
 {cards.map((card) => (
             <div key={card.id} className="group relative @container h-full">
-              <div className="w-full h-full rounded-[2rem] transition-all duration-150 card-hover">
+              <div className="w-full h-full rounded-[2rem] overflow-hidden transition-all duration-150 card-hover">
                 <div className="w-full h-full flex flex-col">
                   {card.content}
                 </div>
