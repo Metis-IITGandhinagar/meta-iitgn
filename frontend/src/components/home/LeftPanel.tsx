@@ -1,18 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Link from "next/link";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
-import { Menu, Heart, Settings, GripHorizontal } from "lucide-react";
+import { Menu, Heart, Settings } from "lucide-react";
 import Sidebar from "@/components/navs/Sidebar";
 import { CategoryIcon, CATEGORY_COLORS } from "@/lib/categoryIcon";
 import { useCommonStore } from "@/store/useCommonStore";
 import { BeautifulSearchBox } from "@/components/helpers/SearchDesign";
-import { Responsive as ResponsiveGridLayout, Layout, LayoutItem, useContainerWidth } from "react-grid-layout";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
+import { motion } from "framer-motion";
 
 interface LeftPanelProps {
   sidebarOpen: boolean;
@@ -43,9 +41,6 @@ export default function LeftPanel({
   const isLoggedIn = auth === true;
   const pageCount = useCommonStore((state) => state.stats?.totalPages ?? null);
   const loadStats = useCommonStore((state) => state.loadStats);
-  const [isEditingSizes, setIsEditingSizes] = useState(false);
-  const [layout, setLayout] = useState<LayoutItem[]>([]);
-  const { width, containerRef, mounted } = useContainerWidth();
 
   // Calculate portals first (before any useEffect that uses it)
   const portalsToDisplay = useMemo(() => {
@@ -65,79 +60,6 @@ export default function LeftPanel({
       };
     });
   }, [categories]);
-
-  // Load saved layout or initialize default
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("meta_iitgn_portal_layout_v3");
-      if (saved) {
-        setLayout(JSON.parse(saved));
-      } else {
-        const defaultPattern = [
-          { w: 2, h: 2, x: 0, y: 0 },
-          { w: 1, h: 1, x: 2, y: 0 },
-          { w: 1, h: 1, x: 2, y: 1 },
-          { w: 3, h: 1, x: 0, y: 2 },
-          { w: 1, h: 2, x: 0, y: 3 },
-          { w: 2, h: 1, x: 1, y: 3 },
-          { w: 2, h: 1, x: 1, y: 4 },
-        ];
-        const defaultLayout = portalsToDisplay.slice(0, 10).map((portal, index) => {
-          const p = defaultPattern[index % defaultPattern.length];
-          const yOffset = Math.floor(index / 7) * 5;
-          return {
-            i: portal.slug,
-            x: p.x !== undefined ? p.x : (index * 2) % 3,
-            y: p.y !== undefined ? p.y + yOffset : index,
-            w: p.w,
-            h: p.h,
-            minW: 1,
-            maxW: 3,
-            minH: 1,
-            maxH: 3,
-          };
-        });
-        setLayout(defaultLayout);
-        try {
-          localStorage.setItem("meta_iitgn_portal_layout_v3", JSON.stringify(defaultLayout));
-        } catch (e) {
-          console.error("Failed to save default portal layout:", e);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load portal layout:", e);
-      setLayout([]);
-    }
-  }, [portalsToDisplay, categories]);
-
-  // Enforce lock state dynamically, ignoring whatever was saved in local storage
-  const enforcedLayout = useMemo(() => {
-    return layout.map(l => ({
-      ...l,
-      static: !isEditingSizes,
-      isDraggable: isEditingSizes,
-      isResizable: isEditingSizes
-    }));
-  }, [layout, isEditingSizes]);
-
-  const handleLayoutChange = (currentLayout: Layout) => {
-    // Strip the dynamic flags before saving so they don't pollute local storage
-    const cleanLayout = currentLayout.map((item) => ({
-      i: item.i,
-      x: item.x,
-      y: item.y,
-      w: item.w,
-      h: item.h,
-    }));
-    setLayout(cleanLayout);
-    try {
-      localStorage.setItem("meta_iitgn_portal_layout_v3", JSON.stringify(cleanLayout));
-    } catch (e) {
-      console.error("Failed to save portal layout:", e);
-    }
-  };
-
-
 
   useEffect(() => {
     loadStats();
@@ -346,13 +268,6 @@ export default function LeftPanel({
           {/* Category Cards (Modern box type redirecting to category sub-pages) */}
           <div className="space-y-2 mt-6 lg:mt-8">
             <div className="flex items-center justify-between mb-2">
-              <button
-                type="button"
-                onClick={() => setIsEditingSizes(!isEditingSizes)}
-                className={`text-[10px] font-extrabold tracking-wider uppercase shrink-0 cursor-pointer transition-colors ${isEditingSizes ? 'text-error' : 'text-base-content/50 hover:text-base-content'}`}
-              >
-                {isEditingSizes ? "Done" : "Resize"}
-              </button>
               <h2 className="text-xl font-serif font-bold text-base-content tracking-tight">
                 Quick Portals
               </h2>
@@ -368,116 +283,33 @@ export default function LeftPanel({
               )}
             </div>
 
-            <div ref={containerRef} className="relative mt-2 w-full">
-              <style>{`
-                .layout:not(.is-editing) .react-resizable-handle {
-                  display: none !important;
-                  pointer-events: none !important;
-                }
-              `}</style>
-              {mounted && (
-                <ResponsiveGridLayout
-                  className={`layout ${isEditingSizes ? 'is-editing' : ''}`}
-                  width={width}
-                  layouts={{ lg: enforcedLayout }}
-                  breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-                  cols={{ lg: 3, md: 3, sm: 3, xs: 3, xxs: 3 }}
-                  rowHeight={80}
-                  margin={[12, 12]}
-                  onLayoutChange={handleLayoutChange}
-                >
-                {portalsToDisplay.slice(0, 10).map((portal, index) => {
-                  const defaultPattern = [
-                    { w: 2, h: 2, x: 0, y: 0 },
-                    { w: 1, h: 1, x: 2, y: 0 },
-                    { w: 1, h: 1, x: 2, y: 1 },
-                    { w: 3, h: 1, x: 0, y: 2 },
-                    { w: 1, h: 2, x: 0, y: 3 },
-                    { w: 2, h: 1, x: 1, y: 3 },
-                    { w: 2, h: 1, x: 1, y: 4 },
-                  ];
-                  const p = defaultPattern[index % defaultPattern.length];
-                  const yOffset = Math.floor(index / 7) * 5;
-                  
-                  // Initial layout structure if not in saved state
-                  const dataGrid = {
-                    x: p.x !== undefined ? p.x : (index * 2) % 3,
-                    y: p.y !== undefined ? p.y + yOffset : index,
-                    w: p.w,
-                    h: p.h,
-                    minW: 1,
-                    maxW: 3,
-                    minH: 1,
-                    maxH: 3
-                  };
-
+            {portalsToDisplay.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2.5 mt-2">
+                {portalsToDisplay.slice(0, 10).map((portal) => {
                   const theme = getEmojiCardStyle(portal.color);
-                  
-                  // Determine spans based on layout state if it exists, otherwise fallback to pattern
-                  const savedItem = layout.find(l => l.i === portal.slug);
-                  const w = savedItem ? savedItem.w : p.w;
-                  const h = savedItem ? savedItem.h : p.h;
-                  
-                  const isTall = h > 1;
-                  const isSquare = w === 1 && h === 1;
-
-                  let layoutClasses = "";
-                  if (isTall) {
-                    layoutClasses = "flex flex-col justify-between items-start text-left";
-                  } else if (isSquare) {
-                    layoutClasses = "flex flex-col items-center justify-center text-center";
-                  } else {
-                    layoutClasses = "flex flex-row items-center gap-3 text-left";
-                  }
-
-                  const paddingClass = isTall ? "p-6" : isSquare ? "p-3" : "p-4";
-                  
-                  const interactingStyles = isEditingSizes 
-                    ? 'cursor-grab active:cursor-grabbing hover:brightness-110' 
-                    : 'card-hover cursor-pointer shadow-md hover:scale-105 hover:brightness-110';
 
                   return (
-                    <div key={portal.slug} data-grid={dataGrid} className="group">
-                      <div
-                        className={`rounded-[2rem] overflow-hidden border-0 ${layoutClasses} ${paddingClass} ${theme.cardClass} ${interactingStyles} transition-all duration-100 ease-in-out w-full h-full relative font-inter ${isEditingSizes ? 'ring-2 ring-white/50 ring-dashed border border-white/20 shadow-lg' : ''}`}
-                        onClick={(e) => {
-                          if (isEditingSizes) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            return;
-                          }
-                          setActivePortalCategory(portal.slug);
-                          setActiveOverlay("portal");
-                        }}
-                      >
-                        {renderPortalIcon(portal.iconName, portal.color, theme.iconClass)}
-                        {isTall ? (
-                          <span className={`text-xs font-extrabold ${theme.textClass} block mt-auto leading-tight drop-shadow-sm pointer-events-none`}>
-                            {portal.name}
-                          </span>
-                        ) : isSquare ? (
-                          <span className={`text-[10px] font-extrabold ${theme.textClass} mt-1.5 leading-tight break-words drop-shadow-sm pointer-events-none`}>
-                            {portal.name}
-                          </span>
-                        ) : (
-                          <span className={`text-xs font-bold ${theme.textClass} leading-tight drop-shadow-sm pointer-events-none`}>
-                            {portal.name}
-                          </span>
-                        )}
-                        
-                        {isEditingSizes && (
-                           <div className="absolute top-3 right-3 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <GripHorizontal className="w-4 h-4" />
-                           </div>
-                        )}
-                      </div>
-                    </div>
+                    <motion.div
+                      key={portal.slug}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className={`rounded-full overflow-hidden border-0 flex flex-row items-center gap-2.5 p-1.5 pr-4 ${theme.cardClass} card-hover cursor-pointer shadow-sm hover:scale-103 hover:brightness-110 transition-all duration-150 w-full font-inter`}
+                      onClick={() => {
+                        setActivePortalCategory(portal.slug);
+                        setActiveOverlay("portal");
+                      }}
+                    >
+                      {renderPortalIcon(portal.iconName, portal.color, theme.iconClass)}
+                      <span className={`text-xs font-bold ${theme.textClass} leading-tight truncate pointer-events-none`}>
+                        {portal.name}
+                      </span>
+                    </motion.div>
                   );
                 })}
-              </ResponsiveGridLayout>
-              )}
-            </div>
-            {portalsToDisplay.length === 0 && (
+              </div>
+            ) : (
               <div className="text-center py-6 border border-dashed border-base-300 rounded-xl bg-base-200/50">
                 <p className="text-xs text-base-content/50 font-semibold mb-2">No Quick Portals pinned</p>
                 <button

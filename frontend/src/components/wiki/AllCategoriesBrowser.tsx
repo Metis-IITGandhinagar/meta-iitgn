@@ -699,8 +699,8 @@ const AllCategoriesBrowser = forwardRef<AllCategoriesBrowserHandle>(
           <CategoryCreateForm onCancel={() => setShowAddForm(false)} />
         )}
 
-        {/* Sticky search + live count */}
-        <div className="sticky top-0 z-10 -mx-6 px-6 pt-6 pb-3 bg-base-100">
+        {/* Search + live count */}
+        <div className="relative -mx-6 px-6 pt-6 pb-3 bg-base-100">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-450 h-4 w-4 pointer-events-none" />

@@ -20,6 +20,7 @@ interface GenericOverlayModalProps {
 export default function GenericOverlayModal({
   isOpen,
   onClose,
+  title,
   children,
   maxWidthClass = "max-w-4xl",
   headerActions,
@@ -147,9 +148,14 @@ export default function GenericOverlayModal({
 
     if (isMaxRef.current) {
       setMax(false);
-      d.startPos = { x: preMaxPos.current.x, y: preMaxPos.current.y };
+      const modalWidth = Math.min(window.innerWidth - 32, 896);
+      const localX = e.clientX - modalWidth / 2;
+      const localY = e.clientY - 20;
+      d.startPos = { x: localX, y: localY };
       d.startX = e.clientX;
       d.startY = e.clientY;
+      setPosition({ x: localX, y: localY });
+      return;
     }
 
     const deltaX = e.clientX - d.startX;
@@ -218,15 +224,10 @@ export default function GenericOverlayModal({
         }
       `}</style>
 
-      {/* Premium Backdrop Overlay */}
+      {/* Premium Backdrop Overlay (no dim, no blur) */}
       <div
-        className={`absolute inset-0 bg-black/45 cursor-default ${
-          animationClass === "animate-enter"
-            ? "animate-backdrop-enter"
-            : "animate-backdrop-exit"
-        }`}
+        className="absolute inset-0 bg-transparent cursor-default"
         onClick={onClose}
-        style={{ backdropFilter: "none" }}
       />
 
       {/* Dialog Card - matching SettingsModal aesthetics and draggable header */}
@@ -264,7 +265,7 @@ export default function GenericOverlayModal({
           }`}
         >
           {/* Left: Close Button */}
-          <div className="flex items-center justify-start">
+          <div className="flex items-center justify-start gap-2">
             <button
               onClick={onClose}
               className="p-1 hover:bg-base-300 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:text-base-content"
@@ -272,6 +273,11 @@ export default function GenericOverlayModal({
             >
               <ArrowLeft className="w-5 h-5 shrink-0" />
             </button>
+            {title && (
+              <span className="font-serif font-bold text-base-content text-sm sm:text-base md:text-lg">
+                {title}
+              </span>
+            )}
           </div>
 
           {/* Right: Actions */}

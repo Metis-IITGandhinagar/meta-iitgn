@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
+import MilkdownEditor from "@/components/article/milkdown-editor";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -30,13 +31,6 @@ import {
   Calendar,
   FileText,
   ExternalLink,
-  Bold,
-  Italic,
-  Heading1,
-  Heading2,
-  Link2,
-  Code,
-  List,
 } from "lucide-react";
 import Avatar from "@/components/helpers/Avatar";
 import UnifiedViewItem from "@/components/helpers/UnifiedViewItem";
@@ -80,47 +74,7 @@ export default function ProfileContent() {
   // Profile README edit overlay states & handlers
   const [isEditingReadme, setIsEditingReadme] = useState(false);
   const [editReadmeContent, setEditReadmeContent] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const insertMarkdown = (syntax: string, placeholder = "") => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-
-    const selectedText = text.substring(start, end) || placeholder;
-
-    let replacement = "";
-    if (syntax === "bold") {
-      replacement = `**${selectedText}**`;
-    } else if (syntax === "italic") {
-      replacement = `*${selectedText}*`;
-    } else if (syntax === "h1") {
-      replacement = `\n# ${selectedText || "Heading 1"}\n`;
-    } else if (syntax === "h2") {
-      replacement = `\n## ${selectedText || "Heading 2"}\n`;
-    } else if (syntax === "link") {
-      replacement = `[${selectedText || "Link Title"}](https://)`;
-    } else if (syntax === "image") {
-      replacement = `![${selectedText || "Image Description"}](https://)`;
-    } else if (syntax === "code") {
-      replacement = `\n\`\`\`\n${selectedText || "code here"}\n\`\`\`\n`;
-    } else if (syntax === "list") {
-      replacement = `\n- ${selectedText || "List item"}\n`;
-    }
-
-    const newContent =
-      text.substring(0, start) + replacement + text.substring(end);
-    setEditReadmeContent(newContent);
-
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + replacement.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-  };
   const userIdParam = searchParams?.get("userId");
   const targetUserId = userIdParam ? Number(userIdParam) : currentUser?.user_id;
   const isOwnProfile =
@@ -594,7 +548,7 @@ export default function ProfileContent() {
         </div>
 
         {/* Tab bar */}
-        <div className="flex border-t border-base-200 px-5 sm:px-8 overflow-x-auto">
+        <div className="flex border-t border-base-200 px-5 sm:px-8 overflow-x-auto scrollbar-none no-scrollbar">
           {[
             "overview",
             "bookmarks",
@@ -820,7 +774,22 @@ export default function ProfileContent() {
                   ))}
                 </div>
               ) : profileReadme ? (
-                <ReactMarkdown>{profileReadme}</ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    a: ({ node: _n, ...props }) => <span>{props.children}</span>,
+                    img: () => null,
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    code: ({ node: _n2, ...props }) => <span>{props.children}</span>,
+                    table: () => null,
+                    thead: () => null,
+                    tbody: () => null,
+                    tr: () => null,
+                    td: () => null,
+                  }}
+                >
+                  {profileReadme}
+                </ReactMarkdown>
               ) : (
                 <div className="flex flex-col gap-2.5">
                   <p className="text-xs text-base-content/40 italic">
@@ -1203,75 +1172,10 @@ export default function ProfileContent() {
               </p>
             </div>
 
-            <div className="grow min-h-0 flex flex-col border border-base-300 rounded-xl bg-base-100 overflow-hidden">
-              {/* Markdown Editing Toolbar */}
-              <div className="flex gap-1 p-2 bg-base-200 border-b border-base-300 flex-wrap items-center">
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("bold", "bold text")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
-                  title="Bold"
-                >
-                  <Bold className="w-4.5 h-4.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("italic", "italic text")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
-                  title="Italic"
-                >
-                  <Italic className="w-4.5 h-4.5" />
-                </button>
-                <span className="h-4 w-px bg-base-300 mx-1" />
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("h1", "Heading 1")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer font-bold"
-                  title="Heading 1"
-                >
-                  <Heading1 className="w-4.5 h-4.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("h2", "Heading 2")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer font-bold"
-                  title="Heading 2"
-                >
-                  <Heading2 className="w-4.5 h-4.5" />
-                </button>
-                <span className="h-4 w-px bg-base-300 mx-1" />
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("link", "Link Title")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
-                  title="Link"
-                >
-                  <Link2 className="w-4.5 h-4.5" />
-                </button>
-                <span className="h-4 w-px bg-base-300 mx-1" />
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("code", "code")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer font-mono"
-                  title="Code Block"
-                >
-                  <Code className="w-4.5 h-4.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertMarkdown("list", "List item")}
-                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
-                  title="List"
-                >
-                  <List className="w-4.5 h-4.5" />
-                </button>
-              </div>
-              <textarea
-                ref={textareaRef}
-                value={editReadmeContent}
-                onChange={(e) => setEditReadmeContent(e.target.value)}
-                placeholder="e.g. # Hello World! I'm a student at IITGN..."
-                className="w-full grow min-h-80 md:h-[450px] border-0 bg-base-100 text-base-content p-4 text-sm focus:outline-none focus:ring-0 font-mono leading-relaxed resize-none"
+            <div className="grow min-h-0 flex flex-col border border-base-300 rounded-xl bg-base-100 overflow-y-auto p-4">
+              <MilkdownEditor
+                initialMarkdown={editReadmeContent}
+                onMarkdownChange={(markdown) => setEditReadmeContent(markdown)}
               />
             </div>
 

@@ -862,8 +862,16 @@ export const createPage = async (req: Request, res: Response) => {
         await updateSyncMetadata('featured', 1, tx);
       }
 
-      await updateSyncMetadata('updatedpages', 1, tx);
-      await updateSyncMetadata('popular', 1, tx);
+      // Log audit trail
+      await tx.audit_logs.create({
+        data: {
+          actor_id: creatorId,
+          action: 'CREATE_PAGE',
+          table_name: 'live_pages',
+          record_id: page.page_id,
+          ip_address: '127.0.0.1',
+        },
+      });
 
       return page;
     });
@@ -1040,6 +1048,16 @@ export const updatePage = async (req: Request, res: Response) => {
 
       await updateSyncMetadata('updatedpages', 0, tx);
       await updateSyncMetadata('popular', 0, tx);
+      // Log audit trail
+      await tx.audit_logs.create({
+        data: {
+          actor_id: editorId,
+          action: 'UPDATE_PAGE',
+          table_name: 'live_pages',
+          record_id: livePage.page_id,
+          ip_address: '127.0.0.1',
+        },
+      });
 
       return page;
     });
@@ -1101,7 +1119,16 @@ export const deletePage = async (req: Request, res: Response) => {
 
       await updateSyncMetadata('updatedpages', -1, tx);
       await updateSyncMetadata('popular', -1, tx);
-    });
+      // Log audit trail for deletion
+      await tx.audit_logs.create({
+        data: {
+          actor_id: req.user.user_id,
+          action: 'DELETE_PAGE',
+          table_name: 'live_pages',
+          record_id: livePage.page_id,
+          ip_address: '127.0.0.1',
+        },
+      });    });
 
     invalidateCategoriesCache();
     invalidateCategoryArticlesCache();

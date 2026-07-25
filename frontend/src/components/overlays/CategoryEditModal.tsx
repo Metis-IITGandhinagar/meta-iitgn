@@ -208,6 +208,18 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
   const [editError, setEditError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const dragRef = useRef<{ isDragging: boolean; startX: number; startY: number; startPos: { x: number; y: number } }>({
+    isDragging: false, startX: 0, startY: 0, startPos: { x: 0, y: 0 },
+  });
+  const isMaxRef = useRef(false);
+  const preMaxPos = useRef({ x: 0, y: 0 });
+  const TOP_SNAP_THRESHOLD = 8;
+
+  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => { isMaxRef.current = isMaximized; }, [isMaximized]);
 
   // Used to detect a double-tap on touch devices (the maximize button is hidden
   // on small screens, so a double-tap on the header is the only way to maximize
@@ -261,7 +273,42 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
     ? categories.find((c) => c.category_id === Number(editParentId))?.name
     : undefined;
 
-  const toggleMaximize = () => setIsMaximized((m) => !m);
+  const setMax = (val: boolean) => { isMaxRef.current = val; setIsMaximized(val); };
+  const toggleMaximize = () => (isMaxRef.current ? setMax(false) : (() => { preMaxPos.current = { x: position.x, y: position.y }; setMax(true); })());
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragRef.current.isDragging) return;
+    const d = dragRef.current;
+    if (e.clientY <= TOP_SNAP_THRESHOLD) {
+      if (!isMaxRef.current) { preMaxPos.current = { x: d.startPos.x, y: d.startPos.y }; setMax(true); }
+      return;
+    }
+    if (isMaxRef.current) {
+      setMax(false);
+      const mw = Math.min(window.innerWidth - 32, 512);
+      const lx = e.clientX - mw / 2, ly = e.clientY - 20;
+      d.startPos = { x: lx, y: ly }; d.startX = e.clientX; d.startY = e.clientY;
+      setPosition({ x: lx, y: ly }); return;
+    }
+    setPosition({ x: d.startPos.x + e.clientX - d.startX, y: d.startPos.y + e.clientY - d.startY });
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    dragRef.current.isDragging = false;
+    setIsDragging(false);
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+  }, [handleMouseMove]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (window.innerWidth < 640) return;
+    const t = e.target as HTMLElement;
+    if (t.closest("button") || t.closest("input") || t.closest("textarea") || t.closest("select") || t.closest("a")) return;
+    dragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, startPos: { ...position } };
+    setIsDragging(true);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
 
   const handleHeaderDoubleTap = (e: React.TouchEvent) => {
     if ((e.target as HTMLElement).closest("button")) return;
@@ -309,13 +356,20 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
 
   return (
     <div
-      className={`fixed inset-0 bg-base-content/40 backdrop-blur-xs flex items-center justify-center z-[21000] animate-in fade-in duration-200 ${
+      className={`fixed inset-0 bg-transparent flex items-center justify-center z-[21000] animate-in fade-in duration-200 ${
         isMaximized ? "p-0" : "p-0 sm:p-4"
       }`}
     >
       <form
         onSubmit={onEditSubmit}
+        style={
+          isMounted && window.innerWidth >= 640 && !isMaximized
+            ? { transform: `translate(${position.x}px, ${position.y}px)`, transition: isDragging ? "none" : undefined }
+            : undefined
+        }
         className={`relative flex flex-col overflow-hidden bg-base-100 border border-base-200 animate-in zoom-in-95 duration-200 ${
+          isDragging ? "" : "transition-all"
+        } ${
           isMaximized
             ? "w-full h-full max-w-none rounded-none shadow-none border-0"
             : "w-full h-full sm:h-auto sm:max-h-[calc(100vh-2rem)] sm:max-w-lg rounded-none sm:rounded-2xl shadow-2xl"
@@ -323,12 +377,15 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
       >
         {/* Window Header — icon + title (left) · maximize + close (right) */}
         <div
+          onMouseDown={handleMouseDown}
           onDoubleClick={(e) => {
             if ((e.target as HTMLElement).closest("button")) return;
             toggleMaximize();
           }}
           onTouchEnd={handleHeaderDoubleTap}
-          className="flex items-center justify-between px-5 py-3 border-b border-base-200 bg-base-100 rounded-t-2xl select-none shrink-0"
+          className={`flex items-center justify-between px-5 py-3 border-b border-base-200 bg-base-200 rounded-t-2xl select-none shrink-0 ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
         >
           <div className="flex items-center gap-2.5">
             <div

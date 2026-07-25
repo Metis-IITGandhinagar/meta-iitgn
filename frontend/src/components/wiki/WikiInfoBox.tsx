@@ -9,6 +9,32 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Category } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import Link from "next/link";
+
+const normalizeCategoryToSlug = (value: string): string => {
+  const normalized = value.toLowerCase().trim();
+  if (normalized === "campus facilities" || normalized === "facilities")
+    return "facilities";
+  if (normalized === "faculty profiles" || normalized === "faculty")
+    return "faculty";
+  if (normalized === "courses info" || normalized === "courses")
+    return "courses";
+  if (normalized === "research labs" || normalized === "research")
+    return "research";
+  if (normalized === "hostels guide" || normalized === "hostels")
+    return "hostels";
+  if (normalized === "student clubs" || normalized === "clubs")
+    return "clubs";
+  if (normalized === "institute fests" || normalized === "fests")
+    return "fests";
+  if (normalized === "placement stats" || normalized === "placements")
+    return "placements";
+  if (normalized === "institute policies" || normalized === "policies")
+    return "policies";
+  if (normalized === "academic calendar" || normalized === "calendar")
+    return "calendar";
+  return normalized.replace(/\s+/g, "-");
+};
 
 interface WikiInfoBoxProps {
   rightSidebarOpen: boolean;
@@ -200,6 +226,7 @@ export default function WikiInfoBox({
   handleRightDoubleClick,
 }: WikiInfoBoxProps) {
   const { categories } = useAuth();
+  const [showImageOptions, setShowImageOptions] = useState(false);
   return (
     <>
       {/* Resize Handle - desktop only, sits on the left edge of the right sidebar */}
@@ -262,145 +289,109 @@ export default function WikiInfoBox({
             </div>
           </div>
 
-          {/* Description below image in read mode */}
-          {parsed.infobox.description && !isEditing && (
-            <div className="px-6 py-4 border-b border-base-200 bg-base-200/30">
-              <p className="text-xs text-base-content/60 italic leading-relaxed whitespace-pre-wrap">
-                {parsed.infobox.description}
-              </p>
-            </div>
-          )}
-
           {/* Inline Image Editor Fields (In-place, only shown when editing) */}
           {isEditing && (
             <div className="p-6 border-b border-base-200 flex flex-col gap-4 bg-base-200/50 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between">
-                <h4 className="text-[10px] font-bold text-base-content/50 tracking-wider uppercase">
-                  Image & Description Options
-                </h4>
-                {parsed.infobox.image && (
+              {!showImageOptions ? (
+                <div className="flex items-center justify-between gap-2">
                   <button
-                    onClick={() =>
-                      handleInfoboxChange({
-                        ...parsed.infobox,
-                        image: "",
-                        imageAlt: "",
-                      })
-                    }
-                    className="text-error hover:text-error/80 p-1.5 hover:bg-error/10 rounded-lg transition-colors cursor-pointer"
-                    title="Remove Image"
+                    type="button"
+                    onClick={() => setShowImageOptions(true)}
+                    className="btn btn-outline btn-primary btn-sm rounded-xl w-full cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    {parsed.infobox.image ? "Change Image" : "Add Image"}
                   </button>
-                )}
-              </div>
-
-              {/* Image URL input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
-                  Image URL
-                </label>
-                <input
-                  type="text"
-                  value={parsed.infobox.image || ""}
-                  onChange={(e) =>
-                    handleInfoboxChange({
-                      ...parsed.infobox,
-                      image: e.target.value,
-                    })
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-3 py-2 text-xs text-base-content placeholder-base-content/40 bg-base-100 focus:outline-none transition-all duration-150 shadow-sm"
-                />
-              </div>
-
-              {/* Upload Image input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
-                  Or Upload Local Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    // Validate image size: 2MB limit in frontend
-                    if (file.size > 2 * 1024 * 1024) {
-                      toast.error("Image size cannot exceed 2MB");
-                      e.target.value = ""; // reset
-                      return;
-                    }
-
-                    const formData = new FormData();
-                    formData.append("file", file);
-
-                    try {
-                      const res = await apiService.uploadMedia(formData);
-                      if (res && res.url) {
+                  {parsed.infobox.image && (
+                    <button
+                      onClick={() =>
                         handleInfoboxChange({
                           ...parsed.infobox,
-                          image: res.url,
-                        });
-                        toast.success("Image uploaded successfully!");
+                          image: "",
+                          imageAlt: "",
+                        })
                       }
-                    } catch (err: any) {
-                      console.error("Error uploading image:", err);
-                      toast.error(err.response?.data?.error || err.message || "Failed to upload image");
-                    }
-                  }}
-                  className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-2 py-1 text-xs text-base-content bg-base-100 focus:outline-none transition-all duration-150 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-                />
-              </div>
+                      className="text-error hover:text-error/80 p-1.5 hover:bg-error/10 rounded-lg transition-colors cursor-pointer"
+                      title="Remove Image"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[10px] font-bold text-base-content/50 tracking-wider uppercase">
+                      Image Options
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setShowImageOptions(false)}
+                      className="btn btn-ghost btn-xs text-base-content/55 hover:text-base-content rounded-lg cursor-pointer"
+                    >
+                      Done
+                    </button>
+                  </div>
 
-              {/* Alt Text input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
-                  Caption / Alt Text
-                </label>
-                <input
-                  type="text"
-                  value={parsed.infobox.imageAlt || ""}
-                  onChange={(e) =>
-                    handleInfoboxChange({
-                      ...parsed.infobox,
-                      imageAlt: e.target.value,
-                    })
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === " ") {
-                      e.stopPropagation();
-                    }
-                  }}
-                  placeholder="e.g. Campus View"
-                  className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-3 py-2 text-xs text-base-content placeholder-base-content/40 bg-base-100 focus:outline-none transition-all duration-150 shadow-sm"
-                />
-              </div>
+                  {/* Image URL input */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
+                      Image URL
+                    </label>
+                    <input
+                      type="text"
+                      value={parsed.infobox.image || ""}
+                      onChange={(e) =>
+                        handleInfoboxChange({
+                          ...parsed.infobox,
+                          image: e.target.value,
+                        })
+                      }
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-3 py-2 text-xs text-base-content placeholder-base-content/40 bg-base-100 focus:outline-none transition-all duration-150 shadow-sm"
+                    />
+                  </div>
 
-              {/* Description Input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
-                  Article Description
-                </label>
-                <textarea
-                  value={parsed.infobox.description || ""}
-                  onChange={(e) =>
-                    handleInfoboxChange({
-                      ...parsed.infobox,
-                      description: e.target.value,
-                    })
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === " ") {
-                      e.stopPropagation();
-                    }
-                  }}
-                  placeholder="Enter a short description..."
-                  rows={3}
-                  className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-3 py-2 text-xs text-base-content placeholder-base-content/40 bg-base-100 focus:outline-none transition-all duration-150 shadow-sm resize-none"
-                />
-              </div>
+                  {/* Upload Image input */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] uppercase font-bold text-base-content/50 tracking-wider">
+                      Or Upload Local Image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        // Validate image size: 2MB limit in frontend
+                        if (file.size > 2 * 1024 * 1024) {
+                          toast.error("Image size cannot exceed 2MB");
+                          e.target.value = ""; // reset
+                          return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append("file", file);
+
+                        try {
+                          const res = await apiService.uploadMedia(formData);
+                          if (res && res.url) {
+                            handleInfoboxChange({
+                              ...parsed.infobox,
+                              image: res.url,
+                            });
+                            toast.success("Image uploaded successfully!");
+                          }
+                        } catch (err: any) {
+                          console.error("Error uploading image:", err);
+                          toast.error(err.response?.data?.error || err.message || "Failed to upload image");
+                        }
+                      }}
+                      className="w-full border border-base-300 hover:border-base-content/30 focus:border-primary rounded-xl px-2 py-1 text-xs text-base-content bg-base-100 focus:outline-none transition-all duration-150 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -420,7 +411,7 @@ export default function WikiInfoBox({
                       className={isLast ? "" : "border-b border-base-200/50"}
                     >
                       <td className="py-3 pr-2 align-top w-[35%]">
-                        {isEditing ? (
+                        {isEditing && !isCategory ? (
                           <EditableCell
                             initialValue={row.label}
                             onChange={(newLabel) => {
@@ -536,14 +527,22 @@ export default function WikiInfoBox({
                         ) : row.type === "badge" && Array.isArray(row.value) ? (
                           <div className="flex flex-wrap gap-1">
                             {row.value.map((val) => (
-                              <span
+                              <Link
                                 key={val}
-                                className="text-[10px] text-primary border border-primary/20 rounded-full px-2 py-0.5 font-semibold bg-primary/10"
+                                href={`/search-results?query=${encodeURIComponent(val)}`}
+                                className="text-[10px] text-primary border border-primary/20 rounded-full px-2 py-0.5 font-semibold bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
                               >
                                 {val}
-                              </span>
+                              </Link>
                             ))}
                           </div>
+                        ) : isCategory ? (
+                          <Link
+                            href={`/wiki/${normalizeCategoryToSlug(Array.isArray(row.value) ? row.value[0] : (row.value as string))}`}
+                            className="text-primary hover:underline cursor-pointer"
+                          >
+                            {Array.isArray(row.value) ? row.value.join(", ") : (row.value as string)}
+                          </Link>
                         ) : (
                           row.value
                         )}

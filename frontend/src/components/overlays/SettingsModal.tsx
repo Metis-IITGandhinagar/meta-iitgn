@@ -398,7 +398,7 @@ export default function SettingsModal({
           >
             <div className="flex flex-col gap-6 h-full overflow-hidden pt-4">
               {/* Navigation Tabs */}
-              <ul className="menu bg-base-100 px-3 md:px-4 py-0 gap-1.5 flex-1 grid grid-cols-1 w-full overflow-y-auto">
+              <ul className="menu bg-base-100 px-3 md:px-4 py-0 gap-1.5 flex-none grid grid-cols-1 w-full overflow-y-auto">
                 {[
                   {
                     id: "appearance",

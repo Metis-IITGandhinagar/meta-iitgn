@@ -2,13 +2,13 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
-import ReactMarkdown from "react-markdown";
 import { parseMarkdown, stringifyMarkdown } from "@/lib/utils";
 import { InfoboxData, InfoboxRow } from "@/lib/types";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { useCommonStore } from "@/store/useCommonStore";
+import { useHomeStore } from "@/store/useHomeStore";
 
 import { EditableCell } from "@/components/article/editable-cell";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -49,8 +49,16 @@ function MilkdownEditorLazy(props: any) {
       dynamic(() => import("@/components/article/milkdown-editor"), {
         ssr: false,
         loading: () => (
-          <div className="milkdown-container prose max-w-none relative min-h-0 border-none p-0">
-            <ReactMarkdown>{fallbackMarkdown.current}</ReactMarkdown>
+          <div className="space-y-4 py-4 animate-pulse w-full">
+            <div className="h-4 bg-base-300/60 rounded-lg w-2/3"></div>
+            <div className="h-4 bg-base-300/60 rounded-lg w-full"></div>
+            <div className="h-4 bg-base-300/60 rounded-lg w-5/6"></div>
+            <div className="h-4 bg-base-300/60 rounded-lg w-1/2"></div>
+            <div className="space-y-2 pt-6">
+              <div className="h-4 bg-base-300/60 rounded-lg w-3/4"></div>
+              <div className="h-4 bg-base-300/60 rounded-lg w-full"></div>
+              <div className="h-4 bg-base-300/60 rounded-lg w-2/3"></div>
+            </div>
           </div>
         ),
       }),
@@ -135,23 +143,27 @@ export default function WikiClient({
   const [pageIcon, setPageIcon] = useState(initialIcon || DEFAULT_ICON);
   const [pageColor, setPageColor] = useState(initialColor || DEFAULT_COLOR);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
-  const canManagePage = user?.role === "admin" || user?.role === "moderator";
+  const canManagePage = user?.role === "admin" || user?.role === "moderator" || isEditing;
 
   const handleIconSave = async (icon: string, color: string) => {
+    setPageIcon(icon);
+    setPageColor(color);
+    
     let currentSlug = initialMetadata?.slug;
     if (!currentSlug && typeof window !== "undefined") {
       currentSlug = window.location.pathname.split("/").pop();
     }
-    if (!currentSlug || !dbPageId) return;
-    try {
-      await apiService.updatePage(currentSlug, { icon, color });
-      setPageIcon(icon);
-      setPageColor(color);
-      toast.success("Icon updated");
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.response?.data?.error || "Failed to update icon");
-      throw err;
+    
+    // Only fire API call if the page is saved and we're not in edit mode
+    if (!isEditing && currentSlug && dbPageId) {
+      try {
+        await apiService.updatePage(currentSlug, { icon, color });
+        toast.success("Icon updated");
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err?.response?.data?.error || "Failed to update icon");
+        throw err;
+      }
     }
   };
 
@@ -483,6 +495,7 @@ export default function WikiClient({
     resolvedVersionOverride?: number,
     summary?: string
   ) => {
+    const loadingToast = toast.loading(dbPageId ? "Saving changes..." : "Publishing page...");
     try {
       let category = categorySlug || initialMetadata?.category || "campus";
       const categoryRow = parsed.infobox?.rows?.find(
@@ -549,9 +562,13 @@ export default function WikiClient({
             content: cleanedContent,
             metadata,
             edit_summary: summary ?? '',
+            icon: pageIcon,
+            color: pageColor,
           });
-          toast.success("Page updated successfully!");
+          toast.success("Page updated successfully!", { id: loadingToast });
           setIsEditing(false);
+          // Refresh home store data so featured articles reflect the new slug/title
+          useHomeStore.getState().loadData(true);
           router.push(`/wiki/page/${res.slug}`);
           router.refresh();
         } else {
@@ -559,9 +576,13 @@ export default function WikiClient({
             title: parsed.title || "Untitled Page",
             content: cleanedContent,
             metadata,
+            icon: pageIcon,
+            color: pageColor,
           });
-          toast.success("Page created and published successfully!");
+          toast.success("Page created and published successfully!", { id: loadingToast });
           setIsEditing(false);
+          // Refresh home store data so new page can be featured immediately
+          useHomeStore.getState().loadData(true);
           router.push(`/wiki/page/${res.slug}`);
           router.refresh();
         }
@@ -579,16 +600,19 @@ export default function WikiClient({
             resolvedVersionOverride !== undefined
               ? resolvedVersionOverride
               : versionId,
+          icon: pageIcon,
+          color: pageColor,
         };
  
         await apiService.submitDraft(payload);
-        toast.success("Proposed changes submitted for review successfully!");
+        toast.success("Proposed changes submitted for review successfully!", { id: loadingToast });
         setIsEditing(false);
         setConflictData(null);
         router.refresh();
       }
     } catch (error: any) {
       if (error.response?.status === 409) {
+        toast.dismiss(loadingToast);
         const data = error.response.data;
         setConflictData({
           myDraft: markdownRef.current,
@@ -605,7 +629,7 @@ export default function WikiClient({
           error.response?.data?.error ||
           error.message ||
           "Unknown error";
-        toast.error(`Failed to submit draft: ${detail}`);
+        toast.error(`Failed to submit draft: ${detail}`, { id: loadingToast });
       }
     }
   };

@@ -216,8 +216,10 @@ export default function PendingChangesView({
         ) : (
           <div className="space-y-4 pt-4">
             {drafts.map((pending) => {
-              const authorName = pending.users?.name || `User #${pending.editor_id}`;
-              const initials = authorName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase() || "U";
+              const authorName = pending.users?.name && pending.users.name !== "undefined"
+                ? pending.users.name
+                : `User #${pending.editor_id}`;
+              const initials = authorName.split(" ").map((n) => n[0] || "").join("").substring(0, 2).toUpperCase() || "U";
               const timeString = new Date(pending.created_at).toLocaleDateString(undefined, {
                 month: "short",
                 day: "numeric",
@@ -329,7 +331,7 @@ export default function PendingChangesView({
           >
             <div className="flex flex-col flex-1 min-h-0">
               <p className="text-xs text-base-content/50 mb-3 font-semibold uppercase tracking-wider shrink-0">
-                Compare live content with proposal. Author: {activeReviewDraft.users?.name || `User #${activeReviewDraft.editor_id}`}
+                Compare live content with proposal. Author: {activeReviewDraft.users?.name && activeReviewDraft.users.name !== "undefined" ? activeReviewDraft.users.name : `User #${activeReviewDraft.editor_id}`}
               </p>
 
               {getEditSummary(activeReviewDraft) && (

@@ -5,7 +5,6 @@ import { Responsive as ResponsiveGridLayout, Layout, LayoutItem, ResponsiveLayou
 import useSWR from "swr";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { GripVertical } from "lucide-react";
 import { apiService } from "@/api";
 
 export interface MasonryCardConfig {
@@ -18,7 +17,6 @@ export interface MasonryCardConfig {
 interface HomeMasonryGridProps {
   cards: MasonryCardConfig[];
   storageKey?: string;
-  reorderEnabled?: boolean;
 }
 
 const DEFAULT_STORAGE_KEY = "meta_iitgn_home_card_order_v2";
@@ -26,7 +24,6 @@ const DEFAULT_STORAGE_KEY = "meta_iitgn_home_card_order_v2";
 export default function HomeMasonryGrid({
   cards,
   storageKey = DEFAULT_STORAGE_KEY,
-  reorderEnabled = false,
 }: HomeMasonryGridProps) {
   const { width, containerRef, mounted } = useContainerWidth();
   const [layouts, setLayouts] = useState<ResponsiveLayouts | null>(null);
@@ -100,8 +97,8 @@ export default function HomeMasonryGrid({
       lg,
       md: baseLayouts?.md ?? buildDefaultLayout(3),
       sm: baseLayouts?.sm ?? buildDefaultLayout(2),
-      xs: baseLayouts?.xs ?? buildDefaultLayout(2),
-      xxs: baseLayouts?.xxs ?? buildDefaultLayout(2),
+      xs: baseLayouts?.xs ?? buildDefaultLayout(1),
+      xxs: baseLayouts?.xxs ?? buildDefaultLayout(1),
     });
   };
 
@@ -111,18 +108,12 @@ export default function HomeMasonryGrid({
         breakpoint,
         items?.map((item) => ({
           ...item,
-          static: !reorderEnabled,
-          isDraggable: reorderEnabled,
-          isResizable: reorderEnabled,
+          static: true,
+          isDraggable: false,
+          isResizable: false,
         })),
       ])
     ) as ResponsiveLayouts;
-
-  useEffect(() => {
-    setLayouts((current) => (current ? lockLayoutItems(current) : current));
-    // Keep drag state in sync when the Customize toggle changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reorderEnabled]);
 
   useEffect(() => {
     try {
@@ -190,7 +181,8 @@ export default function HomeMasonryGrid({
   };
 
   let currentCols = 4;
-  if (width < 768) currentCols = 2;
+  if (width < 480) currentCols = 1;
+  else if (width < 768) currentCols = 2;
   else if (width < 996) currentCols = 2;
   else if (width < 1200) currentCols = 3;
   
@@ -211,30 +203,21 @@ export default function HomeMasonryGrid({
       `}</style>
       {mounted && layouts && (
         <ResponsiveGridLayout
-          key={`${globalSetting ? "has-global" : "no-global"}-${reorderEnabled ? "edit" : "view"}`}
-          className={`home-layout ${reorderEnabled ? 'is-editing' : ''}`}
+          key={`${globalSetting ? "has-global" : "no-global"}-view`}
+          className="home-layout"
           width={width}
           layouts={layouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 4, md: 3, sm: 2, xs: 2, xxs: 2 }}
+          cols={{ lg: 4, md: 3, sm: 2, xs: 1, xxs: 1 }}
           rowHeight={dynamicRowHeight}
           margin={[gap, gap]}
           containerPadding={[0, 0]}
           onLayoutChange={handleLayoutChange}
           onBreakpointChange={(bp) => setActiveBreakpoint(bp)}
-          onDragStop={() => (isUserAction.current = true)}
-          onResizeStop={() => (isUserAction.current = true)}
         >
           {cards.map((card) => (
             <div key={card.id} className="group relative @container h-full">
-              <div className={`w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-all duration-150 ${reorderEnabled ? 'ring-2 ring-primary/30 ring-offset-2 ring-offset-base-100 scale-[0.98] pointer-events-none' : 'card-hover'} rounded-[2rem] bg-white`}>
-                {reorderEnabled && (
-                  <button
-                    className="drag-handle absolute top-3 right-3 z-30 p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm text-gray-900 hover:bg-gray-100 cursor-grab active:cursor-grabbing transition-opacity duration-150"
-                  >
-                    <GripVertical className="w-3.5 h-3.5" />
-                  </button>
-                )}
+              <div className="w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-all duration-150 card-hover rounded-[2rem] bg-white">
                 <div className="w-full h-full flex flex-col [&>div]:h-full">
                   {card.content}
                 </div>

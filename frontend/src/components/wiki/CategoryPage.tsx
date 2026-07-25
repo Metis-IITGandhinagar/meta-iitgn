@@ -66,11 +66,11 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   // Article-list view (Default / Tiles / Details / Icons S–XL). Persisted to
   // localStorage under a category-page-specific key; hydrated after mount to
   // avoid a hydration mismatch (the server render has no localStorage).
-  const [view, setView] = useViewMode(CATEGORY_VIEW_KEY);
+  const [view, setView] = useViewMode(CATEGORY_VIEW_KEY, "icon-xl");
 
   // Subcategory-list view — a separate persisted preference from the Articles
   // view so changing one never disturbs the other.
-  const [subView, setSubView] = useViewMode(SUBCATEGORY_VIEW_KEY);
+  const [subView, setSubView] = useViewMode(SUBCATEGORY_VIEW_KEY, "icon-xl");
 
   // Edit Category modal state — the form itself lives in <CategoryEditModal />.
   const [isEditing, setIsEditing] = useState(false);
@@ -296,27 +296,22 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
 
         {/* Articles List / Grid (Horizontal Stack) — hidden entirely when there
             are no articles (and we're not still loading them). */}
-        {(loading || articles.length > 0) && (
-        <div>
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <h2 className="text-lg font-serif font-bold text-base-content tracking-tight">
-              Articles in this Category
-            </h2>
-
-            <ViewSwitcher view={view} onChange={setView} />
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            <ArticleSkeleton />
+            <ArticleSkeleton />
+            <ArticleSkeleton />
           </div>
+        ) : articles.length > 0 ? (
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg font-serif font-bold text-base-content tracking-tight">
+                Articles in this Category
+              </h2>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-              <ArticleSkeleton />
-              <ArticleSkeleton />
-              <ArticleSkeleton />
+              <ViewSwitcher view={view} onChange={setView} />
             </div>
-          ) : articles.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-base-300 rounded-2xl text-base-content/50 text-sm">
-              No articles are currently listed under this category.
-            </div>
-          ) : (
+
             <div className="w-full flex flex-col gap-8">
               <div className={getGridClass(view)}>
                 {articles.map((article) => {
@@ -374,9 +369,8 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                 </div>
               )}
             </div>
-          )}
-        </div>
-        )}
+          </div>
+        ) : null}
 
       </div>
 

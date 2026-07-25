@@ -237,8 +237,10 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
         ) : (
           <div className="space-y-4 pt-4 pb-12">
             {revisions.map((revision) => {
-              const authorName = revision.creator?.name || `User #${revision.created_by_user_id}`;
-              const initials = authorName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase() || "U";
+              const authorName = revision.creator?.name && revision.creator.name !== "undefined"
+                ? revision.creator.name
+                : `User #${revision.created_by_user_id}`;
+              const initials = authorName.split(" ").map((n) => n[0] || "").join("").substring(0, 2).toUpperCase() || "U";
               const timeString = formatDate(revision.created_at);
 
               return (
