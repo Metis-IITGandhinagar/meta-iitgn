@@ -15,16 +15,12 @@ import {
   Trash2,
   RotateCcw,
   Check,
-  Users,
-  Mail,
 } from "lucide-react";
 
-import { FaGithub } from "react-icons/fa6";
 import { WIKI_THEMES } from "@/lib/constants";
 import ProfilePopover from "@/components/navs/ProfilePopover";
 import { db } from "@/lib/db";
 import { useHomeStore } from "@/store/useHomeStore";
-import Image from "next/image";
 import { useCommonStore } from "@/store/useCommonStore";
 
 // Real build info shown in the Help & About tab.
@@ -43,8 +39,7 @@ type TabType =
   | "search"
   | "storage"
   | "performance"
-  | "help"
-  | "team";
+  | "help";
 
 export default function SettingsModal({
   onClose,
@@ -52,8 +47,6 @@ export default function SettingsModal({
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [dev1Src, setDev1Src] = useState("https://github.com/msparsh.png");
-  const [dev2Src, setDev2Src] = useState("https://github.com/himanshuraj-demon.png");
 
   // Mobile view navigation layer state: "list" shows settings categories, "details" shows the setting controls
   const [mobileView, setMobileView] = useState<"list" | "details">("list");
@@ -352,7 +345,9 @@ export default function SettingsModal({
             toggleMaximize();
           }}
           onTouchEnd={handleHeaderDoubleTap}
-          className={`flex items-center justify-between px-4 py-2.5 border-b border-base-300 bg-base-200 text-base-content select-none shrink-0 ${"cursor-default"}`}
+          className={`flex items-center justify-between px-4 py-2.5 border-b border-base-300 bg-base-200 text-base-content select-none shrink-0 ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
         >
           {/* Left: Close / Back Button */}
           <div className="flex items-center justify-start gap-1">
@@ -434,12 +429,6 @@ export default function SettingsModal({
                     label: "Performance & Cache",
                     desc: "Animations & offline storage",
                     icon: Cpu,
-                  },
-                  {
-                    id: "team",
-                    label: "Team & Contributors",
-                    desc: "Meet the developers & team",
-                    icon: Users,
                   },
                   {
                     id: "help",
@@ -964,174 +953,6 @@ export default function SettingsModal({
                           </>
                         )}
                       </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab: Team & Contributors */}
-              {activeTab === "team" && (
-                <div className="space-y-6 animate-in fade-in duration-200">
-                  <div className="space-y-1">
-                    <h4 className="text-[13px] font-bold text-base-content">
-                      Development Team
-                    </h4>
-                    <p className="text-[11px] text-base-content/50">
-                      Meet the core developers and technical team who build and
-                      maintain Meta IITGN.
-                    </p>
-                  </div>
-
-                  {/* Section: Developers */}
-                  <div className="space-y-3">
-                    <h5 className="text-[11px] font-bold text-base-content/85 uppercase tracking-wider">
-                      Core Developers
-                    </h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Developer 1 */}
-
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-base-200/40 border border-base-200 hover:border-primary/30 transition-all duration-300 group">
-                        <Image
-                          src={dev1Src}
-                          alt="Technical Council Dev"
-                          width={56}
-                          height={56}
-                          className="rounded-full border border-base-300 shrink-0 group-hover:scale-105 transition-transform duration-300 object-cover"
-                          onError={() => {
-                            setDev1Src("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150");
-                          }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <span className="block text-sm font-bold text-base-content truncate">
-                            Sparsh Mishra
-                          </span>
-                          <span className="block text-[11px] font-semibold text-primary/80">
-                            Developer
-                          </span>
-                          <div className="flex items-center gap-3 mt-2">
-                            <a
-                              href="mailto:tech.council@iitgn.ac.in"
-                              className="p-1 rounded-md bg-base-100 hover:bg-primary/10 text-base-content/70 hover:text-primary transition-colors"
-                              title="Email"
-                            >
-                              <Mail className="w-3.5 h-3.5" />
-                            </a>
-                            <a
-                              href="https://github.com/msparsh"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 rounded-md bg-base-100 hover:bg-primary/10 text-base-content/70 hover:text-primary transition-colors"
-                              title="GitHub"
-                            >
-                              <FaGithub className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Developer 2 */}
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-base-200/40 border border-base-200 hover:border-primary/30 transition-all duration-300 group">
-                        <Image
-                          src={dev2Src}
-                          alt="Himanshu Raj"
-                          width={56}
-                          height={56}
-                          className="rounded-full border border-base-300 shrink-0 group-hover:scale-105 transition-transform duration-300 object-cover"
-                          onError={() => {
-                            setDev2Src("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150");
-                          }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <span className="block text-sm font-bold text-base-content truncate">
-                            Himanshu Raj
-                          </span>
-                          <span className="block text-[11px] font-semibold text-primary/80">
-                            Developer
-                          </span>
-                          <div className="flex items-center gap-3 mt-2">
-                            <a
-                              href="mailto:himanshu.raj@iitgn.ac.in"
-                              className="p-1 rounded-md bg-base-100 hover:bg-primary/10 text-base-content/70 hover:text-primary transition-colors"
-                              title="Email"
-                            >
-                              <Mail className="w-3.5 h-3.5" />
-                            </a>
-                            <a
-                              href="https://github.com/himanshuraj-demon"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 rounded-md bg-base-100 hover:bg-primary/10 text-base-content/70 hover:text-primary transition-colors"
-                              title="GitHub"
-                            >
-                              <FaGithub className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-base-200 my-2" />
-
-                  {/* Section: Technical Council Team */}
-                  <div className="space-y-3">
-                    <h5 className="text-[11px] font-bold text-base-content/85 uppercase tracking-wider">
-                      Technical Council Team
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[
-                        {
-                          name: "Aarav Sharma",
-                          role: "Coordinator",
-                          seed: "aarav",
-                        },
-                        {
-                          name: "Isha Patel",
-                          role: "Co-Coordinator",
-                          seed: "isha",
-                        },
-                        {
-                          name: "Kabir Singh",
-                          role: "Design Head",
-                          seed: "kabir",
-                        },
-                        {
-                          name: "Riya Sen",
-                          role: "Content Head",
-                          seed: "riya",
-                        },
-                        {
-                          name: "Devansh Gupta",
-                          role: "Technical Lead",
-                          seed: "devansh",
-                        },
-                        {
-                          name: "Ananya Mishra",
-                          role: "Web Coordinator",
-                          seed: "ananya",
-                        },
-                      ].map((member, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-3 p-3.5 rounded-2xl bg-base-200/20 border border-base-200/80 hover:bg-base-200/45 transition-colors"
-                        >
-                          <Image
-                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${member.name}`}
-                            alt={member.name}
-                            width={40}
-                            height={40}
-                            className="rounded-full shrink-0 border border-base-300 object-cover"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <span className="block text-xs font-bold text-base-content truncate">
-                              {member.name}
-                            </span>
-                            <span className="block text-[10px] text-base-content/50 font-medium truncate">
-                              {member.role}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>

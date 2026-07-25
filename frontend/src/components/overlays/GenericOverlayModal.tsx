@@ -177,12 +177,12 @@ export default function GenericOverlayModal({
     >
       <style>{`
         @keyframes backdropEnter {
-          from { opacity: 0; backdrop-filter: blur(0px); }
-          to { opacity: 1; backdrop-filter: blur(4px); }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         @keyframes backdropExit {
-          from { opacity: 1; backdrop-filter: blur(4px); }
-          to { opacity: 0; backdrop-filter: blur(0px); }
+          from { opacity: 1; }
+          to { opacity: 0; }
         }
         @keyframes modalEnter {
           from {
@@ -226,6 +226,7 @@ export default function GenericOverlayModal({
             : "animate-backdrop-exit"
         }`}
         onClick={onClose}
+        style={{ backdropFilter: "none" }}
       />
 
       {/* Dialog Card - matching SettingsModal aesthetics and draggable header */}
