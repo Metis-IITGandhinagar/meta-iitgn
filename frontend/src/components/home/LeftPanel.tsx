@@ -68,14 +68,14 @@ export default function LeftPanel({
   const renderPortalIcon = (iconName: string | undefined, color: string, iconClass?: string) => {
     if (iconClass) {
       return (
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconClass}`}>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconClass}`}>
           <CategoryIcon icon={iconName} size={20} />
         </div>
       );
     }
     return (
       <div
-        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
         style={{
           backgroundColor: `${color}1a`,
           color: color,
@@ -267,24 +267,8 @@ export default function LeftPanel({
 
           {/* Category Cards (Modern box type redirecting to category sub-pages) */}
           <div className="space-y-2 mt-6 lg:mt-8">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-serif font-bold text-base-content tracking-tight">
-                Quick Portals
-              </h2>
-              {isLoggedIn ? (
-                <button
-                  onClick={() => setActiveOverlay("categories")}
-                  className="text-[10px] font-extrabold text-primary hover:text-blue-700 hover:underline tracking-wider uppercase shrink-0 cursor-pointer"
-                >
-                  All
-                </button>
-              ) : (
-                <div className="w-12" />
-              )}
-            </div>
-
             {portalsToDisplay.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2.5 mt-2">
+              <div className="grid grid-cols-2 gap-4 mt-3">
                 {portalsToDisplay.slice(0, 10).map((portal) => {
                   const theme = getEmojiCardStyle(portal.color);
 
@@ -295,14 +279,14 @@ export default function LeftPanel({
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className={`rounded-full overflow-hidden border-0 flex flex-row items-center gap-2.5 p-1.5 pr-4 ${theme.cardClass} card-hover cursor-pointer shadow-sm hover:scale-103 hover:brightness-110 transition-all duration-150 w-full font-inter`}
+                      className={`rounded-full overflow-hidden border-0 flex flex-row items-center gap-3 p-2 pr-5 ${theme.cardClass} card-hover cursor-pointer shadow-sm transition-all duration-200 w-full font-inter hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5`}
                       onClick={() => {
                         setActivePortalCategory(portal.slug);
                         setActiveOverlay("portal");
                       }}
                     >
                       {renderPortalIcon(portal.iconName, portal.color, theme.iconClass)}
-                      <span className={`text-xs font-bold ${theme.textClass} leading-tight truncate pointer-events-none`}>
+                      <span className={`text-sm font-bold ${theme.textClass} leading-tight truncate pointer-events-none`}>
                         {portal.name}
                       </span>
                     </motion.div>

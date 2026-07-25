@@ -215,10 +215,10 @@ export default function HomeMasonryGrid({
           onLayoutChange={handleLayoutChange}
           onBreakpointChange={(bp) => setActiveBreakpoint(bp)}
         >
-          {cards.map((card) => (
+{cards.map((card) => (
             <div key={card.id} className="group relative @container h-full">
-              <div className="w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-all duration-150 card-hover rounded-[2rem] bg-white">
-                <div className="w-full h-full flex flex-col [&>div]:h-full">
+              <div className="w-full h-full rounded-[2rem] transition-all duration-150 card-hover">
+                <div className="w-full h-full flex flex-col">
                   {card.content}
                 </div>
               </div>

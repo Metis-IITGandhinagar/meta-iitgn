@@ -205,7 +205,7 @@ export default function HomeTab({
           onMouseLeave={() => {
             featuredPausedRef.current = false;
           }}
-          className="group rounded-xl relative overflow-hidden flex flex-col justify-between p-6 @md:p-8 h-full font-inter"
+          className="group rounded-[2rem] relative overflow-hidden flex flex-col justify-between p-6 @md:p-8 h-full font-inter"
         >
           {featuredSlides.length === 0 ? (
             <div className="absolute inset-0 bg-linear-to-br from-primary/30 via-primary/10 to-secondary/15 flex items-center justify-center">
@@ -470,7 +470,7 @@ export default function HomeTab({
     {
       id: "events",
       content: (
-        <div className="bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] rounded-sm p-4 flex flex-col text-white shadow-lg shadow-indigo-200 h-full font-inter">
+        <div className="bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] rounded-[2rem] p-4 flex flex-col text-white shadow-lg shadow-indigo-200 h-full font-inter">
           <div className="flex justify-between items-center mb-3 @sm:mb-4 shrink-0">
             <h3 className="font-display font-bold text-lg @sm:text-xl flex items-center gap-2">
               <Calendar className="w-4 h-4 @sm:w-5 @sm:h-5 text-indigo-200" />
@@ -597,7 +597,7 @@ export default function HomeTab({
     {
       id: "random-page",
       content: (
-        <div className="bg-linear-to-tr from-[#7dd3fc] via-[#e879f9] to-[#fde047]  p-1.5 h-full font-inter text-[#111827]">
+        <div className="bg-linear-to-tr from-[#7dd3fc] via-[#e879f9] to-[#fde047]  p-1.5 h-full font-inter text-[#111827] rounded-[2rem]">
           <div className="bg-white/95 backdrop-blur-xl w-full h-full rounded-[1.6rem] p-4 @sm:p-6 flex flex-col justify-between">
             <div>
               <h3 className="font-display font-bold text-lg @sm:text-xl flex items-center gap-2 text-[#111827] mb-2 @sm:mb-3">
@@ -626,7 +626,7 @@ export default function HomeTab({
       id: "pending-pages",
       colSpan: 2,
       content: (
-        <div className="rounded-2xl p-4 @sm:p-6 flex flex-col md:flex-col   items-center justify-between border-2 border-[#f3f4f6] gap-4 @md:gap-6 h-full font-inter ">
+        <div className="rounded-[2rem] p-4 @sm:p-6 flex flex-col md:flex-col   items-center justify-between border-2 border-[#f3f4f6] gap-4 @md:gap-6 h-full font-inter ">
           <div className="flex-1 text-center @md:text-left">
             <h3 className="font-display font-bold text-lg @sm:text-xl flex items-center justify-center @md:justify-start gap-2  mb-1.5 @sm:mb-2">
               <Clock className="h-4 w-4 @sm:h-5 @sm:w-5 text-[#9ca3af]" />{" "}
@@ -653,7 +653,7 @@ export default function HomeTab({
       id: "quick-stats",
       colSpan: 2,
       content: (
-        <div className="bg-linear-to-r from-[#111827] to-[#1f2937] rounded-xl p-6 flex items-center justify-between text-white overflow-hidden relative h-full font-inter">
+        <div className="bg-linear-to-r from-[#111827] to-[#1f2937] rounded-[2rem] p-6 flex items-center justify-between text-white overflow-hidden relative h-full font-inter">
           <svg
             viewBox="0 0 200 100"
             className="absolute inset-0 w-full h-full opacity-10"
