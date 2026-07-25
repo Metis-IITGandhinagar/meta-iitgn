@@ -308,7 +308,7 @@ export default function LeftPanel({
           </div>
         </div>
         {/* Credits Footer */}
-        <div className="pt-5 border-t hidden lg:flex border-base-200 flex-col items-center text-center gap-1.5 select-none mt-6 w-full">
+        <div className="pt-6 border-t hidden lg:flex border-base-200 flex-col items-center text-center gap-2 select-none mt-6 w-full bg-gradient-to-b from-transparent via-base-200/30 to-base-100 rounded-t-[2rem] -mx-4 px-4 pb-6">
           <div className="text-[12px] text-base-content/60 flex items-center justify-center gap-1.5 uppercase tracking-wider">
             <span>Made with</span>
             <Heart
@@ -322,7 +322,7 @@ export default function LeftPanel({
               Technical Council, IITGN
             </span>
           </div>
-          <div className="text-[9px] font-bold text-base-content/50/60 tracking-widest uppercase mt-1">
+          <div className="text-[9px] font-bold text-base-content/40 tracking-widest uppercase mt-1">
             © {new Date().getFullYear()} Technical Council
           </div>
         </div>
