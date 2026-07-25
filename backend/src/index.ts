@@ -13,7 +13,6 @@ import AuditLogRouter from "./routes/auditLogs.js";
 import PaperRouter from "./routes/paper.js"
 import CompetitionsRouter from "./routes/competitions.js"
 import InterviewPostsRouter from "./routes/interviewPosts.js"
-import SettingsRouter from "./routes/settings.js"
 
 const router = Router();
 
@@ -46,9 +45,6 @@ router.use("/interviews", InterviewPostsRouter);
 // Sync Check direct endpoint
 import { getFeedSyncCheck } from "./controllers/interviewPosts.js";
 router.get("/feed/sync-check", getFeedSyncCheck);
-
-// Settings
-router.use("/settings", SettingsRouter);
 
 export default router;
 

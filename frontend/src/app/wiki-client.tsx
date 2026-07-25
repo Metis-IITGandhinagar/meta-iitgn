@@ -8,6 +8,7 @@ import { InfoboxData, InfoboxRow } from "@/lib/types";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
+import { useCommonStore } from "@/store/useCommonStore";
 
 import { EditableCell } from "@/components/article/editable-cell";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -90,7 +91,7 @@ export default function WikiClient({
   slug,
 }: WikiClientProps) {
   // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isEditing, setIsEditing] = useState(defaultEditing || false);
@@ -120,14 +121,14 @@ export default function WikiClient({
   const [showHelpConfirm, setShowHelpConfirm] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Reading-progress bar: a client-only preference. Default it to `false` on
-  // the server render (no localStorage there) and resolve it after mount so
-  // the server HTML and first client render match — avoiding a hydration
-  // mismatch. Mirrors the pattern used in CategoryPage/HomeTab.
-  const [showReadingProgress, setShowReadingProgress] = useState(false);
+  const [showReadingProgress, setShowReadingProgress] = useState(true);
+  const readingProgress = useCommonStore((state) => state.readingProgress);
+  const autoFold = useCommonStore((state) => state.autoFold);
+  const editorAutosave = useCommonStore((state) => state.editorAutosave);
+
   useEffect(() => {
-    setShowReadingProgress(localStorage.getItem("wiki_reading_progress") !== "false");
-  }, []);
+    setShowReadingProgress(readingProgress);
+  }, [readingProgress]);
 
   // Page icon picker state (admin/moderator only) — mirrors CategoryPage: a
   // page has its own icon+color/emoji, editable from the article header.
@@ -177,8 +178,7 @@ export default function WikiClient({
     return categorySlug === "profile";
   }, [categorySlug]);
 
-  const isStaff = user?.role === "admin" || user?.role === "moderator";
-  const isSelfProfile = false;
+
 
   const isNews = useMemo(() => {
     return (
@@ -192,9 +192,7 @@ export default function WikiClient({
   }, [parsed]);
 
   // Reader "auto fold" preference — sections start collapsed on load.
-  const autoFold =
-    typeof window !== "undefined" &&
-    localStorage.getItem("wiki_auto_fold") === "true";
+  // Bound reactively via Zustand useCommonStore
 
   // The right sidebar (and its toggle button) is suppressed for page types that
   // don't use it. Extend `hideSidebar` for any future page/modal that should take
@@ -217,7 +215,7 @@ export default function WikiClient({
   // Refetch pending count when dbPageId changes
   useEffect(() => {
     fetchPendingCount();
-  }, [dbPageId]);
+  }, [dbPageId, fetchPendingCount]);
 
   // Set up event listener for pending count updates (runs once because fetchPendingCount is stable)
   useEffect(() => {
@@ -231,7 +229,7 @@ export default function WikiClient({
   useEffect(() => {
     if (!isEditing) return;
     // Respect the "Auto-save drafts" preference.
-    if (localStorage.getItem("wiki_editor_autosave") === "false") return;
+    if (!editorAutosave) return;
     const saveToIndexedDB = async () => {
       try {
         const pageKey = dbPageId
@@ -249,7 +247,7 @@ export default function WikiClient({
       }
     };
     saveToIndexedDB();
-  }, [markdown, isEditing, dbPageId, versionId, parsed.title]);
+  }, [markdown, isEditing, dbPageId, versionId, parsed.title, editorAutosave]);
 
   // URL -> state: open the matching wiki modal on deep-link load / back-forward.
   useEffect(() => {
@@ -682,7 +680,7 @@ export default function WikiClient({
 
       // Reading progress: how far the article body has scrolled past. Runs
       // regardless of whether the article has headings.
-      if (localStorage.getItem("wiki_reading_progress") !== "false") {
+      if (showReadingProgress) {
         const scrollable = mainElement.scrollHeight - mainElement.clientHeight;
         const pct = scrollable > 0 ? Math.min(100, Math.max(0, (mainElement.scrollTop / scrollable) * 100)) : 0;
         if (pct !== lastPct) {
@@ -707,7 +705,7 @@ export default function WikiClient({
     return () => {
       mainElement.removeEventListener("scroll", handleScroll);
     };
-  }, [editorLoaded]);
+  }, [editorLoaded, showReadingProgress]);
 
   const handleTocClick = (
     e: React.MouseEvent<HTMLAnchorElement>,

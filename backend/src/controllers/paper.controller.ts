@@ -51,6 +51,7 @@ export async function handlePapersGet(req: Request, res: Response) {
             search,
             department,
             year,
+            examType,
             page = "1",
             limit = "10",
             sortby = "courseCode",
@@ -75,6 +76,14 @@ export async function handlePapersGet(req: Request, res: Response) {
 
         if (year) {
             where.year = Number(year);
+        }
+
+        if (examType) {
+            try {
+                where.exam_type = toExamType(examType);
+            } catch {
+                // If an invalid examType is passed, we can ignore it or leave it unfused.
+            }
         }
 
         const sortField = SORT_FIELD_MAP[sortby] ?? "course_code";

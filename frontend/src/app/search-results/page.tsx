@@ -100,6 +100,17 @@ function SearchResultsContent() {
   const [dynamicCategories, setDynamicCategories] = useState<string[]>(["All"]);
   const [categoryMeta, setCategoryMeta] = useState<Record<string, { icon: string; color: string }>>({});
   const [history, setHistory] = useState<string[]>([]);
+  
+  const [prevQuery, setPrevQuery] = useState(queryParam);
+  const [prevCategory, setPrevCategory] = useState(category);
+
+  if (queryParam !== prevQuery || category !== prevCategory) {
+    setPrevQuery(queryParam);
+    setPrevCategory(category);
+    setSearchQuery(queryParam);
+    setPage(1);
+    setResults([]);
+  }
 
   // Article-list view (Default / Tiles / Details / Icons S–XL), persisted
   // independently from the other surfaces via a search-specific key.
@@ -153,10 +164,7 @@ function SearchResultsContent() {
     }
   }, [data, page]);
 
-  useEffect(() => {
-    setPage(1);
-    setResults([]);
-  }, [queryParam, category]);
+  // Render-phase sync handles resetting page and results when queryParam or category changes
 
   const loadMore = () => {
     if (!loadingMore && hasMore) {
@@ -252,6 +260,7 @@ function SearchResultsContent() {
                   onClick={() => {
                     setSearchQuery(item);
                     addSearchHistory(item);
+                    router.push(`/search-results?query=${encodeURIComponent(item)}&category=${category}`);
                   }}
                   className="text-xs font-semibold text-base-content/70 bg-base-200 hover:bg-base-300 hover:text-base-content rounded-full px-3 py-1 transition-colors cursor-pointer"
                 >

@@ -28,6 +28,7 @@ import {
   X,
   Calendar,
 } from "lucide-react";
+import { VscFeedback } from "react-icons/vsc";
 import { SIDEBAR_SECTIONS } from "@/lib/constants";
 import { CategoryIcon } from "@/lib/categoryIcon";
 
@@ -55,6 +56,41 @@ interface SidebarProps {
   currentTier?: string;
   onChangeTier?: (tier: string) => void;
 }
+
+// Shared row styling so every nav item (sections, categories, tools, account)
+// gets the exact same "slide + glow" hover treatment.
+const navRowClass = (isActive: boolean, tone: "default" | "error" = "default") => {
+  if (tone === "error") {
+    return "group relative flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg select-none overflow-hidden transition-all duration-300 ease-out text-error hover:bg-error/10 hover:translate-x-1 hover:pl-4";
+  }
+  return `group relative flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg select-none overflow-hidden transition-all duration-300 ease-out ${
+    isActive
+      ? "bg-primary/10 text-primary font-bold pl-4"
+      : "text-base-content/75 hover:text-base-content hover:bg-base-200 hover:translate-x-1 hover:pl-4"
+  }`;
+};
+
+// The little accent bar that glides out from the left edge on hover and
+// stays lit while the route is active — this is the "comes out smoothly" bit.
+const NavIndicator = ({
+  isActive,
+  tone = "primary",
+}: {
+  isActive: boolean;
+  tone?: "primary" | "error";
+}) => (
+  <span
+    aria-hidden
+    className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full transition-all duration-300 ease-out ${
+      tone === "error" ? "bg-error" : "bg-primary"
+    } ${
+      isActive
+        ? "h-3/5 opacity-100"
+        : "h-0 opacity-0 group-hover:h-2/5 group-hover:opacity-80"
+    }`}
+  />
+);
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, categories } = useAuth();
@@ -72,10 +108,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     return (
       <IconComponent
-        className={`h-5 w-5 transition-colors duration-200 ${
+        className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
           isActive
             ? "text-primary"
-            : "text-base-content/50 group-hover:text-base-content/80"
+            : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
         }`}
       />
     );
@@ -111,7 +147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
           <button
             onClick={onClose}
-            className="btn btn-ghost btn-square btn-sm text-base-content/50 hover:text-base-content/80 transition-colors cursor-pointer"
+            className="btn btn-ghost btn-square btn-sm text-base-content/50 hover:text-base-content/80 hover:rotate-90 transition-all duration-300 cursor-pointer"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -119,7 +155,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation list area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.title} className="space-y-1.5">
               {/* Section Header */}
@@ -132,12 +168,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {section.items.map((item) => {
                   const isActive = pathname === item.path;
 
-                  const itemClass = `group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg select-none transition-all duration-200 ${
-                    isActive
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`;
-
                   return (
                     <Link
                       key={item.name}
@@ -148,8 +178,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           onClose();
                         }
                       }}
-                      className={itemClass}
+                      className={navRowClass(isActive)}
                     >
+                      <NavIndicator isActive={isActive} />
                       {renderIcon(item.iconName, isActive)}
                       <span className="truncate">{item.name}</span>
                     </Link>
@@ -162,7 +193,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Categories — sourced dynamically from the live categories API so the
               sidebar always reflects the current set of categories. */}
           {rootCategories.length > 0 && (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <h3 className="px-3 text-[10px] font-bold tracking-wider text-base-content/50 uppercase">
                 Categories
               </h3>
@@ -188,19 +219,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           setActiveOverlay("portal");
                           if (window.innerWidth < 1024) onClose();
                         }}
-                        className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg select-none transition-all duration-200 ${
-                          isActive
-                            ? "bg-primary/10 text-primary font-bold"
-                            : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                        }`}
+                        className={navRowClass(isActive)}
                       >
+                        <NavIndicator isActive={isActive} />
                         <CategoryIcon
                           icon={category.icon}
                           size={20}
-                          className={`transition-colors duration-200 ${
+                          className={`shrink-0 transition-all duration-200 ease-out ${
                             isActive
                               ? "text-primary"
-                              : "text-base-content/50 group-hover:text-base-content/80"
+                              : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
                           }`}
                         />
                         <span className="truncate">{category.name}</span>
@@ -212,12 +240,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <button
                     type="button"
                     onClick={() => setShowAllCategories(!showAllCategories)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-[12px] font-semibold text-primary hover:bg-base-200 rounded-lg cursor-pointer transition-colors duration-200 mt-0.5 text-left"
+                    className="group flex w-full items-center justify-between px-3 py-2 text-[12px] font-semibold text-primary hover:bg-base-200 rounded-lg cursor-pointer transition-all duration-300 ease-out hover:translate-x-1 mt-0.5 text-left"
                   >
                     <span>
                       {showAllCategories
                         ? "Show Less"
                         : `+ ${rootCategories.length - 4} More`}
+                    </span>
+                    <span
+                      className={`text-primary/60 transition-transform duration-300 ease-out ${
+                        showAllCategories ? "rotate-180" : "group-hover:translate-y-0.5"
+                      }`}
+                    >
+                      ⌄
                     </span>
                   </button>
                 )}
@@ -235,17 +270,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/paper"
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`}
+                  className={navRowClass(pathname === "/paper")}
                 >
+                  <NavIndicator isActive={pathname === "/paper"} />
                   <PackageCheck
-                    className={`h-5 w-5 transition-colors duration-200 ${
-                      pathname === "/user/profile"
+                    className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
+                      pathname === "/paper"
                         ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
+                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
                     }`}
                   />
                   <span className="truncate">PYQs</span>
@@ -255,17 +287,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/calender"
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`}
+                  className={navRowClass(pathname === "/calender")}
                 >
+                  <NavIndicator isActive={pathname === "/calender"} />
                   <Calendar
-                    className={`h-5 w-5 transition-colors duration-200 ${
+                    className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                       pathname === "/calender"
                         ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
+                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
                     }`}
                   />
                   <span className="truncate">Academic Calender</span>
@@ -275,17 +304,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/interviews"
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`}
+                  className={navRowClass(pathname === "/interviews")}
                 >
-                  <ChartNoAxesCombined
-                    className={`h-5 w-5 transition-colors duration-200 ${
+                  <NavIndicator isActive={pathname === "/interviews"} />
+                  <VscFeedback
+                    className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                       pathname === "/interviews"
                         ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
+                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
                     }`}
                   />
                   <span className="truncate">Interviews</span>
@@ -295,17 +321,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/competitions"
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`}
+                  className={navRowClass(pathname === "/competitions")}
                 >
+                  <NavIndicator isActive={pathname === "/competitions"} />
                   <ChartNoAxesCombined
-                    className={`h-5 w-5 transition-colors duration-200 ${
+                    className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                       pathname === "/competitions"
                         ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
+                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
                     }`}
                   />
                   <span className="truncate">Competitions</span>
@@ -325,17 +348,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
-                    pathname === "/user/profile"
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-base-content/75 hover:text-base-content hover:bg-base-200"
-                  }`}
+                  className={navRowClass(pathname === "/user/profile")}
                 >
+                  <NavIndicator isActive={pathname === "/user/profile"} />
                   <UserCircle2
-                    className={`h-5 w-5 transition-colors duration-200 ${
+                    className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                       pathname === "/user/profile"
                         ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80"
+                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
                     }`}
                   />
                   <span className="truncate">Profile</span>
@@ -345,9 +365,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className="group flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 text-error hover:bg-error/10"
+                  className={navRowClass(false, "error")}
                 >
-                  <LogOut className="h-5 w-5 text-error group-hover:text-error/80" />
+                  <NavIndicator isActive={false} tone="error" />
+                  <LogOut className="h-5 w-5 shrink-0 text-error transition-transform duration-200 ease-out group-hover:scale-110" />
                   <span className="truncate">Sign Out</span>
                 </Link>
               </div>
@@ -359,7 +380,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={() => {
                   if (window.innerWidth < 1024) onClose();
                 }}
-                className="btn btn-primary btn-sm w-full font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-100 ease-in-out hover:scale-105"
+                className="btn btn-primary btn-sm w-full font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-200 ease-out hover:scale-[1.03] hover:shadow-lg active:scale-95"
               >
                 <User className="w-4 h-4" />
                 <span>Login</span>

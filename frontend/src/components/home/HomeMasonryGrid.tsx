@@ -1,12 +1,26 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Responsive as ResponsiveGridLayout, Layout, LayoutItem, ResponsiveLayouts, useContainerWidth } from "react-grid-layout";
-import useSWR from "swr";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-import { GripVertical } from "lucide-react";
-import { apiService } from "@/api";
+import React from "react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useCommonStore } from "@/store/useCommonStore";
+import { motion } from "framer-motion";
 
 export interface MasonryCardConfig {
   id: string;
@@ -21,227 +35,220 @@ interface HomeMasonryGridProps {
   reorderEnabled?: boolean;
 }
 
-const DEFAULT_STORAGE_KEY = "meta_iitgn_home_card_order_v2";
+function SortableCard({
+  card,
+  reorderEnabled,
+}: {
+  card: MasonryCardConfig;
+  reorderEnabled: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: card.id, disabled: !reorderEnabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  };
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      style={style}
+      layoutId={card.id}
+      layout="position"
+      {...(reorderEnabled ? attributes : {})}
+      {...(reorderEnabled ? listeners : {})}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      whileHover={reorderEnabled ? {} : { y: -6, scale: 1.015 }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 25,
+        opacity: { duration: 0.4 }
+      }}
+      className={`w-full aspect-square rounded-2xl overflow-hidden relative transition-shadow ${
+        reorderEnabled
+          ? "ring-2 ring-blue-500/30 hover:ring-blue-500/70 cursor-grab active:cursor-grabbing shadow-lg"
+          : "shadow-sm border border-base-200"
+      }`}
+    >
+      <div className="w-full h-full flex flex-col [&>div]:h-full select-none">
+        {card.content}
+      </div>
+      {reorderEnabled && (
+        <div className="absolute top-3 right-3 bg-blue-600 text-white rounded-full p-2 shadow-md pointer-events-none z-[50] flex items-center justify-center">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="3"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9M20.25 20.25v-4.5m0 4.5h-4.5m4.5 0L15 15"
+            />
+          </svg>
+        </div>
+      )}
+    </motion.div>
+  );
+}
 
 export default function HomeMasonryGrid({
   cards,
-  storageKey = DEFAULT_STORAGE_KEY,
   reorderEnabled = false,
 }: HomeMasonryGridProps) {
-  const { width, containerRef, mounted } = useContainerWidth();
-  const [layouts, setLayouts] = useState<ResponsiveLayouts | null>(null);
-  const [activeBreakpoint, setActiveBreakpoint] = useState<string>("lg");
-  const isUserAction = useRef(false);
+  const { homeCardOrder, setHomeCardOrder } = useCommonStore();
+  const [activeId, setActiveId] = React.useState<string | null>(null);
 
-  const { data: globalSetting } = useSWR("site_settings_homepage_layout", async () => {
-    try {
-      const res = await apiService.getSetting("homepage_layout");
-      console.log("SWR fetched global setting:", res);
-      return res;
-    } catch (e) {
-      console.error("SWR global setting error:", e);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = homeCardOrder.indexOf(active.id as string);
+      const newIndex = homeCardOrder.indexOf(over.id as string);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(homeCardOrder, oldIndex, newIndex);
+        setHomeCardOrder(newOrder);
+      }
     }
-    return null;
+    setActiveId(null);
+  };
+
+  // 1. Featured Article
+  const featuredCard = cards.find((c) => c.id === "featured-article");
+
+  // 2. Bottom horizontal banner cards
+  const bottomCards = cards.filter(
+    (c) => c.id === "pending-pages" || c.id === "quick-stats"
+  );
+
+  // 3. Middle cards
+  const otherCards = cards.filter(
+    (c) =>
+      c.id !== "featured-article" &&
+      c.id !== "pending-pages" &&
+      c.id !== "quick-stats"
+  );
+
+  // Sort otherCards based on the persisted homeCardOrder
+  const sortedOtherCards = [...otherCards].sort((a, b) => {
+    const aIndex = homeCardOrder.indexOf(a.id);
+    const bIndex = homeCardOrder.indexOf(b.id);
+    const aVal = aIndex === -1 ? 999 : aIndex;
+    const bVal = bIndex === -1 ? 999 : bIndex;
+    return aVal - bVal;
   });
 
-  const buildDefaultLayout = (cols: number) => {
-    const occupancy: boolean[][] = [];
-    const layout: LayoutItem[] = [];
-
-    const isFree = (x: number, y: number, w: number, h: number) => {
-      for (let row = y; row < y + h; row += 1) {
-        for (let col = x; col < x + w; col += 1) {
-          if ((occupancy[row] ?? [])[col]) return false;
-        }
-      }
-      return true;
-    };
-
-    const occupy = (x: number, y: number, w: number, h: number) => {
-      for (let row = y; row < y + h; row += 1) {
-        if (!occupancy[row]) occupancy[row] = [];
-        for (let col = x; col < x + w; col += 1) {
-          occupancy[row][col] = true;
-        }
-      }
-    };
-
-    const placeCard = (card: MasonryCardConfig) => {
-      const w = Math.max(1, Math.min(card.colSpan ?? 1, cols));
-      const h = Math.max(1, card.rowSpan ?? 1);
-
-      for (let y = 0; ; y += 1) {
-        for (let x = 0; x <= cols - w; x += 1) {
-          if (!isFree(x, y, w, h)) continue;
-          occupy(x, y, w, h);
-          layout.push({
-            i: card.id,
-            x,
-            y,
-            w,
-            h,
-            minW: 1,
-            maxW: cols,
-            minH: 1,
-            maxH: 4,
-          });
-          return;
-        }
-      }
-    };
-
-    cards.forEach(placeCard);
-    return layout;
-  };
-
-  const buildLayoutMap = (baseLayouts?: ResponsiveLayouts) => {
-    const lg = baseLayouts?.lg ?? buildDefaultLayout(4);
-    return lockLayoutItems({
-      lg,
-      md: baseLayouts?.md ?? buildDefaultLayout(3),
-      sm: baseLayouts?.sm ?? buildDefaultLayout(2),
-      xs: baseLayouts?.xs ?? buildDefaultLayout(2),
-      xxs: baseLayouts?.xxs ?? buildDefaultLayout(2),
-    });
-  };
-
-  const lockLayoutItems = (layoutGroups: ResponsiveLayouts) =>
-    Object.fromEntries(
-      Object.entries(layoutGroups).map(([breakpoint, items]) => [
-        breakpoint,
-        items?.map((item) => ({
-          ...item,
-          static: !reorderEnabled,
-          isDraggable: reorderEnabled,
-          isResizable: reorderEnabled,
-        })),
-      ])
-    ) as ResponsiveLayouts;
-
-  useEffect(() => {
-    setLayouts((current) => (current ? lockLayoutItems(current) : current));
-    // Keep drag state in sync when the Customize toggle changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reorderEnabled]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      const enforceMax = (layoutArray: LayoutItem[], cols = 4) =>
-        layoutArray.map((item) => ({ ...item, maxW: cols, maxH: 4 }));
-
-      if (saved) {
-        isUserAction.current = true;
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setLayouts(buildLayoutMap({ lg: enforceMax(parsed) }));
-        } else {
-          const enforcedParsed: ResponsiveLayouts = {};
-          Object.keys(parsed).forEach(key => {
-            enforcedParsed[key] = enforceMax(parsed[key], key === "lg" ? 4 : 4);
-          });
-          setLayouts(buildLayoutMap(enforcedParsed));
-        }
-      } else if (globalSetting?.data) {
-        // Use global setting if user has no local layout
-        const parsed = typeof globalSetting.data === 'string' ? JSON.parse(globalSetting.data) : globalSetting.data;
-        if (Array.isArray(parsed)) {
-          setLayouts(buildLayoutMap({ lg: enforceMax(parsed) }));
-        } else {
-          const enforcedParsed: ResponsiveLayouts = {};
-          Object.keys(parsed).forEach(key => {
-            enforcedParsed[key] = enforceMax(parsed[key], key === "lg" ? 4 : 4);
-          });
-          setLayouts(buildLayoutMap(enforcedParsed));
-        }
-      } else {
-        // Generate default layout if nothing is saved locally or globally
-        setLayouts(buildLayoutMap());
-      }
-    } catch (e) {
-      console.error("Failed to load portal layout:", e);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey, globalSetting]);
-
-  const handleLayoutChange = (currentLayout: Layout, allLayouts: ResponsiveLayouts) => {
-    let layoutsToSave = { ...allLayouts };
-    
-    // To ensure changes on larger screens dynamically cascade to smaller screens,
-    // we delete the cached layouts of smaller screens whenever a larger screen is edited.
-    if (activeBreakpoint === "lg") {
-      layoutsToSave = { lg: allLayouts.lg };
-    } else if (activeBreakpoint === "md") {
-      layoutsToSave = { lg: allLayouts.lg, md: allLayouts.md };
-    } else if (activeBreakpoint === "sm") {
-      layoutsToSave = { lg: allLayouts.lg, md: allLayouts.md, sm: allLayouts.sm };
-    } else if (activeBreakpoint === "xs") {
-      layoutsToSave = { lg: allLayouts.lg, md: allLayouts.md, sm: allLayouts.sm, xs: allLayouts.xs };
-    }
-
-    setLayouts(buildLayoutMap(layoutsToSave));
-    if (isUserAction.current) {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(layoutsToSave));
-      } catch (e) {
-        console.error("Failed to save portal layout:", e);
-      }
-    }
-  };
-
-  let currentCols = 4;
-  if (width < 768) currentCols = 2;
-  else if (width < 996) currentCols = 2;
-  else if (width < 1200) currentCols = 3;
-  
-  const gap = 24;
-  
-  let dynamicRowHeight = 250;
-  if (width > 0) {
-    dynamicRowHeight = (width - gap * (currentCols - 1)) / currentCols;
-  }
-
   return (
-    <div ref={containerRef} className="relative mt-2 w-full">
-      <style>{`
-        .home-layout:not(.is-editing) .react-resizable-handle {
-          display: none !important;
-          pointer-events: none !important;
-        }
-      `}</style>
-      {mounted && layouts && (
-        <ResponsiveGridLayout
-          key={`${globalSetting ? "has-global" : "no-global"}-${reorderEnabled ? "edit" : "view"}`}
-          className={`home-layout ${reorderEnabled ? 'is-editing' : ''}`}
-          width={width}
-          layouts={layouts}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 4, md: 3, sm: 2, xs: 2, xxs: 2 }}
-          rowHeight={dynamicRowHeight}
-          margin={[gap, gap]}
-          containerPadding={[0, 0]}
-          onLayoutChange={handleLayoutChange}
-          onBreakpointChange={(bp) => setActiveBreakpoint(bp)}
-          onDragStop={() => (isUserAction.current = true)}
-          onResizeStop={() => (isUserAction.current = true)}
+    <div className="w-full flex flex-col gap-6 mt-4">
+      {/* Featured Card */}
+      {featuredCard && (
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7, ease: [0.215, 0.61, 0.355, 1] }}
+          className="w-full aspect-square md:h-[450px] lg:h-[700px] overflow-hidden rounded-xl border border-base-200"
         >
-          {cards.map((card) => (
-            <div key={card.id} className="group relative @container h-full">
-              <div className={`w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-all duration-150 ${reorderEnabled ? 'ring-2 ring-primary/30 ring-offset-2 ring-offset-base-100 scale-[0.98] pointer-events-none' : 'card-hover'} rounded-[2rem] bg-white`}>
-                {reorderEnabled && (
-                  <button
-                    className="drag-handle absolute top-3 right-3 z-30 p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm text-gray-900 hover:bg-gray-100 cursor-grab active:cursor-grabbing transition-opacity duration-150"
-                  >
-                    <GripVertical className="w-3.5 h-3.5" />
-                  </button>
-                )}
+          <div className="w-full h-full flex flex-col [&>div]:h-full">
+            {featuredCard.content}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Middle Cards: 3x2 Grid with optional drag and drop reordering */}
+      {sortedOtherCards.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext
+            items={sortedOtherCards.map((c) => c.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {sortedOtherCards.map((card) => (
+                <SortableCard
+                  key={card.id}
+                  card={card}
+                  reorderEnabled={reorderEnabled}
+                />
+              ))}
+            </div>
+          </SortableContext>
+
+          <DragOverlay adjustScale={true}>
+            {activeId ? (
+              <div className="w-full aspect-square rounded-2xl overflow-hidden ring-2 ring-blue-500/70 shadow-2xl opacity-90 scale-105 cursor-grabbing">
+                <div className="w-full h-full flex flex-col [&>div]:h-full select-none">
+                  {sortedOtherCards.find((c) => c.id === activeId)?.content}
+                </div>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      )}
+
+      {/* Bottom Banner Cards */}
+      {bottomCards.length > 0 && (
+        <div className="flex flex-col gap-6">
+          {bottomCards.map((card) => {
+            const isStats = card.id === "quick-stats";
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
+                whileHover={{ y: -4 }}
+                className={`w-full overflow-hidden rounded-xl border border-base-200 ${
+                  isStats ? "min-h-[9.5rem] md:h-36" : "min-h-[7.5rem] md:h-36"
+                }`}
+              >
                 <div className="w-full h-full flex flex-col [&>div]:h-full">
                   {card.content}
                 </div>
-              </div>
-            </div>
-          ))}
-        </ResponsiveGridLayout>
+              </motion.div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

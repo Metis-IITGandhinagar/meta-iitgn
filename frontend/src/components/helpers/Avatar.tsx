@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   getAvatarDataUri,
   getAvatarSeed,
@@ -48,11 +49,13 @@ export default function Avatar({ email, name, seed, className, alt }: AvatarProp
   }, [seed, email, name]);
 
   return (
-    // Inline data-URI SVG — next/image can't optimize it, so <img> is correct here.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    // Inline data-URI SVG — next/image can't optimize it, so unoptimized={true} is used here.
+    <Image
       src={getAvatarDataUri(resolvedSeed)}
       alt={alt ?? name ?? "User avatar"}
+      width={100}
+      height={100}
+      unoptimized={true}
       className={className}
     />
   );

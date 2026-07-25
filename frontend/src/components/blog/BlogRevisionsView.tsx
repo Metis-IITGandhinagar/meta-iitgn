@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
-import { PanelRight, Check, X } from "lucide-react";
+import { PanelRight, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 import dynamic from "next/dynamic";
@@ -74,9 +73,7 @@ interface RevisionRecord {
     role: string;
   };
 }
-
 export default function BlogRevisionsView({ setShowRevisions, slug }: BlogRevisionsViewProps) {
-  const router = useRouter();
   const { user } = useAuth();
   const [revisions, setRevisions] = useState<RevisionRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,13 +87,11 @@ export default function BlogRevisionsView({ setShowRevisions, slug }: BlogRevisi
 
   const [selectedRevision, setSelectedRevision] = useState<RevisionRecord | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
   const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
       if (mobile) setSidebarOpen(false);
     };
     checkMobile();
@@ -115,7 +110,7 @@ export default function BlogRevisionsView({ setShowRevisions, slug }: BlogRevisi
 
   const isAdminOrMod = user?.role === "admin" || user?.role === "moderator";
 
-  const fetchRevisions = async (pageNum: number, append = false) => {
+  const fetchRevisions = useCallback(async (pageNum: number, append = false) => {
     if (pageNum === 1) {
       setLoading(true);
     } else {
@@ -139,13 +134,13 @@ export default function BlogRevisionsView({ setShowRevisions, slug }: BlogRevisi
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [slug]);
 
   useEffect(() => {
     if (slug) {
       fetchRevisions(1, false);
     }
-  }, [slug]);
+  }, [slug, fetchRevisions]);
 
   const loadMore = () => {
     const next = page + 1;

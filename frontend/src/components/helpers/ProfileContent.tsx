@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
@@ -30,6 +30,13 @@ import {
   Calendar,
   FileText,
   ExternalLink,
+  Bold,
+  Italic,
+  Heading1,
+  Heading2,
+  Link2,
+  Code,
+  List,
 } from "lucide-react";
 import Avatar from "@/components/helpers/Avatar";
 import UnifiedViewItem from "@/components/helpers/UnifiedViewItem";
@@ -67,12 +74,53 @@ export default function ProfileContent() {
   const router = useRouter();
   const { bookmarks, removeBookmark, setActiveOverlay } = useHomeStore();
   const { profileCache, setProfileData } = useProfile();
-  const [isSavingReadme,setIsSavingReadme]=useState<boolean>(false);
+  const [isSavingReadme, setIsSavingReadme] = useState<boolean>(false);
   const [showDashboard, setShowDashboard] = useState(false);
 
   // Profile README edit overlay states & handlers
   const [isEditingReadme, setIsEditingReadme] = useState(false);
   const [editReadmeContent, setEditReadmeContent] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertMarkdown = (syntax: string, placeholder = "") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+
+    const selectedText = text.substring(start, end) || placeholder;
+
+    let replacement = "";
+    if (syntax === "bold") {
+      replacement = `**${selectedText}**`;
+    } else if (syntax === "italic") {
+      replacement = `*${selectedText}*`;
+    } else if (syntax === "h1") {
+      replacement = `\n# ${selectedText || "Heading 1"}\n`;
+    } else if (syntax === "h2") {
+      replacement = `\n## ${selectedText || "Heading 2"}\n`;
+    } else if (syntax === "link") {
+      replacement = `[${selectedText || "Link Title"}](https://)`;
+    } else if (syntax === "image") {
+      replacement = `![${selectedText || "Image Description"}](https://)`;
+    } else if (syntax === "code") {
+      replacement = `\n\`\`\`\n${selectedText || "code here"}\n\`\`\`\n`;
+    } else if (syntax === "list") {
+      replacement = `\n- ${selectedText || "List item"}\n`;
+    }
+
+    const newContent =
+      text.substring(0, start) + replacement + text.substring(end);
+    setEditReadmeContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + replacement.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
   const userIdParam = searchParams?.get("userId");
   const targetUserId = userIdParam ? Number(userIdParam) : currentUser?.user_id;
   const isOwnProfile =
@@ -101,7 +149,10 @@ export default function ProfileContent() {
         if (cached && cached.content) {
           const parsed = JSON.parse(cached.content);
           parsed.readme = editReadmeContent;
-          await db.cachedpages.put({ ...cached, content: JSON.stringify(parsed) });
+          await db.cachedpages.put({
+            ...cached,
+            content: JSON.stringify(parsed),
+          });
         }
       } catch (cacheErr) {
         console.error("Error updating profile README cache:", cacheErr);
@@ -280,10 +331,10 @@ export default function ProfileContent() {
     };
 
     fetchProfileData();
-  }, [targetUserId, currentUser, userIdParam, profileCache, setProfileData]);
+  }, [targetUserId, currentUser, userIdParam, profileCache, setProfileData, isOwnProfile]);
 
   // Lazy-load authored blogs when the Blogs tab is first opened
-  const loadUserBlogs = async () => {
+  const loadUserBlogs = useCallback(async () => {
     if (!targetUserId) return;
     setBlogsLoading(true);
     try {
@@ -300,7 +351,7 @@ export default function ProfileContent() {
       setBlogsLoading(false);
       setBlogsLoaded(true);
     }
-  };
+  }, [targetUserId]);
 
   useEffect(() => {
     if (
@@ -311,10 +362,10 @@ export default function ProfileContent() {
     ) {
       loadUserBlogs();
     }
-  }, [activeTab, targetUserId, blogsLoaded, blogsLoading]);
+  }, [activeTab, targetUserId, blogsLoaded, blogsLoading, loadUserBlogs]);
 
   // Lazy-load uploaded papers when the Papers tab is first opened
-  const loadUserPapers = async () => {
+  const loadUserPapers = useCallback(async () => {
     if (!targetUserId) return;
     setPapersLoading(true);
     try {
@@ -328,7 +379,7 @@ export default function ProfileContent() {
       setPapersLoading(false);
       setPapersLoaded(true);
     }
-  };
+  }, [targetUserId]);
 
   useEffect(() => {
     if (
@@ -339,10 +390,10 @@ export default function ProfileContent() {
     ) {
       loadUserPapers();
     }
-  }, [activeTab, targetUserId, papersLoaded, papersLoading]);
+  }, [activeTab, targetUserId, papersLoaded, papersLoading, loadUserPapers]);
 
   // Lazy-load interview posts when tab opened
-  const loadUserInterviews = async () => {
+  const loadUserInterviews = useCallback(async () => {
     if (!targetUserId) return;
     setInterviewsLoading(true);
     try {
@@ -358,7 +409,7 @@ export default function ProfileContent() {
       setInterviewsLoading(false);
       setInterviewsLoaded(true);
     }
-  };
+  }, [targetUserId, isOwnProfile]);
 
   useEffect(() => {
     if (
@@ -369,7 +420,7 @@ export default function ProfileContent() {
     ) {
       loadUserInterviews();
     }
-  }, [activeTab, targetUserId, interviewsLoaded, interviewsLoading]);
+  }, [activeTab, targetUserId, interviewsLoaded, interviewsLoading, loadUserInterviews]);
 
   const handleDeletePaper = async (paperId: number) => {
     try {
@@ -446,10 +497,10 @@ export default function ProfileContent() {
   const isOwner = targetUserId === currentUser?.user_id;
   const displayBookmarks = isOwnProfile
     ? bookmarks
-    : targetBookmarks ?? profileCache[targetUserId!]?.bookmarks ?? [];
+    : (targetBookmarks ?? profileCache[targetUserId!]?.bookmarks ?? []);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-28">
+    <div className="mx-auto max-w-4xl space-y-6 pb-28 scrollbar-none">
       {/* ── Profile Header Card ─────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-3xl border border-base-200 bg-base-100 shadow-sm">
         {/* Banner */}
@@ -544,7 +595,13 @@ export default function ProfileContent() {
 
         {/* Tab bar */}
         <div className="flex border-t border-base-200 px-5 sm:px-8 overflow-x-auto">
-          {["overview", "bookmarks", "blogs", "interviews", isOwnProfile ? "papers" : null]
+          {[
+            "overview",
+            "bookmarks",
+            "blogs",
+            "interviews",
+            isOwnProfile ? "papers" : null,
+          ]
             .filter(Boolean)
             .map((tab) => (
               <button
@@ -559,12 +616,12 @@ export default function ProfileContent() {
                 {tab === "bookmarks"
                   ? `Bookmarks (${displayBookmarks.length})`
                   : tab === "blogs"
-                  ? "Blogs"
-                  : tab === "interviews"
-                  ? `Interview Feed ${interviewsLoaded ? `(${userInterviews.length})` : ""}`
-                  : tab === "papers"
-                  ? `Uploaded Papers ${papersLoaded ? `(${userPapers.length})` : ""}`
-                  : tab}
+                    ? "Blogs"
+                    : tab === "interviews"
+                      ? `Interview Feed ${interviewsLoaded ? `(${userInterviews.length})` : ""}`
+                      : tab === "papers"
+                        ? `Uploaded Papers ${papersLoaded ? `(${userPapers.length})` : ""}`
+                        : tab}
               </button>
             ))}
         </div>
@@ -623,59 +680,77 @@ export default function ProfileContent() {
           </section>
 
           <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-            {/* Profile README (takes place of recent activity) */}
-            <section className="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-sm sm:p-6 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-black text-base-content">
-                  Profile README
-                </h2>
-                {isOwner && !dataLoading && (
-                  <button
-                    onClick={() => {
-                      setEditReadmeContent(profileReadme || "");
-                      setIsEditingReadme(true);
-                    }}
-                    className="btn btn-ghost btn-xs rounded-xl text-primary cursor-pointer"
-                  >
-                    <PenLine className="h-3.5 w-3.5" /> Edit
-                  </button>
-                )}
+            {/* Recent Activity - full width below the grid */}
+            <section className="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-sm ">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-black text-base-content">
+                    Recent Activity
+                  </h2>
+                  <p className="mt-0.5 text-xs text-base-content/55">
+                    Your contributions to META IITGN.
+                  </p>
+                </div>
               </div>
-              <div className="prose prose-xs max-w-none text-base-content/75 grow">
-                {dataLoading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
+              {dataLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-14 bg-base-300 animate-pulse rounded-xl"
+                    />
+                  ))}
+                </div>
+              ) : recentActivity.length > 0 ? (
+                <div className="space-y-1">
+                  {recentActivity.map((item, idx) => {
+                    const Icon = item.type === "created" ? FilePlus2 : FileEdit;
+                    const tone =
+                      item.type === "created"
+                        ? "text-success bg-success/10"
+                        : "text-primary bg-primary/10";
+                    const relTime = item.time
+                      ? new Intl.RelativeTimeFormat("en", {
+                          numeric: "auto",
+                        }).format(
+                          Math.round(
+                            (new Date(item.time).getTime() - Date.now()) /
+                              86400000
+                          ),
+                          "day"
+                        )
+                      : "";
+                    return (
                       <div
-                        key={i}
-                        className="h-3 bg-base-300 animate-pulse rounded"
-                      />
-                    ))}
-                  </div>
-                ) : profileReadme ? (
-                  <ReactMarkdown>{profileReadme}</ReactMarkdown>
-                ) : (
-                  <div className="flex flex-col gap-2.5">
-                    <p className="text-xs text-base-content/40 italic">
-                      No README yet.
-                      {isOwner ? " Introduce yourself to the community!" : ""}
-                    </p>
-                    {isOwner && (
-                      <button
-                        onClick={() => {
-                          setEditReadmeContent("");
-                          setIsEditingReadme(true);
-                        }}
-                        className="btn btn-xs btn-outline btn-primary rounded-lg self-start mt-1 cursor-pointer"
+                        key={idx}
+                        className="flex gap-3 rounded-2xl p-3 hover:bg-base-200/70 transition-colors"
                       >
-                        Add README
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+                        <span
+                          className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${tone}`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-base-content">
+                            {item.type} — {item.title}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-base-content/50">
+                            {item.status} · {relTime}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-xs text-base-content/50">
+                  <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                  No recent activity yet. Start contributing to pages!
+                </div>
+              )}
             </section>
 
-            {/* Profile aside */}
+            {/* Recent aside */}
             <aside className="space-y-5">
               {/* Contribution goal */}
               <section className="rounded-3xl border border-warning/20 bg-warning/5 p-5 shadow-sm">
@@ -716,74 +791,56 @@ export default function ProfileContent() {
             </aside>
           </div>
 
-          {/* Recent Activity - full width below the grid */}
-          <section className="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-sm sm:p-6 mt-6">
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-black text-base-content">
-                  Recent Activity
-                </h2>
-                <p className="mt-0.5 text-xs text-base-content/55">
-                  Your contributions to META IITGN.
-                </p>
-              </div>
+          {/* Profile README (takes place of recent activity) */}
+          <section className="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-sm sm:p-6 flex flex-col h-[50dvh]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-black text-base-content">
+                Profile README
+              </h2>
+              {isOwner && !dataLoading && (
+                <button
+                  onClick={() => {
+                    setEditReadmeContent(profileReadme || "");
+                    setIsEditingReadme(true);
+                  }}
+                  className="btn btn-ghost btn-xs rounded-xl text-primary cursor-pointer"
+                >
+                  <PenLine className="h-3.5 w-3.5" /> Edit
+                </button>
+              )}
             </div>
-            {dataLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-14 bg-base-300 animate-pulse rounded-xl"
-                  />
-                ))}
-              </div>
-            ) : recentActivity.length > 0 ? (
-              <div className="space-y-1">
-                {recentActivity.map((item, idx) => {
-                  const Icon = item.type === "created" ? FilePlus2 : FileEdit;
-                  const tone =
-                    item.type === "created"
-                      ? "text-success bg-success/10"
-                      : "text-primary bg-primary/10";
-                  const relTime = item.time
-                    ? new Intl.RelativeTimeFormat("en", {
-                        numeric: "auto",
-                      }).format(
-                        Math.round(
-                          (new Date(item.time).getTime() - Date.now()) /
-                            86400000
-                        ),
-                        "day"
-                      )
-                    : "";
-                  return (
+            <div className="prose prose-xs max-w-none text-base-content/75 grow">
+              {dataLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
                     <div
-                      key={idx}
-                      className="flex gap-3 rounded-2xl p-3 hover:bg-base-200/70 transition-colors"
+                      key={i}
+                      className="h-3 bg-base-300 animate-pulse rounded"
+                    />
+                  ))}
+                </div>
+              ) : profileReadme ? (
+                <ReactMarkdown>{profileReadme}</ReactMarkdown>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  <p className="text-xs text-base-content/40 italic">
+                    No README yet.
+                    {isOwner ? " Introduce yourself to the community!" : ""}
+                  </p>
+                  {isOwner && (
+                    <button
+                      onClick={() => {
+                        setEditReadmeContent("");
+                        setIsEditingReadme(true);
+                      }}
+                      className="btn btn-xs btn-outline btn-primary rounded-lg self-start mt-1 cursor-pointer"
                     >
-                      <span
-                        className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${tone}`}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-base-content">
-                          {item.type} — {item.title}
-                        </span>
-                        <span className="mt-0.5 block text-xs text-base-content/50">
-                          {item.status} · {relTime}
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-xs text-base-content/50">
-                <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                No recent activity yet. Start contributing to pages!
-              </div>
-            )}
+                      Add README
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
         </>
       )}
@@ -883,7 +940,11 @@ export default function ProfileContent() {
           ) : (
             <div className="space-y-4">
               {userInterviews.map((post) => (
-                <InterviewPostCard key={post.post_id} post={post} onPostUpdated={loadUserInterviews} />
+                <InterviewPostCard
+                  key={post.post_id}
+                  post={post}
+                  onPostUpdated={loadUserInterviews}
+                />
               ))}
             </div>
           )}
@@ -964,7 +1025,9 @@ export default function ProfileContent() {
                   <>
                     <div className="flex items-center gap-2">
                       <Avatar
-                        seed={String(blog.original_author?.user_id ?? targetUserId)}
+                        seed={String(
+                          blog.original_author?.user_id ?? targetUserId
+                        )}
                         name={blog.original_author?.name ?? name}
                         className="h-6 w-6 rounded-full object-cover border border-base-300"
                       />
@@ -1103,7 +1166,8 @@ export default function ProfileContent() {
 
                   <div className="flex items-center justify-between pt-3 border-t border-base-200/60 mt-2 text-xs text-base-content/60">
                     <span className="text-[11px] text-base-content/50 font-mono truncate max-w-[160px]">
-                      {paper.file_size || paper.file_name} • {paper.downloads} downloads
+                      {paper.file_size || paper.file_name} • {paper.downloads}{" "}
+                      downloads
                     </span>
                     <a
                       href={paper.pdf_url}
@@ -1126,7 +1190,7 @@ export default function ProfileContent() {
           isOpen={isEditingReadme}
           onClose={() => setIsEditingReadme(false)}
           title="Edit Profile README"
-          maxWidthClass="max-w-2xl"
+          maxWidthClass="max-w-4xl lg:max-w-5xl"
         >
           <div className="space-y-4 flex flex-col h-full min-h-0">
             <div className="flex flex-col gap-1.5 shrink-0">
@@ -1139,12 +1203,75 @@ export default function ProfileContent() {
               </p>
             </div>
 
-            <div className="grow min-h-0 flex flex-col">
+            <div className="grow min-h-0 flex flex-col border border-base-300 rounded-xl bg-base-100 overflow-hidden">
+              {/* Markdown Editing Toolbar */}
+              <div className="flex gap-1 p-2 bg-base-200 border-b border-base-300 flex-wrap items-center">
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("bold", "bold text")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
+                  title="Bold"
+                >
+                  <Bold className="w-4.5 h-4.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("italic", "italic text")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
+                  title="Italic"
+                >
+                  <Italic className="w-4.5 h-4.5" />
+                </button>
+                <span className="h-4 w-px bg-base-300 mx-1" />
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("h1", "Heading 1")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer font-bold"
+                  title="Heading 1"
+                >
+                  <Heading1 className="w-4.5 h-4.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("h2", "Heading 2")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer font-bold"
+                  title="Heading 2"
+                >
+                  <Heading2 className="w-4.5 h-4.5" />
+                </button>
+                <span className="h-4 w-px bg-base-300 mx-1" />
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("link", "Link Title")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
+                  title="Link"
+                >
+                  <Link2 className="w-4.5 h-4.5" />
+                </button>
+                <span className="h-4 w-px bg-base-300 mx-1" />
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("code", "code")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer font-mono"
+                  title="Code Block"
+                >
+                  <Code className="w-4.5 h-4.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertMarkdown("list", "List item")}
+                  className="p-1.5 rounded-lg hover:bg-base-300 text-base-content/75 hover:text-base-content transition-colors cursor-pointer"
+                  title="List"
+                >
+                  <List className="w-4.5 h-4.5" />
+                </button>
+              </div>
               <textarea
+                ref={textareaRef}
                 value={editReadmeContent}
                 onChange={(e) => setEditReadmeContent(e.target.value)}
                 placeholder="e.g. # Hello World! I'm a student at IITGN..."
-                className="w-full grow min-h-62.5 border border-base-300 bg-base-100 text-base-content rounded-xl p-4 text-sm focus:outline-none focus:border-primary font-mono leading-relaxed resize-none"
+                className="w-full grow min-h-80 md:h-[450px] border-0 bg-base-100 text-base-content p-4 text-sm focus:outline-none focus:ring-0 font-mono leading-relaxed resize-none"
               />
             </div>
 
@@ -1171,7 +1298,9 @@ export default function ProfileContent() {
       <ConfirmationModal
         isOpen={!!paperToDelete}
         onClose={() => setPaperToDelete(null)}
-        onConfirm={() => paperToDelete && handleDeletePaper(paperToDelete.paper_id)}
+        onConfirm={() =>
+          paperToDelete && handleDeletePaper(paperToDelete.paper_id)
+        }
         title="Delete Paper"
         message={`Are you sure you want to delete "${paperToDelete?.course_code} - ${paperToDelete?.exam_type} (${paperToDelete?.year})"? This action cannot be undone.`}
         confirmText={deletingPaperId ? "Deleting..." : "Delete Paper"}

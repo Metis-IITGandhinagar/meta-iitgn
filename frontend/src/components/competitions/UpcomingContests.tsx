@@ -321,7 +321,6 @@ export default function UpcomingContests() {
   const [contests,       setContests]       = useState<Contest[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState<string | null>(null);
-  const [fromCache,      setFromCache]      = useState(false);
   const [activePlatform, setActivePlatform] = useState("all");
   const [showCount,      setShowCount]      = useState(20);
 
@@ -334,7 +333,6 @@ export default function UpcomingContests() {
         const cached = await getCachedContests();
         if (cached) {
           setContests(cached);
-          setFromCache(true);
           setLoading(false);
           return;
         }
@@ -343,7 +341,6 @@ export default function UpcomingContests() {
       const fresh = await fetchContestsFromNetwork();
       await cacheContests(fresh);
       setContests(fresh);
-      setFromCache(false);
     } catch (err) {
       setError("Failed to fetch contests. Please try again.");
       console.error("[UpcomingContests]", err);

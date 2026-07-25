@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { applySectionFolding } from "@/lib/wikiFolding";
 import { apiService, getPagesList } from "@/api";
 import type { PageListItem } from "@/api";
+import { useCommonStore } from "@/store/useCommonStore";
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/common/toolbar.css";
@@ -157,11 +158,10 @@ function MilkdownEditorInner({
   const containerRef = useRef<HTMLDivElement>(null);
   const [topBarNode, setTopBarNode] = useState<Element | null>(null);
 
-  // Editor-specific preferences read from localStorage.
-  const [editorFontStyle, setEditorFontStyle] = useState("serif");
-  const [editorFontSize, setEditorFontSize] = useState("normal");
-  const [spellCheck, setSpellCheck] = useState(true);
-  const [showWordCount, setShowWordCount] = useState(true);
+  const editorFontStyle = useCommonStore((state) => state.editorFontStyle);
+  const editorFontSize = useCommonStore((state) => state.editorFontSize);
+  const spellCheck = useCommonStore((state) => state.editorSpellCheck);
+  const showWordCount = useCommonStore((state) => state.editorWordCount);
   const [wordCount, setWordCount] = useState({ words: 0, chars: 0 });
 
   // --- `[[` page-link autocomplete state ---------------------------------

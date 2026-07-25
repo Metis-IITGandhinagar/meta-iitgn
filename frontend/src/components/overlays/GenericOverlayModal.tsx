@@ -20,7 +20,6 @@ interface GenericOverlayModalProps {
 export default function GenericOverlayModal({
   isOpen,
   onClose,
-  title,
   children,
   maxWidthClass = "max-w-4xl",
   headerActions,
@@ -32,6 +31,10 @@ export default function GenericOverlayModal({
   const [isMounted, setIsMounted] = useState(false);
   const [isMaximized, setIsMaximized] = useState(defaultMaximized);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Transition & Render states to allow closing animations to play fully
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [animationClass, setAnimationClass] = useState("");
 
   const dragRef = useRef<{
     isDragging: boolean;
@@ -45,22 +48,9 @@ export default function GenericOverlayModal({
     startPos: { x: 0, y: 0 },
   });
 
-  // Used to detect a double-tap on touch devices (the maximize button is
-  // hidden on small screens, so a double-tap on the header is the only way
-  // to maximize there).
   const lastTapRef = useRef(0);
-
-  // Mirror of `isMaximized` kept in a ref so the drag/move handlers (which are
-  // registered once per drag and therefore capture a stale closure) always read
-  // the live maximized state.
   const isMaxRef = useRef(defaultMaximized);
-
-  // Position the window had before it was last maximized, so dragging it back
-  // down from the top edge can restore it (like a regular OS window).
   const preMaxPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  // How close to the top viewport edge (px) the pointer must get for the
-  // window to snap-maximize while dragging.
   const TOP_SNAP_THRESHOLD = 8;
 
   useEffect(() => {
@@ -78,11 +68,9 @@ export default function GenericOverlayModal({
   };
 
   const restore = () => setMax(false);
-
   const toggleMaximize = () => (isMaxRef.current ? restore() : maximize());
 
   const handleHeaderDoubleTap = (e: React.TouchEvent) => {
-    // Don't hijack taps on header buttons (close, maximize, actions).
     if ((e.target as HTMLElement).closest("button")) return;
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
@@ -106,6 +94,20 @@ export default function GenericOverlayModal({
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  // Opening & Closing animation lifecycle handler
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setAnimationClass("animate-enter");
+    } else if (shouldRender) {
+      setAnimationClass("animate-exit");
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 280); // match exit duration
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, shouldRender]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (window.innerWidth < 640) return;
@@ -135,8 +137,6 @@ export default function GenericOverlayModal({
     const d = dragRef.current;
     const atTop = e.clientY <= TOP_SNAP_THRESHOLD;
 
-    // Pointer at the top edge: snap-maximize (remember where we were so we can
-    // restore on the way back down).
     if (atTop) {
       if (!isMaxRef.current) {
         preMaxPos.current = { x: d.startPos.x, y: d.startPos.y };
@@ -145,8 +145,6 @@ export default function GenericOverlayModal({
       return;
     }
 
-    // Pointer below the top edge while maximized (e.g. dragging a maximized
-    // window down): un-maximize and keep following the cursor from where it was.
     if (isMaxRef.current) {
       setMax(false);
       d.startPos = { x: preMaxPos.current.x, y: preMaxPos.current.y };
@@ -169,12 +167,67 @@ export default function GenericOverlayModal({
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   return (
-    <div className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center bg-transparent overflow-hidden font-sans ${
-      isMaximized ? "p-0" : "p-0 sm:p-4"
-    }`}>
+    <div
+      className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center overflow-hidden font-sans ${
+        isMaximized ? "p-0" : "p-0 sm:p-4"
+      }`}
+    >
+      <style>{`
+        @keyframes backdropEnter {
+          from { opacity: 0; backdrop-filter: blur(0px); }
+          to { opacity: 1; backdrop-filter: blur(4px); }
+        }
+        @keyframes backdropExit {
+          from { opacity: 1; backdrop-filter: blur(4px); }
+          to { opacity: 0; backdrop-filter: blur(0px); }
+        }
+        @keyframes modalEnter {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        @keyframes modalExit {
+          from {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: scale(0.93) translateY(25px);
+          }
+        }
+        .animate-backdrop-enter {
+          animation: backdropEnter 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .animate-backdrop-exit {
+          animation: backdropExit 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .animate-modal-enter {
+          animation: modalEnter 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .animate-modal-exit {
+          animation: modalExit 0.26s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+      `}</style>
+
+      {/* Premium Backdrop Overlay */}
+      <div
+        className={`absolute inset-0 bg-black/45 cursor-default ${
+          animationClass === "animate-enter"
+            ? "animate-backdrop-enter"
+            : "animate-backdrop-exit"
+        }`}
+        onClick={onClose}
+      />
+
       {/* Dialog Card - matching SettingsModal aesthetics and draggable header */}
       <div
         style={
@@ -185,12 +238,16 @@ export default function GenericOverlayModal({
               }
             : undefined
         }
-        className={`relative box-border flex flex-col shrink-0 grow-0 overflow-hidden bg-base-100 shadow-xl pointer-events-auto ${
+        className={`relative box-border flex flex-col shrink-0 grow-0 overflow-hidden bg-base-100 shadow-2xl pointer-events-auto ${
           isDragging ? "" : "transition-all duration-200"
         } ${
           isMaximized
             ? "w-full h-full max-w-none max-h-none sm:w-screen sm:h-screen sm:max-h-none sm:rounded-none sm:border-0"
             : `w-full h-full ${maxWidthClass} sm:h-[min(640px,calc(100vh-2rem))] sm:min-h-0 sm:max-h-[calc(100vh-2rem)] sm:rounded-lg border border-base-300/60`
+        } ${
+          animationClass === "animate-enter"
+            ? "animate-modal-enter"
+            : "animate-modal-exit"
         }`}
       >
         {/* Unified Draggable Header */}

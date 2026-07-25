@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, memo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { parseModalParams, buildQuery } from "@/lib/modalUrl";
 import {
@@ -21,6 +21,7 @@ import SearchTab from "@/components/home/SearchTab";
 import BookmarksTab from "@/components/home/BookmarksTab";
 import ProfileTab from "@/components/home/ProfileTab";
 
+// Overlays
 import NewPagesOverlay from "@/components/overlays/NewPagesOverlay";
 import UpdatedPagesOverlay from "@/components/overlays/UpdatedPagesOverlay";
 import PendingPagesOverlay from "@/components/overlays/PendingPagesOverlay";
@@ -30,6 +31,23 @@ import HistoryOverlay from "@/components/overlays/HistoryOverlay";
 import FeaturedEditOverlay from "@/components/overlays/FeaturedEditOverlay";
 import PortalOverlay from "@/components/overlays/PortalOverlay";
 import CategoriesOverlay from "@/components/overlays/CategoriesOverlay";
+
+// Memoized Components to Prevent Unnecessary Renders
+const LeftPanelMemo = memo(LeftPanel);
+const HomeTabMemo = memo(HomeTab);
+const SearchTabMemo = memo(SearchTab);
+const BookmarksTabMemo = memo(BookmarksTab);
+const ProfileTabMemo = memo(ProfileTab);
+
+const NewPagesOverlayMemo = memo(NewPagesOverlay);
+const UpdatedPagesOverlayMemo = memo(UpdatedPagesOverlay);
+const PendingPagesOverlayMemo = memo(PendingPagesOverlay);
+const NewsOverlayMemo = memo(NewsOverlay);
+const TriviaOverlayMemo = memo(TriviaOverlay);
+const HistoryOverlayMemo = memo(HistoryOverlay);
+const FeaturedEditOverlayMemo = memo(FeaturedEditOverlay);
+const PortalOverlayMemo = memo(PortalOverlay);
+const CategoriesOverlayMemo = memo(CategoriesOverlay);
 
 export default function HomePage() {
   const {
@@ -121,7 +139,7 @@ export default function HomePage() {
           ? "Profile"
           : undefined
   );
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   const [imageLoaded, setImageLoaded] = useState(false);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
 
@@ -169,16 +187,15 @@ export default function HomePage() {
     }
   }, [activeOverlay]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  // Stable event handlers
+  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const q = searchQuery.trim();
-    if (!q) {
-      return;
-    }
+    if (!q) return;
     router.push(`/search-results?query=${encodeURIComponent(q)}`);
-  };
+  }, [searchQuery, router]);
 
-  const spawnHearts = (e: React.MouseEvent) => {
+  const spawnHearts = useCallback((e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     for (let i = 0; i < 8; i++) {
       const heart = document.createElement("div");
@@ -206,14 +223,14 @@ export default function HomePage() {
         heart.remove();
       }, 800);
     }
-  };
+  }, []);
 
-  const scrollToFeed = () => {
+  const scrollToFeed = useCallback(() => {
     const feedElement = document.getElementById("right-highlights-feed");
     if (feedElement) {
       feedElement.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, []);
 
   const homeTabs = [
     {
@@ -243,7 +260,7 @@ export default function HomePage() {
   ];
   const mobileTabs = homeTabs.filter((tab) => tab.id !== "search");
 
-  function getRelativeTime(dateString: string) {
+  const getRelativeTime = useCallback((dateString: string) => {
     if (!dateString) return "some time ago";
     const now = new Date();
     const date = new Date(dateString);
@@ -257,21 +274,12 @@ export default function HomePage() {
     if (diffHours < 24)
       return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
     return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
-  }
+  }, []);
 
   useEffect(() => {
     const img = new Image();
     img.src = "/homepage_bg.png";
     img.onload = () => setImageLoaded(true);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 45,
-        y: (e.clientY / window.innerHeight - 0.5) * 45,
-      });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   useEffect(() => {
@@ -298,133 +306,43 @@ export default function HomePage() {
 
   const [activeTier, setActiveTier] = useState("gold");
 
-  // Overlay configuration mapping
-  const OVERLAYS = {
-    new: {
-      Component: NewPagesOverlay,
-      props: {
-        isOpen: activeOverlay === "new",
-        onClose: () => router.back(),
-        newPages,
-        getRelativeTime,
-        hasMore: newPagesHasMore,
-        onLoadMore: loadMoreNewPages,
-      },
-    },
-    updated: {
-      Component: UpdatedPagesOverlay,
-      props: {
-        isOpen: activeOverlay === "updated",
-        onClose: () => router.back(),
-        updatedPages,
-        getRelativeTime,
-        hasMore: updatedPagesHasMore,
-        onLoadMore: loadMoreUpdatedPages,
-      },
-    },
-    pending: {
-      Component: PendingPagesOverlay,
-      props: {
-        isOpen: activeOverlay === "pending",
-        onClose: () => router.back(),
-        pendingPages,
-        getRelativeTime,
-        handleReview: (pendingId: number, action: "approve" | "reject") =>
-          handleReview({ pendingId, action, userId: user?.user_id || 0 }).then(
-            () => loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
-          ),
-        hasMore: pendingPagesHasMore,
-        onLoadMore: loadMorePendingPages,
-      },
-    },
-    news: {
-      Component: NewsOverlay,
-      props: {
-        isOpen: activeOverlay === "news",
-        onClose: () => router.back(),
-        getRelativeTime,
-      },
-    },
-    trivia: {
-      Component: TriviaOverlay,
-      props: {
-        isOpen: activeOverlay === "trivia",
-        onClose: () => router.back(),
-        triviaPages,
-        activeTriviaItem,
-        setActiveTriviaItem,
-        showAddTriviaForm,
-        setShowAddTriviaForm,
-        newTriviaTitle,
-        setNewTriviaTitle,
-        newTriviaContent,
-        setNewTriviaContent,
-        isSubmittingTrivia,
-        handleAddTrivia: (e: React.FormEvent) => {
-          e.preventDefault();
-          handleAddTrivia({
-            title: newTriviaTitle,
-            content: newTriviaContent,
-          }).then(() =>
-            loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
-          );
-        },
-        getRelativeTime,
-      },
-    },
-    history: {
-      Component: HistoryOverlay,
-      props: {
-        isOpen: activeOverlay === "history",
-        onClose: () => router.back(),
-        historyPages,
-        activeHistoryItem,
-        setActiveHistoryItem,
-        showAddHistoryForm,
-        setShowAddHistoryForm,
-        newHistoryTitle,
-        setNewHistoryTitle,
-        newHistoryContent,
-        setNewHistoryContent,
-        newHistoryVideoUrl,
-        setNewHistoryVideoUrl,
-        isSubmittingHistory,
-        handleAddHistory: (e: React.FormEvent) => {
-          e.preventDefault();
-          handleAddHistory({
-            title: newHistoryTitle,
-            content: newHistoryContent,
-            videoUrl: newHistoryVideoUrl,
-          }).then(() =>
-            loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
-          );
-        },
-        getRelativeTime,
-      },
-    },
-    "featured-edit": {
-      Component: FeaturedEditOverlay,
-      props: {
-        isOpen: activeOverlay === "featured-edit",
-        onClose: () => router.back(),
-      },
-    },
-    portal: {
-      Component: PortalOverlay,
-      props: {
-        isOpen: activeOverlay === "portal",
-        onClose: () => router.back(),
-        categorySlug: activePortalCategory,
-      },
-    },
-    categories: {
-      Component: CategoriesOverlay,
-      props: {
-        isOpen: activeOverlay === "categories",
-        onClose: () => router.back(),
-      },
-    },
-  };
+  // Stable overlay handlers to preserve child memoization
+  const handleCloseOverlay = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const handleReviewCallback = useCallback((pendingId: number, action: "approve" | "reject") => {
+    return handleReview({ pendingId, action, userId: user?.user_id || 0 }).then(
+      () => loadHomeData({ user, setTotalPagesCount, forceRefresh: true })
+    );
+  }, [handleReview, user, setTotalPagesCount, loadHomeData]);
+
+  const handleAddTriviaCallback = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleAddTrivia({
+      title: newTriviaTitle,
+      content: newTriviaContent,
+    });
+    await loadHomeData({ user, setTotalPagesCount, forceRefresh: true });
+  }, [handleAddTrivia, newTriviaTitle, newTriviaContent, user, setTotalPagesCount, loadHomeData]);
+
+  const handleAddHistoryCallback = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleAddHistory({
+      title: newHistoryTitle,
+      content: newHistoryContent,
+      videoUrl: newHistoryVideoUrl,
+    });
+    await loadHomeData({ user, setTotalPagesCount, forceRefresh: true });
+  }, [handleAddHistory, newHistoryTitle, newHistoryContent, newHistoryVideoUrl, user, setTotalPagesCount, loadHomeData]);
+
+  const setShowAllNew = useCallback((val: boolean) => setActiveOverlay(val ? "new" : null), [setActiveOverlay]);
+  const setShowAllUpdated = useCallback((val: boolean) => setActiveOverlay(val ? "updated" : null), [setActiveOverlay]);
+  const setShowAllPending = useCallback((val: boolean) => setActiveOverlay(val ? "pending" : null), [setActiveOverlay]);
+  const setShowAllNews = useCallback((val: boolean) => setActiveOverlay(val ? "news" : null), [setActiveOverlay]);
+  const setShowAllTrivia = useCallback((val: boolean) => setActiveOverlay(val ? "trivia" : null), [setActiveOverlay]);
+  const setShowAllHistory = useCallback((val: boolean) => setActiveOverlay(val ? "history" : null), [setActiveOverlay]);
+  const setShowEditFeatured = useCallback((val: boolean) => setActiveOverlay(val ? "featured-edit" : null), [setActiveOverlay]);
 
   if (authLoading || auth === null) return null;
 
@@ -433,7 +351,7 @@ export default function HomePage() {
       {/* Main Container */}
       <div className="flex flex-col lg:flex-row flex-1 relative overflow-visible lg:overflow-hidden w-full h-auto lg:h-full">
         {/* Left panel & collapsible sidebar */}
-        <LeftPanel
+        <LeftPanelMemo
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
           activeTier={activeTier}
@@ -486,59 +404,46 @@ export default function HomePage() {
             </div>
 
             {activeTab === "home" ? (
-              <HomeTab
-                mousePos={mousePos}
+              <HomeTabMemo
                 imageLoaded={imageLoaded}
                 scrollToFeed={scrollToFeed}
                 spawnHearts={spawnHearts}
-                setShowAllNew={(val) => setActiveOverlay(val ? "new" : null)}
-                setShowAllUpdated={(val) =>
-                  setActiveOverlay(val ? "updated" : null)
-                }
-                setShowAllPending={(val) =>
-                  setActiveOverlay(val ? "pending" : null)
-                }
+                setShowAllNew={setShowAllNew}
+                setShowAllUpdated={setShowAllUpdated}
+                setShowAllPending={setShowAllPending}
                 newPages={newPages}
                 updatedPages={updatedPages}
                 pendingPages={pendingPages}
                 loading={loading}
                 getRelativeTime={getRelativeTime}
                 newsPages={newsPages}
-                setShowAllNews={(val) => setActiveOverlay(val ? "news" : null)}
+                setShowAllNews={setShowAllNews}
                 triviaPages={triviaPages}
-                setShowAllTrivia={(val) =>
-                  setActiveOverlay(val ? "trivia" : null)
-                }
+                setShowAllTrivia={setShowAllTrivia}
                 setActiveTriviaItem={setActiveTriviaItem}
                 historyPages={historyPages}
-                setShowAllHistory={(val) =>
-                  setActiveOverlay(val ? "history" : null)
-                }
+                setShowAllHistory={setShowAllHistory}
                 setActiveHistoryItem={setActiveHistoryItem}
                 totalPagesCount={totalPagesCount}
                 featuredPages={featuredPages}
                 popularPages={popularPages}
                 upcomingEvents={upcomingEvents}
-                setShowEditFeatured={(val) =>
-                  setActiveOverlay(val ? "featured-edit" : null)
-                }
+                setShowEditFeatured={setShowEditFeatured}
               />
             ) : activeTab === "search" ? (
-              <SearchTab
+              <SearchTabMemo
                 searchTabQuery={searchTabQuery}
                 setSearchTabQuery={setSearchTabQuery}
-                mousePos={mousePos}
               />
             ) : activeTab === "bookmarks" ? (
-              <BookmarksTab
+              <BookmarksTabMemo
                 bookmarks={bookmarks}
                 setBookmarks={setBookmarks}
                 removeBookmark={removeBookmark}
                 setActiveTab={setActiveTab}
-                mousePos={mousePos}
               />
             ) : activeTab === "profile" ? (
-              <ProfileTab />
+              <ProfileTabMemo />
             ) : null}
           </div>
         </div>
@@ -558,34 +463,104 @@ export default function HomePage() {
           />
         )}
       </div>
+
       {/* Dynamic Overlays */}
       <Suspense fallback={null}>
         <HomeModalUrlSync />
       </Suspense>
-      <NewPagesOverlay {...(OVERLAYS.new.props as any)} />
-      <UpdatedPagesOverlay {...(OVERLAYS.updated.props as any)} />
-      <PendingPagesOverlay {...(OVERLAYS.pending.props as any)} />
-      <NewsOverlay {...(OVERLAYS.news.props as any)} />
-      <TriviaOverlay {...(OVERLAYS.trivia.props as any)} />
-      <HistoryOverlay {...(OVERLAYS.history.props as any)} />
-      <FeaturedEditOverlay {...(OVERLAYS["featured-edit"].props as any)} />
-      <PortalOverlay {...(OVERLAYS.portal.props as any)} />
-      <CategoriesOverlay {...(OVERLAYS.categories.props as any)} />
+
+      <NewPagesOverlayMemo
+        isOpen={activeOverlay === "new"}
+        onClose={handleCloseOverlay}
+        newPages={newPages}
+        getRelativeTime={getRelativeTime}
+        hasMore={newPagesHasMore}
+        onLoadMore={loadMoreNewPages}
+      />
+
+      <UpdatedPagesOverlayMemo
+        isOpen={activeOverlay === "updated"}
+        onClose={handleCloseOverlay}
+        updatedPages={updatedPages}
+        getRelativeTime={getRelativeTime}
+        hasMore={updatedPagesHasMore}
+        onLoadMore={loadMoreUpdatedPages}
+      />
+
+      <PendingPagesOverlayMemo
+        isOpen={activeOverlay === "pending"}
+        onClose={handleCloseOverlay}
+        pendingPages={pendingPages}
+        getRelativeTime={getRelativeTime}
+        handleReview={handleReviewCallback}
+        hasMore={pendingPagesHasMore}
+        onLoadMore={loadMorePendingPages}
+      />
+
+      <NewsOverlayMemo
+        isOpen={activeOverlay === "news"}
+        onClose={handleCloseOverlay}
+        getRelativeTime={getRelativeTime}
+      />
+
+      <TriviaOverlayMemo
+        isOpen={activeOverlay === "trivia"}
+        onClose={handleCloseOverlay}
+        triviaPages={triviaPages}
+        activeTriviaItem={activeTriviaItem}
+        setActiveTriviaItem={setActiveTriviaItem}
+        showAddTriviaForm={showAddTriviaForm}
+        setShowAddTriviaForm={setShowAddTriviaForm}
+        newTriviaTitle={newTriviaTitle}
+        setNewTriviaTitle={setNewTriviaTitle}
+        newTriviaContent={newTriviaContent}
+        setNewTriviaContent={setNewTriviaContent}
+        isSubmittingTrivia={isSubmittingTrivia}
+        handleAddTrivia={handleAddTriviaCallback}
+        getRelativeTime={getRelativeTime}
+      />
+
+      <HistoryOverlayMemo
+        isOpen={activeOverlay === "history"}
+        onClose={handleCloseOverlay}
+        historyPages={historyPages}
+        activeHistoryItem={activeHistoryItem}
+        setActiveHistoryItem={setActiveHistoryItem}
+        showAddHistoryForm={showAddHistoryForm}
+        setShowAddHistoryForm={setShowAddHistoryForm}
+        newHistoryTitle={newHistoryTitle}
+        setNewHistoryTitle={setNewHistoryTitle}
+        newHistoryContent={newHistoryContent}
+        setNewHistoryContent={setNewHistoryContent}
+        newHistoryVideoUrl={newHistoryVideoUrl}
+        setNewHistoryVideoUrl={setNewHistoryVideoUrl}
+        isSubmittingHistory={isSubmittingHistory}
+        handleAddHistory={handleAddHistoryCallback}
+        getRelativeTime={getRelativeTime}
+      />
+
+      <FeaturedEditOverlayMemo
+        isOpen={activeOverlay === "featured-edit"}
+        onClose={handleCloseOverlay}
+      />
+
+      <PortalOverlayMemo
+        isOpen={activeOverlay === "portal"}
+        onClose={handleCloseOverlay}
+        categorySlug={activePortalCategory}
+      />
+
+      <CategoriesOverlayMemo
+        isOpen={activeOverlay === "categories"}
+        onClose={handleCloseOverlay}
+      />
     </div>
   );
 }
 
 /**
  * Keeps the home overlays in sync with the URL. Rendered inside a <Suspense>
- * boundary so reading search params never triggers a full-page reload (which
- * is what caused the modal to "blink" on open/close).
- *
- * - URL -> store: deep-link opens + browser back/forward.
- * - store -> URL: pushes ONE new history entry when an overlay opens, so the
- *   browser back button closes it. A ref guards against re-pushing the same
- *   URL, and the effect only pushes on open (close is handled by router.back()).
- *   Opening an overlay also clears the settings/wmodal params so the two
- *   modal systems don't leave each other's params dangling in the address bar.
+ * boundary so reading search params never triggers a full-page reload.
  */
 function HomeModalUrlSync() {
   const searchParams = useSearchParams();

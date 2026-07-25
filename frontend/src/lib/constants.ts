@@ -1,8 +1,4 @@
 import {
-  Home,
-  Map,
-  BookOpen,
-  Users,
   Award,
   Crown,
   Shield,

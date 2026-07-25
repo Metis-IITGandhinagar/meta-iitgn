@@ -53,12 +53,12 @@ export default function AcademicCalendar() {
 
   return (
     <main className="mt-15">
-    <div className="h-dvh overflow-y-scroll bg-base-200 p-4 md:p-8 antialiased selection:bg-primary/20 selection:text-primary-content">
+    <div className="h-dvh overflow-y-scroll bg-base p-4 md:p-8 antialiased selection:bg-primary/20 selection:text-primary-content">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-base-300 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-              Academic Calendar Hub
+              Academic Calendar
             </h1>
             <p className="text-sm text-base-content/60 mt-0.5">
               Click any calendar box day to filter the timeline feed to focus on specific dates.

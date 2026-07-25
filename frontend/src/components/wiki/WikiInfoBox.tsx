@@ -8,6 +8,7 @@ import { apiService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import type { Category } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
 
 interface WikiInfoBoxProps {
   rightSidebarOpen: boolean;
@@ -247,10 +248,13 @@ export default function WikiInfoBox({
               isEditing ? "rounded-xl border border-base-300/80 shadow-sm bg-base-100" : ""
             }`}>
               {parsed.infobox.image ? (
-                <img
+                <Image
                   src={parsed.infobox.image}
-                  alt={parsed.infobox.imageAlt}
-                  className="w-full h-full object-cover"
+                  alt={parsed.infobox.imageAlt || "Infobox image"}
+                  fill
+                  sizes="200px"
+                  className="object-cover"
+                  unoptimized={true}
                 />
               ) : (
                 <div className="text-base-content/30 text-sm font-medium absolute inset-0 flex items-center justify-center bg-base-200/50">No Image</div>
