@@ -101,6 +101,11 @@ export default function GenericOverlayModal({
     if (isOpen) {
       setShouldRender(true);
       setAnimationClass("animate-enter");
+      setPosition({ x: 0, y: 0 });
+      const timer = setTimeout(() => {
+        setAnimationClass("entered");
+      }, 450);
+      return () => clearTimeout(timer);
     } else if (shouldRender) {
       setAnimationClass("animate-exit");
       const timer = setTimeout(() => {
@@ -233,10 +238,12 @@ export default function GenericOverlayModal({
       {/* Dialog Card - matching SettingsModal aesthetics and draggable header */}
       <div
         style={
-          isMounted && window.innerWidth >= 640 && !isMaximized
+          isMounted && !isMaximized
             ? {
                 transform: `translate(${position.x}px, ${position.y}px)`,
-                transition: isDragging ? "none" : undefined,
+                transition: isDragging ? "none" : "all 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+                animation: (isDragging || animationClass === "entered" || (animationClass === "animate-exit" && (position.x !== 0 || position.y !== 0))) ? "none" : undefined,
+                opacity: animationClass === "animate-exit" ? 0 : 1,
               }
             : undefined
         }

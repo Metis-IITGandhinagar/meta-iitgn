@@ -261,7 +261,14 @@ export default function RevisionsView({ setShowRevisions, slug }: RevisionsViewP
                         <span className="text-xs text-base-content/50 shrink-0 font-medium">{timeString}</span>
                       </div>
                       <p className="text-sm text-base-content/60 mt-1.5 leading-relaxed">
-                        {revision.commit_message || `Version backup (v${revision.version})`}
+                        {(() => {
+                          if (!revision.commit_message) return `Version backup (v${revision.version})`;
+                          const match = revision.commit_message.match(/^Version\s+(\d+)$/i);
+                          if (match) {
+                            return `Version backup (v${revision.version})`;
+                          }
+                          return revision.commit_message;
+                        })()}
                       </p>
 
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-base-200 border-dashed">
