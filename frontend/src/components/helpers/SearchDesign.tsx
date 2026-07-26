@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 // --- BeautifulSearchBox Props ---
 interface BeautifulSearchBoxProps {
@@ -25,35 +25,31 @@ export function BeautifulSearchBox({
 
   return (
     <div className={`relative w-full mx-auto select-none ${isCompact ? "py-1" : "py-4 px-2"}`}>
-      {/* Elevated input container with balanced border and centered omnidirectional shadow */}
       <form
         onSubmit={onSubmit}
-        className={`relative z-10 w-full flex items-center bg-base-100 backdrop-blur-md border border-base-300 focus-within:bg-base-100 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 shadow-[0_0_36px_rgba(0,0,0,0.10)] hover:shadow-[0_0_48px_rgba(0,0,0,0.15)] ${
-          isCompact ? "h-11 rounded-full px-4" : "h-16 rounded-3xl px-6"
-        }`}
+        className="relative z-10 w-full"
       >
-        <Search className={`${isCompact ? "h-4.5 w-4.5" : "h-6 w-6"} text-base-content/40 shrink-0 mr-2.5`} />
-        <input
-          type="text"
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`w-full bg-transparent focus:outline-none h-full font-medium text-base-content placeholder-base-content/40 ${
-            isCompact ? "text-xs md:text-sm" : "text-lg"
-          }`}
-          autoFocus={autoFocus}
-        />
-        {value && (
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            className={`text-base-content/60 hover:text-base-content font-bold transition-all cursor-pointer mr-1 active:scale-95 ${
-              isCompact ? "text-[10px] px-2 py-1 bg-base-200 hover:bg-base-300 rounded-lg" : "text-xs px-3 py-1.5 bg-base-200 hover:bg-base-300 rounded-xl"
-            }`}
-          >
-            Clear
-          </button>
-        )}
+        <div className="relative">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className={`block w-full pl-12 pr-4 py-4 bg-white border-none rounded-[2rem] text-slate-700 placeholder-slate-400 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all pill-shadow-white text-base shadow-[0_8px_30px_rgba(0,0,0,0.04)] ${isCompact ? "py-3 text-sm" : ""}`}
+            autoFocus={autoFocus}
+          />
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+              aria-label="Clear search"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );
