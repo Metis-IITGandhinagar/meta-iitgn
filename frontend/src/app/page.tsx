@@ -361,7 +361,6 @@ export default function HomePage() {
           handleSearchSubmit={handleSearchSubmit}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          spawnHearts={spawnHearts}
         />
 
         {/* Split Screen Layout */}

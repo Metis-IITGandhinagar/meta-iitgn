@@ -32,7 +32,7 @@ import PendingChangesView from "@/components/wiki/PendingChangesView";
 import WikiInfoBox from "@/components/wiki/WikiInfoBox";
 import { makeHeadingId } from "@/lib/wikiFolding";
 import { CategoryIcon } from "@/lib/categoryIcon";
-import CategoryIconPicker from "@/components/overlays/CategoryIconPicker";
+import IconColorPicker from "@/components/overlays/IconColorPicker";
 import { DEFAULT_ICON, DEFAULT_COLOR } from "@/lib/categoryIcon";
 
 // Progressive enhancement for the read-only surface: while the heavy Milkdown
@@ -142,7 +142,6 @@ export default function WikiClient({
   // page has its own icon+color/emoji, editable from the article header.
   const [pageIcon, setPageIcon] = useState(initialIcon || DEFAULT_ICON);
   const [pageColor, setPageColor] = useState(initialColor || DEFAULT_COLOR);
-  const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const canManagePage = user?.role === "admin" || user?.role === "moderator" || isEditing;
 
   const handleIconSave = async (icon: string, color: string) => {
@@ -827,24 +826,19 @@ export default function WikiClient({
             {/* Title Header (Separated from editor to prevent accidental deletion) */}
             {(!isProfile || !isEditing) && (
               <div className="flex items-start gap-4">
-                {/* Page icon — clickable icon/emoji picker for staff */}
+                {/* Page icon — emoji/icon indicator */}
                 <div className="relative pt-1 shrink-0">
                   {canManagePage ? (
-                    <button
-                      type="button"
-                      onClick={() => setIconPickerOpen((o) => !o)}
-                      className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm transition-transform duration-200 cursor-pointer hover:scale-105 active:scale-95"
-                      style={{
-                        backgroundColor: `${pageColor || DEFAULT_COLOR}1a`,
-                        color: pageColor || DEFAULT_COLOR,
-                      }}
-                      title="Set icon"
-                    >
-                      <CategoryIcon icon={pageIcon} size={24} />
-                    </button>
+                    <IconColorPicker
+                      currentIcon={pageIcon}
+                      currentColor={pageColor || DEFAULT_COLOR}
+                      onSave={handleIconSave}
+                      canManage={canManagePage}
+                      hideColorPicker={true}
+                    />
                   ) : (
                     <div
-                      className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm"
+                      className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm w-12 h-12"
                       style={{
                         backgroundColor: `${pageColor || DEFAULT_COLOR}1a`,
                         color: pageColor || DEFAULT_COLOR,
@@ -852,13 +846,6 @@ export default function WikiClient({
                     >
                       <CategoryIcon icon={pageIcon} size={24} />
                     </div>
-                  )}
-                  {iconPickerOpen && canManagePage && (
-                    <CategoryIconPicker
-                      currentColor={pageColor}
-                      onSave={handleIconSave}
-                      onClose={() => setIconPickerOpen(false)}
-                    />
                   )}
                 </div>
 

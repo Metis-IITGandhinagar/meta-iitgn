@@ -11,7 +11,7 @@ import { toast } from "react-hot-toast";
 import { apiService } from "@/api";
 import CategoryEditModal from "@/components/overlays/CategoryEditModal";
 import CategoryCreateForm from "@/components/overlays/CategoryCreateForm";
-import CategoryIconPicker from "@/components/overlays/CategoryIconPicker";
+import IconColorPicker from "@/components/overlays/IconColorPicker";
 import { CategoryIcon } from "@/lib/categoryIcon";
 import { useViewMode } from "@/hooks/useViewMode";
 import ViewSwitcher from "@/components/helpers/ViewSwitcher";
@@ -83,7 +83,6 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
 
   // Icon picker popover (admin/moderator only) — opened by clicking the
   // category icon in the header; lets you set an icon+color or an emoji.
-  const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const canManage = user?.role === "admin" || user?.role === "moderator";
 
   const handleIconSave = async (icon: string, color: string) => {
@@ -163,23 +162,17 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
         {/* Category Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div className="space-y-3 flex-1">
-            <div className="relative">
+            <div className="relative shrink-0">
               {canManage ? (
-                <button
-                  type="button"
-                  onClick={() => setIconPickerOpen((o) => !o)}
-                  className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm transition-transform duration-200 cursor-pointer hover:scale-105 active:scale-95"
-                  style={{
-                    backgroundColor: `${category.color || "#4f46e5"}1a`,
-                    color: category.color || "#4f46e5",
-                  }}
-                  title="Set icon"
-                >
-                  <CategoryIcon icon={category.icon} size={24} />
-                </button>
+                <IconColorPicker
+                  currentIcon={category.icon}
+                  currentColor={category.color || "#4f46e5"}
+                  onSave={handleIconSave}
+                  canManage={canManage}
+                />
               ) : (
                 <div
-                  className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm"
+                  className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm w-12 h-12"
                   style={{
                     backgroundColor: `${category.color || "#4f46e5"}1a`,
                     color: category.color || "#4f46e5",
@@ -187,14 +180,6 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                 >
                   <CategoryIcon icon={category.icon} size={24} />
                 </div>
-              )}
-              {iconPickerOpen && canManage && (
-                <CategoryIconPicker
-                  currentIcon={category.icon}
-                  currentColor={category.color || "#4f46e5"}
-                  onSave={handleIconSave}
-                  onClose={() => setIconPickerOpen(false)}
-                />
               )}
             </div>
             <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">

@@ -189,6 +189,7 @@ export default function HomeTab({
     "random-page": 6,
     "pending-pages": 7,
     "quick-stats": 8,
+    "made-with-love": 9,
   };
 
   const cards: MasonryCardConfig[] = [
@@ -700,6 +701,32 @@ export default function HomeTab({
               </div>
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: "made-with-love",
+      colSpan: 2,
+      content: (
+        <div className="rounded-[2rem] p-6 flex flex-col items-center justify-center border-2 border-base-200 bg-linear-to-br from-base-100 to-base-200/50 gap-3 h-full font-inter text-center select-none">
+          <div className="text-sm font-semibold tracking-wide text-base-content/70">
+            Made with{" "}
+            <button
+              type="button"
+              onClick={spawnHearts}
+              aria-label="Send hearts"
+              className="inline-block text-red-500 cursor-pointer hover:scale-130 active:scale-90 transition-transform duration-200 animate-pulse text-lg mx-1"
+            >
+              ❤️
+            </button>{" "}
+            by
+          </div>
+          <h3 className="font-display font-black text-xl bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Technical Council, IITGN
+          </h3>
+          <p className="text-[10px] font-bold text-base-content/40 tracking-widest uppercase mt-1">
+            © {new Date().getFullYear()} Technical Council
+          </p>
         </div>
       ),
     },
