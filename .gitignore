@@ -7,3 +7,4 @@ Bugs.md
 Future.md
 .claude/worktrees/
 frontend/.claude/settings.json
+.env
