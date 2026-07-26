@@ -268,25 +268,35 @@ export default function WikiInfoBox({
           {/* Infobox Image */}
           <div
             className={`w-full relative ${isEditing ? "mt-15" : "md:mt-18"} bg-base-200/50 border-b border-base-200 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
-              isEditing ? "h-32 p-4" : "h-52 p-1"
+              isEditing ? "h-32 p-4" : "h-auto p-2"
             }`}
           >
-            <div className={`w-full h-full relative overflow-hidden transition-all duration-300 ${
-              isEditing ? "rounded-xl border border-base-300/80 shadow-sm bg-base-100" : ""
-            }`}>
-              {parsed.infobox.image ? (
-                <Image
+            {isEditing ? (
+              <div className="w-full h-full relative overflow-hidden rounded-xl border border-base-300/80 shadow-sm bg-base-100">
+                {parsed.infobox.image ? (
+                  <Image
+                    src={parsed.infobox.image}
+                    alt={parsed.infobox.imageAlt || "Infobox image"}
+                    fill
+                    sizes="200px"
+                    className="object-contain"
+                    unoptimized={true}
+                  />
+                ) : (
+                  <div className="text-base-content/30 text-sm font-medium absolute inset-0 flex items-center justify-center bg-base-200/50">No Image</div>
+                )}
+              </div>
+            ) : (
+              parsed.infobox.image ? (
+                <img
                   src={parsed.infobox.image}
                   alt={parsed.infobox.imageAlt || "Infobox image"}
-                  fill
-                  sizes="200px"
-                  className="object-cover"
-                  unoptimized={true}
+                  className="w-full h-auto object-contain rounded-xl max-h-[400px]"
                 />
               ) : (
-                <div className="text-base-content/30 text-sm font-medium absolute inset-0 flex items-center justify-center bg-base-200/50">No Image</div>
-              )}
-            </div>
+                <div className="w-full h-12 text-base-content/30 text-sm font-medium flex items-center justify-center bg-base-200/50 rounded-xl">No Image</div>
+              )
+            )}
           </div>
 
           {/* Inline Image Editor Fields (In-place, only shown when editing) */}

@@ -540,12 +540,21 @@ export default function WikiClient({
         : markdownRef.current;
  
       // Drop empty key-info rows so they aren't persisted (e.g. unused
-      // optional fields added on a new page).
+      // optional fields added on a new page), and prevent duplicate Category rows.
       const parsedForSave = parseMarkdown(contentVal);
+      let seenCategory = false;
       const cleanedRows = (parsedForSave.infobox.rows as InfoboxRow[]).filter(
         (r) => {
-          if (Array.isArray(r.value)) return r.value.length > 0;
-          return (r.value ?? "").toString().trim() !== "";
+          const isEmpty = Array.isArray(r.value)
+            ? r.value.length === 0
+            : (r.value ?? "").toString().trim() === "";
+          if (isEmpty) return false;
+
+          if (r.label?.toLowerCase() === "category") {
+            if (seenCategory) return false;
+            seenCategory = true;
+          }
+          return true;
         }
       );
       const cleanedContent = stringifyMarkdown(
@@ -567,7 +576,7 @@ export default function WikiClient({
           toast.success("Page updated successfully!", { id: loadingToast });
           setIsEditing(false);
           // Refresh home store data so featured articles reflect the new slug/title
-          useHomeStore.getState().loadData(true);
+          useHomeStore.getState().loadHomeData({ user, forceRefresh: true });
           router.push(`/wiki/page/${res.slug}`);
           router.refresh();
         } else {
@@ -581,7 +590,7 @@ export default function WikiClient({
           toast.success("Page created and published successfully!", { id: loadingToast });
           setIsEditing(false);
           // Refresh home store data so new page can be featured immediately
-          useHomeStore.getState().loadData(true);
+          useHomeStore.getState().loadHomeData({ user, forceRefresh: true });
           router.push(`/wiki/page/${res.slug}`);
           router.refresh();
         }
