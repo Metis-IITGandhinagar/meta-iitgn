@@ -92,14 +92,73 @@ export default function HomeMasonryGrid({
   };
 
   const buildLayoutMap = (baseLayouts?: ResponsiveLayouts) => {
-    const lg = baseLayouts?.lg ?? buildDefaultLayout(4);
-    return lockLayoutItems({
-      lg,
-      md: baseLayouts?.md ?? buildDefaultLayout(3),
-      sm: baseLayouts?.sm ?? buildDefaultLayout(2),
-      xs: baseLayouts?.xs ?? buildDefaultLayout(1),
-      xxs: baseLayouts?.xxs ?? buildDefaultLayout(1),
-    });
+    const mergeMissing = (layout: LayoutItem[], cols: number) => {
+      const existingIds = new Set(layout.map(item => item.i));
+      const missingCards = cards.filter(card => !existingIds.has(card.id));
+      if (missingCards.length === 0) return layout;
+
+      const occupancy: boolean[][] = [];
+      layout.forEach(item => {
+        for (let row = item.y; row < item.y + item.h; row++) {
+          if (!occupancy[row]) occupancy[row] = [];
+          for (let col = item.x; col < item.x + item.w; col++) {
+            occupancy[row][col] = true;
+          }
+        }
+      });
+
+      const isFree = (x: number, y: number, w: number, h: number) => {
+        for (let row = y; row < y + h; row += 1) {
+          for (let col = x; col < x + w; col += 1) {
+            if ((occupancy[row] ?? [])[col]) return false;
+          }
+        }
+        return true;
+      };
+
+      const occupy = (x: number, y: number, w: number, h: number) => {
+        for (let row = y; row < y + h; row += 1) {
+          if (!occupancy[row]) occupancy[row] = [];
+          for (let col = x; col < x + w; col += 1) {
+            occupancy[row][col] = true;
+          }
+        }
+      };
+
+      const newItems = [...layout];
+      missingCards.forEach(card => {
+        const w = Math.max(1, Math.min(card.colSpan ?? 1, cols));
+        const h = cols === 1 ? 1 : Math.max(1, card.rowSpan ?? 1);
+
+        for (let y = 0; ; y += 1) {
+          for (let x = 0; x <= cols - w; x += 1) {
+            if (!isFree(x, y, w, h)) continue;
+            occupy(x, y, w, h);
+            newItems.push({
+              i: card.id,
+              x,
+              y,
+              w,
+              h,
+              minW: 1,
+              maxW: cols,
+              minH: 1,
+              maxH: 4,
+            });
+            return;
+          }
+        }
+      });
+      return newItems;
+    };
+
+    const lg = mergeMissing(baseLayouts?.lg ?? buildDefaultLayout(4), 4);
+    const md = mergeMissing(baseLayouts?.md ?? buildDefaultLayout(3), 3);
+    const sm = mergeMissing(baseLayouts?.sm ?? buildDefaultLayout(2), 2);
+    const xs = mergeMissing(baseLayouts?.xs ?? buildDefaultLayout(1), 1);
+    const xxs = mergeMissing(baseLayouts?.xxs ?? buildDefaultLayout(1), 1);
+
+    return lockLayoutItems({ lg, md, sm, xs, xxs });
   };
 
   const lockLayoutItems = (layoutGroups: ResponsiveLayouts) =>

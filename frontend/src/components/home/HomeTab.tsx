@@ -774,35 +774,6 @@ export default function HomeTab({
           overlayClass=""
         />
 
-        {/* Floating Bento Badges */}
-        <div className="hidden lg:flex absolute z-20 top-16 left-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-[1.5rem] p-4 items-center gap-4 animate-[bounce_6s_infinite] shadow-2xl">
-          <div className="bg-linear-to-br from-fuchsia-400 to-pink-500 text-white p-3 rounded-[1rem] shadow-inner">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div className="text-left text-white drop-shadow-md">
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-90">
-              Total Edits
-            </p>
-            <p className="font-display font-black text-2xl">
-              {totalPagesCount ?? 0}
-            </p>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex absolute z-20 bottom-24 right-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-[1.5rem] p-4 items-center gap-4 animate-[bounce_7s_infinite_reverse] shadow-2xl">
-          <div className="text-right text-white drop-shadow-md">
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-90">
-              Active Readers
-            </p>
-            <p className="font-display font-black text-2xl">
-              {newPages.length ?? 0}
-            </p>
-          </div>
-          <div className="bg-linear-to-br from-cyan-400 to-blue-500 text-white p-3 rounded-[1rem] shadow-inner">
-            <Users className="w-6 h-6" />
-          </div>
-        </div>
-
         <style>{`
           @keyframes slide-up-fade { 0% { opacity: 0; transform: translateY(120px); } 100% { opacity: 1; transform: translateY(0); } }
           .animate-hero-content { animation: slide-up-fade 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -852,29 +823,6 @@ export default function HomeTab({
           cards={cards}
         />
 
-        {/* Mobile footer */}
-        <div className="pt-4 border-t border-base-200 flex md:hidden flex-col items-center text-center gap-1.5 select-none w-full">
-          <div className="text-[12px] text-base-content/50 font-medium flex items-center justify-center gap-1.5 uppercase tracking-wider">
-            <span>Made with</span>
-            <button
-              type="button"
-              onClick={spawnHearts}
-              aria-label="Send hearts"
-              className="text-red-500 cursor-pointer hover:scale-130 active:scale-90 transition-transform duration-200"
-            >
-              ❤️
-            </button>
-          </div>
-          <div className="text-[12px] text-base-content/50 font-semibold tracking-wide">
-            by{" "}
-            <span className="font-extrabold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Technical Council, IITGN
-            </span>
-          </div>
-          <div className="text-[9px] font-bold text-base-content/60 tracking-widest uppercase mt-1">
-            © {new Date().getFullYear()} Technical Council
-          </div>
-        </div>
       </div>
 
       <EventsOverlay

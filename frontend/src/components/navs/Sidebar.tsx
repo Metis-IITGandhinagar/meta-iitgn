@@ -98,9 +98,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [showAllCategories, setShowAllCategories] = useState(false);
 
   // Only show root-level categories (those without a parent) on the sidebar.
-  const rootCategories = categories.filter(
-    (category) => category.parent_id == null
-  );
+  // Filters out duplicate categories by slug to prevent double rendering.
+  const rootCategories = categories
+    .filter((category) => category.parent_id == null)
+    .filter((category, index, self) =>
+      self.findIndex((c) => c.slug === category.slug) === index
+    );
 
   // Helper to render Lucide icons dynamically from their string names
   const renderIcon = (iconName: string, isActive: boolean) => {

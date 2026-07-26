@@ -286,7 +286,7 @@ export default function LeftPanel({
           {/* Category Cards (Pill style) */}
           <div className="space-y-2 mt-6 lg:mt-8">
             {portalsToDisplay.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 {portalsToDisplay.slice(0, 10).map((portal) => {
                   const style = getPortalStyle(portal.color);
 

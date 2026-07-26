@@ -276,39 +276,46 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
   const setMax = (val: boolean) => { isMaxRef.current = val; setIsMaximized(val); };
   const toggleMaximize = () => (isMaxRef.current ? setMax(false) : (() => { preMaxPos.current = { x: position.x, y: position.y }; setMax(true); })());
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragRef.current.isDragging) return;
-    const d = dragRef.current;
-    if (e.clientY <= TOP_SNAP_THRESHOLD) {
-      if (!isMaxRef.current) { preMaxPos.current = { x: d.startPos.x, y: d.startPos.y }; setMax(true); }
-      return;
-    }
-    if (isMaxRef.current) {
-      setMax(false);
-      const mw = Math.min(window.innerWidth - 32, 512);
-      const lx = e.clientX - mw / 2, ly = e.clientY - 20;
-      d.startPos = { x: lx, y: ly }; d.startX = e.clientX; d.startY = e.clientY;
-      setPosition({ x: lx, y: ly }); return;
-    }
-    setPosition({ x: d.startPos.x + e.clientX - d.startX, y: d.startPos.y + e.clientY - d.startY });
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    dragRef.current.isDragging = false;
-    setIsDragging(false);
-    document.removeEventListener("mousemove", handleMouseMove);
-    document.removeEventListener("mouseup", handleMouseUp);
-  }, [handleMouseMove]);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     if (window.innerWidth < 640) return;
     const t = e.target as HTMLElement;
     if (t.closest("button") || t.closest("input") || t.closest("textarea") || t.closest("select") || t.closest("a")) return;
     dragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, startPos: { ...position } };
     setIsDragging(true);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current.isDragging) return;
+      const d = dragRef.current;
+      if (e.clientY <= TOP_SNAP_THRESHOLD) {
+        if (!isMaxRef.current) { preMaxPos.current = { x: d.startPos.x, y: d.startPos.y }; setMax(true); }
+        return;
+      }
+      if (isMaxRef.current) {
+        setMax(false);
+        const mw = Math.min(window.innerWidth - 32, 512);
+        const lx = e.clientX - mw / 2, ly = e.clientY - 20;
+        d.startPos = { x: lx, y: ly }; d.startX = e.clientX; d.startY = e.clientY;
+        setPosition({ x: lx, y: ly }); return;
+      }
+      setPosition({ x: d.startPos.x + e.clientX - d.startX, y: d.startPos.y + e.clientY - d.startY });
+    };
+
+    const handleMouseUp = () => {
+      dragRef.current.isDragging = false;
+      setIsDragging(false);
+    };
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-  };
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging]);
 
   const handleHeaderDoubleTap = (e: React.TouchEvent) => {
     if ((e.target as HTMLElement).closest("button")) return;

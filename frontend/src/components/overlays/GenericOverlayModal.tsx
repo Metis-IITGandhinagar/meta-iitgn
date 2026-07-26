@@ -129,49 +129,56 @@ export default function GenericOverlayModal({
       startPos: { ...position },
     };
     setIsDragging(true);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current.isDragging) return;
+      const d = dragRef.current;
+      const atTop = e.clientY <= TOP_SNAP_THRESHOLD;
+
+      if (atTop) {
+        if (!isMaxRef.current) {
+          preMaxPos.current = { x: d.startPos.x, y: d.startPos.y };
+          setMax(true);
+        }
+        return;
+      }
+
+      if (isMaxRef.current) {
+        setMax(false);
+        const modalWidth = Math.min(window.innerWidth - 32, 896);
+        const localX = e.clientX - modalWidth / 2;
+        const localY = e.clientY - 20;
+        d.startPos = { x: localX, y: localY };
+        d.startX = e.clientX;
+        d.startY = e.clientY;
+        setPosition({ x: localX, y: localY });
+        return;
+      }
+
+      const deltaX = e.clientX - d.startX;
+      const deltaY = e.clientY - d.startY;
+      setPosition({
+        x: d.startPos.x + deltaX,
+        y: d.startPos.y + deltaY,
+      });
+    };
+
+    const handleMouseUp = () => {
+      dragRef.current.isDragging = false;
+      setIsDragging(false);
+    };
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!dragRef.current.isDragging) return;
-    const d = dragRef.current;
-    const atTop = e.clientY <= TOP_SNAP_THRESHOLD;
-
-    if (atTop) {
-      if (!isMaxRef.current) {
-        preMaxPos.current = { x: d.startPos.x, y: d.startPos.y };
-        setMax(true);
-      }
-      return;
-    }
-
-    if (isMaxRef.current) {
-      setMax(false);
-      const modalWidth = Math.min(window.innerWidth - 32, 896);
-      const localX = e.clientX - modalWidth / 2;
-      const localY = e.clientY - 20;
-      d.startPos = { x: localX, y: localY };
-      d.startX = e.clientX;
-      d.startY = e.clientY;
-      setPosition({ x: localX, y: localY });
-      return;
-    }
-
-    const deltaX = e.clientX - d.startX;
-    const deltaY = e.clientY - d.startY;
-    setPosition({
-      x: d.startPos.x + deltaX,
-      y: d.startPos.y + deltaY,
-    });
-  };
-
-  const handleMouseUp = () => {
-    dragRef.current.isDragging = false;
-    setIsDragging(false);
-    document.removeEventListener("mousemove", handleMouseMove);
-    document.removeEventListener("mouseup", handleMouseUp);
-  };
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging]);
 
   if (!shouldRender) return null;
 
