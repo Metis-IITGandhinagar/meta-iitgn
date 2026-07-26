@@ -438,7 +438,7 @@ export default function HomeTab({
                       type="button"
                       onClick={() => setShowAllNews(true)}
 
-                      className={`flex flex-col @sm:flex-row items-start gap-2 @sm:gap-3 rounded-xl bg-white/60 hover:bg-white p-2.5 @sm:px-3  transition-colors w-full text-left`}
+                      className={`flex flex-col  items-start gap-2 @sm:gap-3 rounded-xl bg-white/60 hover:bg-white p-2.5 @sm:px-3  transition-colors w-full text-left`}
                     >
                       <div className="flex justify-between w-full">
                         <div className="w-6 h-6 @sm:w-8 @sm:h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500/15 text-amber-600">
@@ -448,8 +448,8 @@ export default function HomeTab({
                           {getRelativeTime(item.created_at)}
                         </span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-[10px] @sm:text-xs font-bold text-[#1f2937] line-clamp-2 leading-snug">
+                      <div className="min-w-5 flex-1">
+                        <h4 className="text-[12px] @sm:text-sm font-bold text-black line-clamp-2 leading-snug">
                           {item.title}
                         </h4>
                       </div>

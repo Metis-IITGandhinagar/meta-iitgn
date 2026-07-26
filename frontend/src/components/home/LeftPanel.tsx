@@ -260,7 +260,7 @@ export default function LeftPanel({
               </Link>
             </div>
             <div className="mt-4">
-              <span className="block text-4xl font-extrabold text-slate-800 font-serif">
+              <span className="block text-3xl font-extrabold text-slate-800 font-serif">
                 {pageCount !== null ? pageCount.toLocaleString() : "..."}
               </span>
               <span className="block text-xs font-bold text-slate-500 tracking-widest uppercase mt-1">
@@ -300,7 +300,7 @@ export default function LeftPanel({
                     >
                       <Link
                         href={portal.path}
-                        className={`group relative flex items-center p-4 pr-6 rounded-[2rem] transition-transform transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${style.shadowClass} ${style.gradientClass} ${style.textClass} ${style.specialClass}`}
+                        className={`group relative flex items-center p-3  rounded-[2rem] transition-transform transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${style.shadowClass} ${style.gradientClass} ${style.textClass} ${style.specialClass}`}
                         onClick={(e) => {
                           e.preventDefault();
                           setActivePortalCategory(portal.slug);
