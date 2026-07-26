@@ -97,7 +97,7 @@ export default function IconColorPicker({
         title="Set icon"
         aria-label="Set icon"
       >
-        <CategoryIcon icon={currentIcon} size={size} />
+        <CategoryIcon icon={currentIcon || undefined} size={size} />
       </button>
 
       {/* Color Circle Trigger - shown beside emoji icon, hidden on pages */}
@@ -126,7 +126,7 @@ export default function IconColorPicker({
             searchPlaceholder="Search emoji…"
             emojiVersion="15.0"
             autoFocusSearch={true}
-            theme="auto"
+            theme={"auto" as any}
             previewConfig={{ showPreview: false }}
             lazyLoadEmojis={true}
             style={{

@@ -98,7 +98,7 @@ export interface HomeState {
   setSearchTabQuery: (query: string) => void;
 
   // Actions
-  loadHomeData: (args: { user: any; setTotalPagesCount: (val: any) => void; forceRefresh?: boolean }) => Promise<void>;
+  loadHomeData: (args: { user: any; setTotalPagesCount?: (val: any) => void; forceRefresh?: boolean }) => Promise<void>;
   loadMoreNewPages: () => Promise<void>;
   loadMoreUpdatedPages: () => Promise<void>;
   loadMorePendingPages: () => Promise<void>;
@@ -440,7 +440,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
         set({ bookmarks: finalBookmarks });
 
         const metaInfo = await db.meta.get("updatedpages");
-        if (metaInfo && typeof metaInfo.count === "number") {
+        if (metaInfo && typeof metaInfo.count === "number" && setTotalPagesCount) {
           setTotalPagesCount(metaInfo.count);
         }
 
@@ -692,7 +692,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
         await Promise.allSettled(syncPromises);
 
-        if (syncInfo.updatedpages?.count !== undefined) {
+        if (syncInfo.updatedpages?.count !== undefined && setTotalPagesCount) {
           setTotalPagesCount(syncInfo.updatedpages.count);
         }
       } catch (err) {

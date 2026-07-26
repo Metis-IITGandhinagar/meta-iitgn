@@ -63,7 +63,7 @@ export const getCategoryArticles = async (categorySlug: string, params: { page?:
   return response.data;
 };
 
-export const createPage = async (data: { title: string; content?: string; metadata?: any; video_url?: string }) => {
+export const createPage = async (data: { title: string; content?: string; metadata?: any; video_url?: string; icon?: string; color?: string }) => {
   const response = await api.post('/pages', data, { withCredentials: true });
   return response.data;
 };
@@ -114,4 +114,14 @@ export const getPageRevisions = async (slug: string, params: { page?: number; li
 export const revertPage = async (slug: string, revisionId: number) => {
   const response = await api.post(`/pages/${slug}/revisions/${revisionId}/revert`, {}, { withCredentials: true });
   return response.data;
+};
+
+export const getSetting = async (key: string): Promise<any> => {
+  try {
+    const response = await api.get(`/settings/${key}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch setting ${key}:`, error);
+    return null;
+  }
 };

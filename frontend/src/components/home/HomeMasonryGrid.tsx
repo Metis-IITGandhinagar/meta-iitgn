@@ -92,7 +92,7 @@ export default function HomeMasonryGrid({
   };
 
   const buildLayoutMap = (baseLayouts?: ResponsiveLayouts) => {
-    const mergeMissing = (layout: LayoutItem[], cols: number) => {
+    const mergeMissing = (layout: readonly LayoutItem[], cols: number) => {
       const existingIds = new Set(layout.map(item => item.i));
       const missingCards = cards.filter(card => !existingIds.has(card.id));
       if (missingCards.length === 0) return layout;
