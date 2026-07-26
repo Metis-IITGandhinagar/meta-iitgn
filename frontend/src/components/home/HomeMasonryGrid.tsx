@@ -65,7 +65,7 @@ export default function HomeMasonryGrid({
 
     const placeCard = (card: MasonryCardConfig) => {
       const w = Math.max(1, Math.min(card.colSpan ?? 1, cols));
-      const h = Math.max(1, card.rowSpan ?? 1);
+      const h = cols === 1 ? 1 : Math.max(1, card.rowSpan ?? 1);
 
       for (let y = 0; ; y += 1) {
         for (let x = 0; x <= cols - w; x += 1) {
