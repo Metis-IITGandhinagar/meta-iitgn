@@ -24,8 +24,8 @@ services:
       dockerfile: Dockerfile
     container_name: meta-iitgn-backend
     restart: always
-    # Backend port is NOT exposed to the host VPS.
-    # It communicates inside the bridge network directly.
+    ports:
+      - "3636:3001"
     depends_on:
       db:
         condition: service_healthy
@@ -58,8 +58,7 @@ services:
     container_name: meta-iitgn-frontend
     restart: always
     ports:
-      # Only the frontend port 3000 is exposed to the outside host VPS.
-      - "3000:3000"
+      - "3603:3000"
     depends_on:
       - backend
     environment:

@@ -27,10 +27,6 @@ export const getAuditLogs = async (params: { page?: number; limit?: number } = {
   return response.data;
 };
 
-export const devBypass = async (data: UserCreateInput) => {
-  const response = await api.post('/user', data);
-  return response.data;
-};
 
 export const getUserStats = async (userId: number) => {
   const response = await api.get(`/user/${userId}/stats`, { withCredentials: true });
