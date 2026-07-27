@@ -205,7 +205,7 @@ export default function LeftPanel({
 
   const renderPortalIcon = (iconName: string | undefined, iconBgClass: string) => {
     return (
-      <div className={`w-12 h-12 flex-shrink-0 icon-circle mr-4 shadow-sm ${iconBgClass}`}>
+      <div className={`w-10 h-10 md:w-11 md:h-11 flex-shrink-0 icon-circle mr-2 shadow-sm ${iconBgClass}`}>
         {isEmojiIcon(iconName) ? (
           <span className="text-xl filter drop-shadow-sm" aria-hidden>{iconName}</span>
         ) : (
@@ -227,7 +227,7 @@ export default function LeftPanel({
 
       {/* Left Panel: Fixed Dashboard on Desktop */}
       <div
-        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4 bg-base-100 h-auto lg:h-full min-h-0 mb-10 md:mb-0 overflow-y-auto select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"}`}
+        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4  h-auto lg:h-full min-h-0 mb-10 md:mb-0 overflow-y-auto select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"}`}
       >
         <div className="space-y-2">
           {/* Header with Hamburger Menu and Settings inside Left Panel */}
@@ -286,7 +286,7 @@ export default function LeftPanel({
           {/* Category Cards (Pill style) */}
           <div className="space-y-2 mt-6 lg:mt-8">
             {portalsToDisplay.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2 md:gap-4">
                 {portalsToDisplay.slice(0, 10).map((portal) => {
                   const style = getPortalStyle(portal.color);
 
@@ -300,7 +300,7 @@ export default function LeftPanel({
                     >
                       <Link
                         href={portal.path}
-                        className={`group relative flex items-center p-3  rounded-[2rem] transition-transform transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${style.shadowClass} ${style.gradientClass} ${style.textClass} ${style.specialClass}`}
+                        className={`group relative flex items-center p-2  rounded-[2rem] transition-transform transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${style.shadowClass} ${style.gradientClass} ${style.textClass} ${style.specialClass}`}
                         onClick={(e) => {
                           e.preventDefault();
                           setActivePortalCategory(portal.slug);
@@ -308,7 +308,7 @@ export default function LeftPanel({
                         }}
                       >
                         {renderPortalIcon(portal.iconName, style.iconBgClass)}
-                        <span className="font-bold text-sm tracking-wide truncate">
+                        <span className="font-bold text-xs md:text-sm tracking-wide truncate">
                           {portal.name}
                         </span>
                       </Link>

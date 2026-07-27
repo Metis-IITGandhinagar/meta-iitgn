@@ -1,29 +1,26 @@
-"use client";
+import type { Metadata } from "next";
+import AppLayout from "@/components/helpers/AppLayout";
 
-import React, { useState } from "react";
-import Navbar from "@/components/navs/Navbar";
-import Sidebar from "@/components/navs/Sidebar";
+export const metadata: Metadata = {
+  title: "META IITGN-Previous Year Question Papers (PYQs)",
+  description:
+    "Access IIT Gandhinagar Previous Year Question Papers (PYQs) organized by course, semester, and academic year. Prepare smarter with a searchable collection of past exam papers on META IITGN.",
+  keywords: [
+    "IIT Gandhinagar PYQs",
+    "IITGN Previous Year Question Papers",
+    "PYQ",
+    "Past Papers",
+    "Exam Papers",
+    "Semester Exams",
+    "Course-wise PYQs",
+    "META IITGN",
+  ],
+};
 
-export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  return (
-    <div className="relative h-screen w-screen bg-base-100 overflow-hidden font-sans">
-      {/* Top Navbar */}
-      <div className="z-[10010] fixed top-0 left-0 right-0 transition-transform duration-300 ease-in-out">
-        <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-      </div>
-
-      {/* Main Container */}
-      <div className="flex h-full w-full overflow-hidden relative">
-        {/* Collapsible Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        
-        {/* Children content area */}
-        <div className="flex flex-col flex-1 h-full w-full min-w-full shrink-0 lg:shrink lg:min-w-0 lg:flex-1 overflow-hidden">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
+export default function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <AppLayout>{children}</AppLayout>;
 }
