@@ -173,15 +173,6 @@ export default function LoginPage() {
           {loading ? "Signing in..." : "Continue with Google"}
         </button>
 
-        {/* Divider */}
-        <div className="w-full flex items-center my-6">
-          <div className="flex-1 h-px bg-slate-150" />
-          <span className="px-3 text-[10px] text-base-content/50 font-bold uppercase tracking-wider">or bypass</span>
-          <div className="flex-1 h-px bg-slate-150" />
-        </div>
-
-        
-
         {/* Go Back button */}
         <button
           onClick={() => {
