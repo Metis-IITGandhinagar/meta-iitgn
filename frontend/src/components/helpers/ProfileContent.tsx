@@ -38,6 +38,7 @@ import ViewSwitcher from "@/components/helpers/ViewSwitcher";
 import { useViewMode } from "@/hooks/useViewMode";
 import { getGridClass } from "@/lib/viewModes";
 import { useAuth } from "@/hooks/useAuth";
+import { useCommonStore } from "@/store/useCommonStore";
 import { apiService } from "@/api";
 import { db } from "@/lib/db";
 import { useHomeStore } from "@/store/useHomeStore";
@@ -200,6 +201,9 @@ export default function ProfileContent() {
           if (statsRes.success) {
             stats = statsRes.data;
             setProfileStats(stats);
+            if (isOwnProfile) {
+              useCommonStore.getState().setUserStats(stats);
+            }
           }
         } catch {
           // Stats may not be available

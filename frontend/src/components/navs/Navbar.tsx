@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
+import { useCommonStore } from "@/store/useCommonStore";
 import Link from "next/link";
 import { BeautifulSearchBox } from "@/components/helpers/SearchDesign";
 import {
@@ -25,7 +26,6 @@ import {
 } from "lucide-react";
 import Avatar from "@/components/helpers/Avatar";
 import ShareModal from "@/components/overlays/ShareModal";
-import { apiService } from "@/api";
 import { db } from "@/lib/db";
 
 interface NavbarProps {
@@ -103,7 +103,8 @@ export default function Navbar({
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareData, setShareData] = useState({ url: "", title: "" });
-  const [stats, setStats] = useState<any>(null);
+  const userStats = useCommonStore((s) => s.userStats);
+  const loadUserStats = useCommonStore((s) => s.loadUserStats);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -168,24 +169,11 @@ export default function Navbar({
 
   // Load the signed-in user's real contribution stats when the dropdown opens.
   useEffect(() => {
-    if (!dropdownOpen || !user?.user_id || stats) {
+    if (!dropdownOpen || !user?.user_id) {
       return;
     }
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await apiService.getUserStats(user.user_id);
-        if (!cancelled && res?.success) {
-          setStats(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to load user stats for navbar dropdown:", err);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [dropdownOpen, user?.user_id, stats]);
+    void loadUserStats(user.user_id);
+  }, [dropdownOpen, user?.user_id, loadUserStats]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -339,7 +327,7 @@ export default function Navbar({
                         Points
                       </span>
                       <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {stats?.points ?? user.points}
+                        {userStats?.points ?? user.points}
                       </span>
                     </div>
                     <div className="flex flex-col border-l border-base-300">
@@ -347,7 +335,7 @@ export default function Navbar({
                         Edits
                       </span>
                       <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {stats ? stats.editsThisMonth : "—"}
+                        {userStats ? userStats.editsThisMonth : "—"}
                       </span>
                     </div>
                     <div className="flex flex-col border-l border-base-300">
@@ -355,7 +343,7 @@ export default function Navbar({
                         Streak
                       </span>
                       <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {stats ? `${stats.streak}d` : "—"}
+                        {userStats ? `${userStats.streak}d` : "—"}
                       </span>
                     </div>
                   </div>

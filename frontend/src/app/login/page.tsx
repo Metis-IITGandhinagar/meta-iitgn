@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { api } from "@/lib/api";
-import { devBypass } from "@/api/user";
-import { BookOpen, AlertCircle, CheckCircle, ShieldAlert, Cpu, X, ChevronLeft } from "lucide-react";
+import { BookOpen, AlertCircle, CheckCircle, X, ChevronLeft } from "lucide-react";
 
 export default function LoginPage() {
   useDocumentTitle("Log In");
@@ -19,24 +18,8 @@ export default function LoginPage() {
     message: "",
   });
 
-  const DEV_ACCOUNTS = [
-    { name: "Gold User A (Gold)", email: "gold1@meta-iitgn.edu", role: "admin" },
-    { name: "Gold User B (Gold)", email: "gold2@meta-iitgn.edu", role: "admin" },
-    { name: "Gold User C (Gold)", email: "gold3@meta-iitgn.edu", role: "admin" },
-    { name: "Silver User A (Silver)", email: "silver1@meta-iitgn.edu", role: "moderator" },
-    { name: "Silver User B (Silver)", email: "silver2@meta-iitgn.edu", role: "moderator" },
-    { name: "Silver User C (Silver)", email: "silver3@meta-iitgn.edu", role: "moderator" },
-    { name: "Bronze User A (Bronze)", email: "bronze1@meta-iitgn.edu", role: "normal" },
-    { name: "Bronze User B (Bronze)", email: "bronze2@meta-iitgn.edu", role: "normal" },
-    { name: "Bronze User C (Bronze)", email: "bronze3@meta-iitgn.edu", role: "normal" },
-  ];
 
-  // Dev bypass form state
-  const [devEmail, setDevEmail] = useState(DEV_ACCOUNTS[0].email);
-  const [devName, setDevName] = useState("Gold User A");
-  const [devRole, setDevRole] = useState(DEV_ACCOUNTS[0].role);
-  const [showDevBypass, setShowDevBypass] = useState(false);
-
+  
   // Cursor-following 3D tilt for the login card (interaction-safe alternative to
   // daisyUI's hover-3d, whose overlay zones would block the close button / form).
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
@@ -97,36 +80,6 @@ export default function LoginPage() {
     scope: "openid email profile",
   });
 
-  const handleDevBypass = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setStatus({ type: null, message: "" });
-
-    try {
-      const response = await devBypass({
-        email: devEmail,
-        name: devName,
-        role: devRole,
-      });
-
-      if (response.success) {
-        setStatus({ type: "success", message: "Bypass Login Successful!" });
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        await checkAuth();
-        router.replace("/");
-      } else {
-        setStatus({ type: "error", message: response.error || "Bypass failed." });
-      }
-    } catch (error: any) {
-      console.error("Dev Bypass Error:", error);
-      setStatus({
-        type: "error",
-        message: error.response?.data?.error || error.message || "Bypass login failed. Verify backend is in dev mode.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/65 overflow-hidden font-sans p-4">
@@ -219,65 +172,6 @@ export default function LoginPage() {
           </svg>
           {loading ? "Signing in..." : "Continue with Google"}
         </button>
-
-        {/* Divider */}
-        <div className="w-full flex items-center my-6">
-          <div className="flex-1 h-px bg-slate-150" />
-          <span className="px-3 text-[10px] text-base-content/50 font-bold uppercase tracking-wider">or bypass</span>
-          <div className="flex-1 h-px bg-slate-150" />
-        </div>
-
-        {/* Dev Bypass Section */}
-        <div className="w-full">
-          <button
-            onClick={() => setShowDevBypass(!showDevBypass)}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-base-content/50 hover:text-base-content text-xs font-bold border border-dashed border-slate-300 hover:border-slate-400 rounded-xl transition-all duration-200 cursor-pointer bg-base-200/50 hover:bg-base-200"
-          >
-            <Cpu className="w-3.5 h-3.5 text-base-content/50" />
-            {showDevBypass ? "Hide Sandbox Bypass" : "Show Sandbox Bypass"}
-          </button>
-
-          {showDevBypass && (
-            <form onSubmit={handleDevBypass} className="mt-3.5 p-4 rounded-2xl bg-base-200 border border-base-200 flex flex-col gap-3.5 transition-all duration-300">
-              <div className="flex items-center gap-1.5 text-amber-600 text-xs font-bold">
-                <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
-                <span>Local Sandbox Login Bypass</span>
-              </div>
-
-               <div className="space-y-1">
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-base-content/50">
-                  Select Dev Account (Role/Tier)
-                </label>
-                <select
-                  value={devEmail}
-                  onChange={(e) => {
-                    const selected = DEV_ACCOUNTS.find(acc => acc.email === e.target.value);
-                    if (selected) {
-                      setDevEmail(selected.email);
-                      setDevName(selected.name.replace(/\s*\(.*\)/, ""));
-                      setDevRole(selected.role);
-                    }
-                  }}
-                  className="w-full h-9.5 px-3 bg-base-100 border border-base-300 rounded-xl text-xs font-bold text-base-content/85 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
-                >
-                  {DEV_ACCOUNTS.map((acc) => (
-                    <option key={acc.email} value={acc.email}>
-                      {acc.name} ({acc.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-9 flex items-center justify-center bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-content text-xs font-bold rounded-xl shadow-sm cursor-pointer transition-colors active:scale-98"
-              >
-                {loading ? "Logging in..." : "Bypass with Selected Account"}
-              </button>
-            </form>
-          )}
-        </div>
 
         {/* Go Back button */}
         <button

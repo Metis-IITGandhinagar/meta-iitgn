@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (previousUserId !== null && previousUserId !== currentUserId) {
       localStorage.removeItem("syncCheck");
+      useCommonStore.getState().setUserStats(null); // Clear stored user stats
       const clearDb = async () => {
         try {
           await Promise.all([
@@ -100,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuth(false);
       setLoading(false);
       setTotalPagesCount(null);
+      useCommonStore.getState().setUserStats(null); // Clear stored user stats
       localStorage.removeItem("syncCheck");
       try {
         await Promise.all([
@@ -126,6 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(userRes.data.user);
       setAuth(true);
+      void useCommonStore.getState().loadUserStats(userRes.data.user.user_id);
     } catch {
       setUser(null);
       setAuth(false);

@@ -47,8 +47,26 @@ import { Providers } from "./providers";
 import { ServiceWorkerRegister } from "./service-worker-register";
 
 export const metadata: Metadata = {
-  title: "META IITGN",
-  description: "The collaborative campus wiki for IIT Gandhinagar.",
+  title: {
+    default: "META IITGN",
+    template: "%s | META IITGN",
+  },
+  description:
+    "META IITGN is the collaborative campus platform for IIT Gandhinagar featuring PYQs, campus news, articles, blogs, academic calendar, events, student resources, and more.",
+  keywords: [
+    "IIT Gandhinagar",
+    "IITGN",
+    "META IITGN",
+    "PYQ",
+    "Previous Year Question Papers",
+    "Academic Calendar",
+    "Campus News",
+    "Student Blogs",
+    "Campus Feed",
+    "College Events",
+    "Student Resources",
+    "Engineering",
+  ],
 };
 
 export const viewport: Viewport = {

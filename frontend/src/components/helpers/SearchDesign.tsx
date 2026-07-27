@@ -36,7 +36,7 @@ export function BeautifulSearchBox({
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className={`block w-full pl-12 pr-4 py-4 bg-white border-none rounded-[2rem] text-slate-700 placeholder-slate-400 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all pill-shadow-white text-base shadow-[0_8px_30px_rgba(0,0,0,0.04)] ${isCompact ? "py-3 text-sm" : ""}`}
+            className={`input border-none focus:border-none focus:outline-none focus:ring-0 focus-visible:ring-4 focus-visible:ring-indigo-500 block w-full pl-12 pr-4 py-4 bg-transparent  rounded-[2rem] text-slate-700 placeholder-slate-400  focus:ring-indigo-500  transition-all pill-shadow-white text-base shadow-[0_8px_30px_rgba(0,0,0,0.04)] ${isCompact ? "py-3 text-sm" : ""}`}
             autoFocus={autoFocus}
           />
           {value && (

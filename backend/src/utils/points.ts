@@ -20,6 +20,7 @@
  */
 
 import { prisma } from '../lib/prisma.js';
+import { userCache } from './userCache.js';
 
 /** Fixed multiplier applied to the Fibonacci tier value. */
 export const POINTS_BASE = 100;
@@ -71,5 +72,6 @@ export async function recomputeUserPoints(userId: number): Promise<number> {
     where: { user_id: userId },
     data: { points },
   });
+  userCache.delete(userId); // Invalidate the cached user details so new points are loaded
   return points;
 }

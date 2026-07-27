@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: meta-iitgn-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      # Make sure to change DB_PASSWORD in your production .env file
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-wiki}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wiki"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meta-iitgn-backend
+    restart: always
+    # Backend port is NOT exposed to the host VPS.
+    # It communicates inside the bridge network directly.
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@db:5432/${DB_NAME:-wiki}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_API_URL="" sets the app to use relative /api routing.
+        # This works because Next.js handles proxy rewrites to the backend internally.
+        BACKEND_INTERNAL_URL: http://backend:3001
+        NEXT_PUBLIC_API_URL: ""
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+    container_name: meta-iitgn-frontend
+    restart: always
+    ports:
+      # Only the frontend port 3000 is exposed to the outside host VPS.
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      # Next.js server proxies /api and /uploads traffic internally to this URL
+      BACKEND_INTERNAL_URL: http://backend:3001
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
