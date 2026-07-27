@@ -52,8 +52,9 @@ services:
       args:
         # NEXT_PUBLIC_API_URL="" sets the app to use relative /api routing.
         # This works because Next.js handles proxy rewrites to the backend internally.
+        BACKEND_INTERNAL_URL: http://backend:3001
         NEXT_PUBLIC_API_URL: ""
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-146089881940-3u2lf6a3durur4famkl2itch9eofdvg3.apps.googleusercontent.com}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
     container_name: meta-iitgn-frontend
     restart: always
     ports:
