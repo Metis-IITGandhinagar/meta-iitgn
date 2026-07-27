@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { getPageStats } from "../api/page";
+import { getUserStats } from "../api/user";
+
+export interface UserStats {
+  points: number;
+  articlesImproved: number;
+  editsThisMonth: number;
+  streak: number;
+}
 
 interface PageStats {
   totalPages: number;
@@ -10,6 +18,12 @@ interface CommonState {
   stats: PageStats | null;
   loadingStats: boolean;
   loadStats: (forceRefresh?: boolean) => Promise<void>;
+
+  // User Stats State
+  userStats: UserStats | null;
+  loadingUserStats: boolean;
+  setUserStats: (stats: UserStats | null) => void;
+  loadUserStats: (userId: number, forceRefresh?: boolean) => Promise<void>;
 
   // Settings State
   theme: string;
@@ -57,6 +71,9 @@ export const useCommonStore = create<CommonState>()(
       stats: null,
       loadingStats: false,
 
+      userStats: null,
+      loadingUserStats: false,
+
       // Settings default state values
       theme: "light",
       interfaceFontStyle: "sans",
@@ -97,6 +114,25 @@ export const useCommonStore = create<CommonState>()(
           console.error("Failed to load page stats in commonStore:", err);
         } finally {
           set({ loadingStats: false });
+        }
+      },
+
+      setUserStats: (userStats) => set({ userStats }),
+
+      loadUserStats: async (userId, forceRefresh = false) => {
+        if (get().userStats && !forceRefresh) return;
+        if (get().loadingUserStats) return;
+
+        set({ loadingUserStats: true });
+        try {
+          const res = await getUserStats(userId);
+          if (res?.success && res.data) {
+            set({ userStats: res.data });
+          }
+        } catch (err) {
+          console.error("Failed to load user stats in commonStore:", err);
+        } finally {
+          set({ loadingUserStats: false });
         }
       },
 
@@ -170,6 +206,7 @@ export const useCommonStore = create<CommonState>()(
         const settingsState = { ...state };
         delete (settingsState as any).stats;
         delete (settingsState as any).loadingStats;
+        delete (settingsState as any).loadingUserStats;
         return settingsState;
       },
     }
