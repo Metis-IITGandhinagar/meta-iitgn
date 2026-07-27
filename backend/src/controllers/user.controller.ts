@@ -8,6 +8,29 @@ import { userCache } from '../utils/userCache.js';
 import { invalidateSyncCache } from './page.controller.js';
 import { countUserEdits, fibonacciPoints } from '../utils/points.js';
 import { setTokenCookie, clearTokenCookie } from '../utils/cookies.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const getAdminEmails = (): string[] => {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const filePath = path.resolve(__dirname, '../../admin-emails.json');
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    const content = fs.readFileSync(filePath, 'utf8');
+    const emails = JSON.parse(content);
+    if (Array.isArray(emails)) {
+      return emails.map(email => email.trim().toLowerCase());
+    }
+    return [];
+  } catch (error) {
+    console.error("Error reading admin-emails.json:", error);
+    return [];
+  }
+};
 
 export const devBypass = async (req: Request, res: Response) => {
   if (process.env.NODE_ENV === 'production') {
@@ -21,8 +44,12 @@ export const devBypass = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
+    const adminEmails = getAdminEmails();
+    const shouldBeAdmin = adminEmails.includes(email.toLowerCase());
+
     const validRoles = ['normal', 'moderator', 'admin'];
     const chosenRole = role && validRoles.includes(role.toLowerCase()) ? role.toLowerCase() : null;
+    const finalRole = shouldBeAdmin ? 'admin' : (chosenRole || 'normal');
 
     let user = await prisma.users.findUnique({
       where: { email }
@@ -34,15 +61,24 @@ export const devBypass = async (req: Request, res: Response) => {
           name: name || email.split('@')[0],
           email,
           avatar_url: avatar_url || null,
-          role: (chosenRole || 'normal') as any,
+          role: finalRole as any,
           points: 0,
         },
       });
-    } else if (chosenRole && user.role !== chosenRole) {
-      user = await prisma.users.update({
-        where: { email },
-        data: { role: chosenRole as any }
-      });
+    } else {
+      const updateData: any = {};
+      if (shouldBeAdmin && user.role !== 'admin') {
+        updateData.role = 'admin';
+      } else if (chosenRole && user.role !== chosenRole) {
+        updateData.role = chosenRole;
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        user = await prisma.users.update({
+          where: { email },
+          data: updateData
+        });
+      }
     }
     userCache.delete(user.user_id);
 
@@ -262,6 +298,9 @@ export const handleGoogleAuth = async (req: Request, res: Response) => {
     );
     const { email, name, picture } = userRes.data;
 
+    const adminEmails = getAdminEmails();
+    const shouldBeAdmin = adminEmails.includes(email.toLowerCase());
+
     let user = await prisma.users.findUnique({
       where: { email }
     });
@@ -272,16 +311,20 @@ export const handleGoogleAuth = async (req: Request, res: Response) => {
           name: name || email.split('@')[0],
           email,
           avatar_url: picture || null,
-          role: 'normal',
+          role: shouldBeAdmin ? 'admin' : 'normal',
           points: 0,
         }
       });
     } else {
+      const updateData: any = {
+        last_login_at: new Date(),
+      };
+      if (shouldBeAdmin && user.role !== 'admin') {
+        updateData.role = 'admin';
+      }
       user = await prisma.users.update({
         where: { user_id: user.user_id },
-        data: {
-          last_login_at: new Date(),
-        }
+        data: updateData
       });
     }
     userCache.delete(user.user_id);
