@@ -19,6 +19,7 @@ interface InterviewPostCardProps {
 export default function InterviewPostCard({ post, onPostUpdated, onSelectFeatured }: InterviewPostCardProps) {
   const { user: currentUser } = useAuth();
   const markAsRead = useFeedStore((state) => state.markAsRead);
+  const updatePostLikes = useFeedStore((state) => state.updatePostLikes);
   const cardRef = useRef<HTMLElement | null>(null);
 
   const [isLiked, setIsLiked] = useState<boolean>(!!post.isLiked);
@@ -29,6 +30,13 @@ export default function InterviewPostCard({ post, onPostUpdated, onSelectFeature
   const [isFeatured, setIsFeatured] = useState(post.featured);
 
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "moderator";
+
+  useEffect(() => {
+    setIsLiked(!!post.isLiked);
+    setLikesCount(post.likes_count || 0);
+    setIsApproved(post.approved);
+    setIsFeatured(post.featured);
+  }, [post]);
 
   useEffect(() => {
     if (!post.post_id) return;
@@ -71,8 +79,12 @@ export default function InterviewPostCard({ post, onPostUpdated, onSelectFeature
     // Optimistic UI update
     const previousLiked = isLiked;
     const previousCount = likesCount;
-    setIsLiked(!previousLiked);
-    setLikesCount(previousLiked ? Math.max(0, previousCount - 1) : previousCount + 1);
+    const newLiked = !previousLiked;
+    const newCount = previousLiked ? Math.max(0, previousCount - 1) : previousCount + 1;
+
+    setIsLiked(newLiked);
+    setLikesCount(newCount);
+    updatePostLikes(post.post_id, newLiked, newCount);
     setIsLiking(true);
 
     try {
@@ -80,15 +92,19 @@ export default function InterviewPostCard({ post, onPostUpdated, onSelectFeature
       if (res && res.success) {
         setIsLiked(res.isLiked);
         setLikesCount(res.likesCount);
+        updatePostLikes(post.post_id, res.isLiked, res.likesCount);
       } else {
         // Rollback
         setIsLiked(previousLiked);
         setLikesCount(previousCount);
+        updatePostLikes(post.post_id, previousLiked, previousCount);
       }
     } catch (err) {
       console.error("Error toggling like:", err);
+      // Rollback
       setIsLiked(previousLiked);
       setLikesCount(previousCount);
+      updatePostLikes(post.post_id, previousLiked, previousCount);
       toast.error("Failed to update like status.");
     } finally {
       setIsLiking(false);

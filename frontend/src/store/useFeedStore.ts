@@ -81,6 +81,7 @@ export interface FeedState {
   loadUserStats: (forceRefresh?: boolean) => Promise<void>;
   markAsRead: (postId: number) => Promise<void>;
   applyFeedShuffle: (chronoPosts: InterviewPost[]) => Promise<InterviewPost[]>;
+  updatePostLikes: (postId: number, isLiked: boolean, likesCount: number) => Promise<void>;
   clearLocalCache: () => Promise<void>;
 }
 
@@ -501,6 +502,85 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     } finally {
       set({ loadingStats: false });
     }
+  },
+
+  // Update likes and likes count of a post across state and local caches (Zustand & Dexie)
+  updatePostLikes: async (postId: number, isLiked: boolean, likesCount: number) => {
+    const { posts, featuredPosts, pages } = get();
+
+    // 1. Update the posts list in state
+    const updatedPosts = posts.map((post) =>
+      post.post_id === postId
+        ? { ...post, isLiked, likes_count: likesCount }
+        : post
+    );
+
+    // 2. Update the featured posts list in state
+    const updatedFeaturedPosts = featuredPosts.map((post) =>
+      post.post_id === postId
+        ? { ...post, isLiked, likes_count: likesCount }
+        : post
+    );
+
+    // 3. Update the pages cache in state and Dexie
+    const updatedPages = { ...pages };
+    for (const key of Object.keys(updatedPages)) {
+      const pageData = updatedPages[key];
+      if (pageData) {
+        let postFound = false;
+        const updatedPagePosts = pageData.posts.map((post) => {
+          if (post.post_id === postId) {
+            postFound = true;
+            return { ...post, isLiked, likes_count: likesCount };
+          }
+          return post;
+        });
+
+        if (postFound) {
+          updatedPages[key] = {
+            ...pageData,
+            posts: updatedPagePosts,
+          };
+          // Write updated page to Dexie cache
+          try {
+            await db.feed_pages.put({
+              key,
+              ...updatedPages[key],
+            });
+          } catch (err) {
+            console.error(`Failed to update page cache for ${key} in Dexie:`, err);
+          }
+        }
+      }
+    }
+
+    // 4. Update the featured posts in Dexie cache if modified
+    const isFeaturedModified = featuredPosts.some((post) => post.post_id === postId);
+    if (isFeaturedModified) {
+      try {
+        const cachedFeatured = await db.meta.get("featured_posts");
+        if (cachedFeatured) {
+          const updatedCachedFeatured = cachedFeatured.data.map((post: any) =>
+            post.post_id === postId
+              ? { ...post, isLiked, likes_count: likesCount }
+              : post
+          );
+          await db.meta.put({
+            key: "featured_posts",
+            cachedAt: cachedFeatured.cachedAt,
+            data: updatedCachedFeatured,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to update featured posts cache in Dexie:", err);
+      }
+    }
+
+    set({
+      posts: updatedPosts,
+      featuredPosts: updatedFeaturedPosts,
+      pages: updatedPages,
+    });
   },
 
   // Helper to clear local feed caches on demand (e.g. settings clear)
