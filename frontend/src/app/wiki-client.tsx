@@ -834,9 +834,9 @@ export default function WikiClient({
             )}
             {/* Title Header (Separated from editor to prevent accidental deletion) */}
             {(!isProfile || !isEditing) && (
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 {/* Page icon — emoji/icon indicator */}
-                <div className="relative pt-1 shrink-0">
+                <div className="relative -mt-1 shrink-0">
                   {canManagePage ? (
                     <IconColorPicker
                       currentIcon={pageIcon}
