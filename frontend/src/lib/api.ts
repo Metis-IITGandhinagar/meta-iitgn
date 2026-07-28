@@ -1,13 +1,26 @@
-import axios from 'axios';
+import axios from "axios";
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL !== undefined
-  ? (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api')
-  : 'http://localhost:3001/api';
+const apiBase = (() => {
+  // If an explicit public API URL is configured, always use it.
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return `${process.env.NEXT_PUBLIC_API_URL}/api`;
+  }
+
+  // Server-side (SSR) inside Docker.
+  if (typeof window === "undefined") {
+    return `${process.env.BACKEND_INTERNAL_URL || "http://backend:3001"}/api`;
+  }
+
+  // Browser: use Next.js rewrites.
+  return "/api";
+})();
 
 export const api = axios.create({
   baseURL: apiBase,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
-  withCredentials: true, // Allow cookies to be sent with requests
+  withCredentials: true,
 });
+
+console.log("[API] Base URL:", apiBase);
