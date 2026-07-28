@@ -227,7 +227,7 @@ export default function LeftPanel({
 
       {/* Left Panel: Fixed Dashboard on Desktop */}
       <div
-        className={`w-full lg:w-120 shrink-0 border-b lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-4  h-auto lg:h-full min-h-0 mb-10 md:mb-0 overflow-y-auto select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"}`}
+        className={`w-full lg:w-120 shrink-0 border-0 lg:border-b-0 lg:border-r border-base-200 flex flex-col justify-between p-2  h-auto lg:h-full min-h-0 mb-10 md:mb-0 overflow-y-auto select-none pb-0 lg:pb-6 ${activeTab !== "home" ? "hidden lg:flex" : "flex"}`}
       >
         <div className="space-y-2">
           {/* Header with Hamburger Menu and Settings inside Left Panel */}
@@ -254,9 +254,9 @@ export default function LeftPanel({
               <div className="absolute -inset-1 bg-gradient-to-r from-[#4c39ec] to-[#604dec] rounded-full blur opacity-40 group-hover:opacity-60 transition duration-500" />
               <Link
                 href="/"
-                className="relative bg-[#4c39ec] text-white w-28 h-28 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(76,57,236,0.4)] border-2 border-white/10"
+                className="relative bg-[#4c39ec] text-white w-22 h-22 md:w-25 md:h-25 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(76,57,236,0.4)] border-2 border-white/10"
               >
-                <span className="text-5xl font-bold tracking-tighter font-serif">mI</span>
+                <span className="text-4xl md:text-5xl font-bold tracking-tighter font-serif">mI</span>
               </Link>
             </div>
             <div className="mt-4">
@@ -284,7 +284,7 @@ export default function LeftPanel({
           </div>
 
           {/* Category Cards (Pill style) */}
-          <div className="space-y-2 mt-6 lg:mt-8">
+          <div className="space-y-2 mt-6 lg:mt-8 pb-10 md:pb-0 p-2">
             {portalsToDisplay.length > 0 ? (
               <div className="grid grid-cols-2 gap-2 md:gap-4">
                 {portalsToDisplay.slice(0, 10).map((portal) => {

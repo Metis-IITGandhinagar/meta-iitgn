@@ -29,7 +29,7 @@ interface BottomNavbarProps {
 export default function BottomNavbar({
   tabs,
   activeTab,
-  className = "fixed bottom-6 left-1/2 transform -translate-x-1/2",
+  className = "fixed bottom-5 left-1/2 transform -translate-x-1/2",
   style,
   hidden = false,
   mobileAction,
@@ -57,7 +57,7 @@ export default function BottomNavbar({
                 key={tab.id}
                 onClick={tab.onClick}
                 aria-label={tab.label}
-                className={`relative z-10 flex flex-1 items-center justify-center rounded-full px-3 py-2.5 transition-all duration-200 group active:scale-95 ${
+                className={`relative z-10 flex flex-1 items-center justify-center rounded-full px-2.5 py-2 transition-all duration-200 group active:scale-95 ${
                   isActive
                     ? `${tab.colorClass ?? "bg-primary text-primary-content"} shadow-sm`
                     : `${tab.colorClass ?? "text-base-content/70 hover:bg-base-200 hover:text-base-content"}`
@@ -65,7 +65,7 @@ export default function BottomNavbar({
               >
                 <span className="relative flex items-center justify-center">
                   <Icon
-                    className={`${isProfile ? "h-7 w-7" : "h-5 w-5"} transition-transform duration-200 ${isActive ? "scale-105" : "group-hover:scale-105"}`}
+                    className={`${isProfile ? "h-6 w-6" : "h-5 w-5"} transition-transform duration-200 ${isActive ? "scale-105" : "group-hover:scale-105"}`}
                   />
                   {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
                     <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-error hover:bg-error/90 text-[9px] font-black text-error-content leading-none shadow-sm">
@@ -83,7 +83,7 @@ export default function BottomNavbar({
             type="button"
             onClick={mobileAction.onClick}
             aria-label={mobileAction.label}
-            className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-200 active:scale-95 ${
+            className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-200 active:scale-95 ${
               mobileAction.active
                 ? "bg-primary text-primary-content border-primary"
                 : "bg-base-100 border-base-300 text-base-content/80 hover:bg-base-200 hover:text-base-content"
