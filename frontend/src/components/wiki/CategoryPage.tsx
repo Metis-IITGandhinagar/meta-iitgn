@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
-import { PlusCircle, Pencil } from "lucide-react";
+import { PlusCircle, Pencil, BookOpen } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
@@ -356,6 +356,65 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             </div>
           </div>
         ) : null}
+
+        {/* Premium Empty State when there are no subcategories and no articles */}
+        {!loading && childCategories.length === 0 && articles.length === 0 && (
+          <div className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100/30 backdrop-blur-xs p-8 md:p-12 text-center max-w-2xl mx-auto mt-8 group hover:border-base-content/10 transition-all duration-300">
+            {/* Subtle premium background glow */}
+            <div 
+              className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-[80px] opacity-20 pointer-events-none"
+              style={{ backgroundColor: category.color || "#4f46e5" }}
+            />
+            <div 
+              className="absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-20 pointer-events-none"
+              style={{ backgroundColor: category.color || "#4f46e5" }}
+            />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              {/* Icon Container with radial background and subtle pulse */}
+              <div 
+                className="inline-flex items-center justify-center p-4.5 rounded-2xl mb-5 shadow-xs border border-base-content/5 transition-transform duration-500 group-hover:scale-105"
+                style={{
+                  backgroundColor: `${category.color || "#4f46e5"}12`,
+                  color: category.color || "#4f46e5",
+                }}
+              >
+                <BookOpen className="h-8 w-8 animate-pulse" />
+              </div>
+              
+              <h3 className="text-xl font-serif font-black text-base-content tracking-tight">
+                No articles yet
+              </h3>
+              
+              <p className="text-sm text-base-content/50 max-w-md mt-2.5 leading-relaxed font-medium">
+                This category doesn&apos;t have any articles or subcategories published.
+              </p>
+              
+              {canManage ? (
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+                  <button
+                    onClick={() => setShowAddSub(true)}
+                    className="btn btn-outline btn-sm font-extrabold rounded-xl shadow-xs transition-all duration-200 active:scale-95 cursor-pointer"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    <span>Add Subcategory</span>
+                  </button>
+                  <Link
+                    href={`/wiki/${categorySlug}/new`}
+                    className="btn btn-primary btn-sm font-extrabold rounded-xl shadow-xs transition-all duration-200 active:scale-95 text-primary-content cursor-pointer"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    <span>New Article</span>
+                  </Link>
+                </div>
+              ) : (
+                <p className="text-xs text-base-content/40 italic mt-6">
+                  Check back later for student-contributed content.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
       </div>
 
