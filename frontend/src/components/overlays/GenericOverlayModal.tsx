@@ -156,7 +156,7 @@ export default function GenericOverlayModal({
   }, [handleMouseMove]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (window.innerWidth < 640 || isMaximized) return;
+    if (window.innerWidth < 640) return;
     const target = e.target as HTMLElement;
     if (
       target.closest("button") ||
@@ -238,11 +238,11 @@ export default function GenericOverlayModal({
       {/* Dialog Card - matching SettingsModal aesthetics and draggable header */}
       <div
         style={
-          isMounted && !isMaximized
+          isMounted
             ? {
-                transform: `translate(${position.x}px, ${position.y}px)`,
+                transform: isMaximized ? "none" : `translate(${position.x}px, ${position.y}px)`,
                 transition: isDragging ? "none" : "all 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
-                animation: (isDragging || animationClass === "entered" || (animationClass === "animate-exit" && (position.x !== 0 || position.y !== 0))) ? "none" : undefined,
+                animation: (isDragging || animationClass === "entered" || (!isMaximized && animationClass === "animate-exit" && (position.x !== 0 || position.y !== 0))) ? "none" : undefined,
                 opacity: animationClass === "animate-exit" ? 0 : 1,
               }
             : undefined
@@ -256,7 +256,9 @@ export default function GenericOverlayModal({
         } ${
           animationClass === "animate-enter"
             ? "animate-modal-enter"
-            : "animate-modal-exit"
+            : animationClass === "animate-exit"
+            ? "animate-modal-exit"
+            : ""
         }`}
       >
         {/* Unified Draggable Header */}

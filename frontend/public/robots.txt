@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block internal API routes
+Disallow: /api/
+Disallow: /uploads/
+
+Disallow: /login
+Disallow: /signup
+
+# Sitemap
+Sitemap: https://meta.metis-iitgn.tech/sitemap.xml

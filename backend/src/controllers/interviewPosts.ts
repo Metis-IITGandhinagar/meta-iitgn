@@ -50,7 +50,6 @@ export async function getFeedPosts(req: express.Request, res: express.Response) 
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },
@@ -129,7 +128,6 @@ export async function getFeaturedPosts(req: express.Request, res: express.Respon
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },
@@ -222,7 +220,6 @@ export async function getMyPosts(req: express.Request, res: express.Response) {
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },
@@ -290,7 +287,6 @@ export async function createPost(req: express.Request, res: express.Response) {
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },
@@ -401,7 +397,6 @@ export async function getPendingPosts(req: express.Request, res: express.Respons
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },
@@ -436,7 +431,6 @@ export async function approvePost(req: express.Request, res: express.Response) {
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },
@@ -484,7 +478,6 @@ export async function toggleFeaturePost(req: express.Request, res: express.Respo
           select: {
             user_id: true,
             name: true,
-            email: true,
             avatar_url: true,
             role: true,
           },

@@ -273,8 +273,12 @@ function MilkdownEditorInner({
       defaultValue: initialMarkdown,
       features: {
         [Crepe.Feature.TopBar]: !readOnly,
+        [Crepe.Feature.Placeholder]: !readOnly,
       },
       featureConfigs: {
+        [Crepe.Feature.Placeholder]: {
+          text: "Type / for commands or [[ ]] for wiki links",
+        },
         [Crepe.Feature.ImageBlock]: {
           onUpload: async (file: File) => {
             try {
