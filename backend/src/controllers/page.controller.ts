@@ -1162,7 +1162,7 @@ export const getSyncCheck = async (req: Request, res: Response) => {
       const row = metadataMap.get(key);
       return {
         last_updated: row ? row.last_updated.getTime() : 0,
-        count: row ? row.count : 0
+        count: row ? Math.max(0, row.count) : 0
       };
     };
 

@@ -43,15 +43,21 @@ export async function updateSyncMetadata(
       },
     });
   } else {
+    const existing = await client.sync_metadata.findUnique({
+      where: { key },
+    });
+    const currentCount = existing ? existing.count : 0;
+    const nextCount = Math.max(0, currentCount + countChange);
+
     await client.sync_metadata.upsert({
       where: { key },
       create: {
         key,
-        count: Math.max(0, countChange),
+        count: nextCount,
         last_updated: new Date(),
       },
       update: {
-        count: { increment: countChange },
+        count: nextCount,
         last_updated: new Date(),
       },
     });

@@ -681,7 +681,7 @@ export default function HomeTab({
               </p>
               <p className="font-display font-black text-3xl @sm:text-4xl text-white">
                 {totalPagesCount !== null
-                  ? totalPagesCount.toLocaleString()
+                  ? Math.max(0, totalPagesCount).toLocaleString()
                   : "…"}
               </p>
             </div>
