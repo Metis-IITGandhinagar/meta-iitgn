@@ -156,13 +156,13 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   }
 
   return (
-    <main className={`flex-1 p-6 md:p-8 ${embedded ? "" : "mt-15"} bg-transparent ${embedded ? "" : "overflow-y-auto"} ${loading ? "no-scrollbar" : ""}`}>
+    <main className={`flex-1 p-0.5 md:p-6 ${embedded ? "" : "mt-15"} bg-transparent ${embedded ? "" : "overflow-y-auto"} ${loading ? "no-scrollbar" : ""}`}>
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Category Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div className="space-y-3 flex-1">
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 flex justify-between items-center">
               {canManage ? (
                 <IconColorPicker
                   currentIcon={category.icon}
@@ -181,6 +181,15 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                   <CategoryIcon icon={category.icon} size={24} />
                 </div>
               )}
+              {(user?.role === "admin" || user?.role === "moderator") && (
+              <button
+                onClick={handleStartEdit}
+                className="btn md:hidden btn-outline btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
+              >
+                <Pencil className="h-4.5 w-4.5" />
+                <span>Edit</span>
+              </button>
+            )}
             </div>
             <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
               {category.name}
@@ -190,7 +199,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 mb-1">
+          <div className="flex items-center gap-3 flex-wrap shrink-0 mb-1">
             {(user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={() => setShowAddSub((s) => !s)}
@@ -203,10 +212,10 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             {(user?.role === "admin" || user?.role === "moderator") && (
               <button
                 onClick={handleStartEdit}
-                className="btn btn-outline btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
+                className="btn btn-outline hidden md:flex btn-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95"
               >
                 <Pencil className="h-4.5 w-4.5" />
-                <span>Edit Category</span>
+                <span>Edit</span>
               </button>
             )}
             {(user?.role === "admin" || user?.role === "moderator") && (
