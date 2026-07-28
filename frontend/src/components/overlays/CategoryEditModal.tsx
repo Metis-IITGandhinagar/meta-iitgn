@@ -74,7 +74,10 @@ function ParentCategoryPicker({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
-    const onReflow = () => setOpen(false);
+    const onReflow = (e: Event) => {
+      if (panelRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onReflow, true);

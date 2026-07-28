@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Responsive as ResponsiveGridLayout, Layout, LayoutItem, ResponsiveLayouts, useContainerWidth } from "react-grid-layout";
+import { Responsive as ResponsiveGridLayout, LayoutItem, ResponsiveLayouts, useContainerWidth } from "react-grid-layout";
 import useSWR from "swr";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -27,7 +27,6 @@ export default function HomeMasonryGrid({
 }: HomeMasonryGridProps) {
   const { width, containerRef, mounted } = useContainerWidth();
   const [layouts, setLayouts] = useState<ResponsiveLayouts | null>(null);
-  const [activeBreakpoint, setActiveBreakpoint] = useState<string>("lg");
   const isUserAction = useRef(false);
 
   const { data: globalSetting } = useSWR("site_settings_homepage_layout", async () => {
@@ -214,30 +213,7 @@ export default function HomeMasonryGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey, globalSetting]);
 
-  const handleLayoutChange = (currentLayout: Layout, allLayouts: ResponsiveLayouts) => {
-    let layoutsToSave = { ...allLayouts };
-    
-    // To ensure changes on larger screens dynamically cascade to smaller screens,
-    // we delete the cached layouts of smaller screens whenever a larger screen is edited.
-    if (activeBreakpoint === "lg") {
-      layoutsToSave = { lg: allLayouts.lg };
-    } else if (activeBreakpoint === "md") {
-      layoutsToSave = { lg: allLayouts.lg, md: allLayouts.md };
-    } else if (activeBreakpoint === "sm") {
-      layoutsToSave = { lg: allLayouts.lg, md: allLayouts.md, sm: allLayouts.sm };
-    } else if (activeBreakpoint === "xs") {
-      layoutsToSave = { lg: allLayouts.lg, md: allLayouts.md, sm: allLayouts.sm, xs: allLayouts.xs };
-    }
 
-    setLayouts(buildLayoutMap(layoutsToSave));
-    if (isUserAction.current) {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(layoutsToSave));
-      } catch (e) {
-        console.error("Failed to save portal layout:", e);
-      }
-    }
-  };
 
   let currentCols = 4;
   if (width < 480) currentCols = 1;
@@ -271,8 +247,6 @@ export default function HomeMasonryGrid({
           rowHeight={dynamicRowHeight}
           margin={[gap, gap]}
           containerPadding={[0, 0]}
-          onLayoutChange={handleLayoutChange}
-          onBreakpointChange={(bp) => setActiveBreakpoint(bp)}
         >
 {cards.map((card) => (
             <div key={card.id} className="group relative @container h-full">
