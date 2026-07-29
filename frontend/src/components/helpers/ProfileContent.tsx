@@ -533,7 +533,7 @@ export default function ProfileContent() {
                 {currentUser?.role === "admin" && (
                   <button
                     onClick={() => setShowDashboard(true)}
-                    className="btn"
+                    className="btn rounded-xl"
                   >
                     <Settings className="h-4 w-4" /> Admin Panel
                   </button>
