@@ -1,16 +1,31 @@
 import type { Metadata } from "next";
 import AppLayout from "@/components/helpers/AppLayout";
+import { getSeoMetadata, getBreadcrumbSchema } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "META IITGN-College Feed",
-  description:
-    "Discover what's happening at IIT Gandhinagar with the META IITGN College Feed. Browse campus news, student posts, events, announcements, club updates, and community discussions in one place.",
-};
+export const metadata: Metadata = getSeoMetadata({
+  title: "Placement Interviews & Preparation Feed",
+  description: "Read interview experiences, placement guides, internship experiences, and preparation tips shared by the IIT Gandhinagar student community on META IITGN.",
+  path: "/interviews",
+  keywords: ["IITGN placement interviews", "IIT Gandhinagar internship preparation", "IITGN student advice"],
+});
 
 export default function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AppLayout>{children}</AppLayout>;
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", item: "/" },
+    { name: "Interview Feed", item: "/interviews" },
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <AppLayout>{children}</AppLayout>
+    </>
+  );
 }

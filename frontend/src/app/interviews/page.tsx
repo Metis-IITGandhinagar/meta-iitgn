@@ -137,6 +137,7 @@ export default function InterviewFeedPage() {
 
           {/* Center Column: Main Feed */}
           <main className="lg:col-span-6 space-y-5">
+            <h1 className="sr-only">Placement & Internship Interviews Feed</h1>
             {/* Create Post Bar (Mobile & Desktop Top) */}
             <div className="rounded-3xl border border-base-200 bg-base-100 p-4 shadow-sm flex items-center gap-3">
               <div className="h-10 w-10 rounded-2xl bg-base-200 border border-base-300 overflow-hidden shrink-0">

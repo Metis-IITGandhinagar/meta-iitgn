@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import WikiClient from "../../../wiki-client";
 import Link from "next/link";
 import { apiService } from "@/api";
+import { getSeoMetadata, getBreadcrumbSchema } from "@/lib/seo";
 
 // Wiki modals reflect state in the URL (useSearchParams); keep this dynamic.
 export const dynamic = "force-dynamic";
@@ -25,30 +27,47 @@ function slugToTitle(slug: string): string {
     .trim();
 }
 
+// Cached loader to prevent double queries between metadata and rendering
+const getCachedWikiPage = cache(async (slug: string) => {
+  try {
+    const dbArticle = await apiService.getPage(slug);
+    if (dbArticle) return dbArticle;
+  } catch (e) {
+    console.warn("Could not find article in db cached loader:", slug, e);
+  }
+  return null;
+});
+
 export async function generateMetadata({ params, searchParams }: ArticlePageProps): Promise<Metadata> {
   const { category, slug } = await params;
   const { title } = await searchParams;
   const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
 
   if (slug === "new") {
-    return { title: `New ${displayCategory} Article | META IITGN` };
+    return getSeoMetadata({
+      title: `New ${displayCategory} Article`,
+      description: `Create a new ${displayCategory} article on META IITGN wiki.`,
+      path: `/wiki/${category}/new`,
+      noIndex: true,
+    });
   }
 
-  // NOTE: we deliberately do NOT fetch the article here. generateMetadata
-  // and ArticlePage both run on every request; fetching the same page
-  // twice would double the SSR round-trips. The slug-derived name is
-  // used for <title> (ArticlePage already does the real fetch for content).
-  const name = title?.trim() || slugToTitle(slug);
+  const dbArticle = await getCachedWikiPage(slug);
+  const name = dbArticle?.title || title?.trim() || slugToTitle(slug);
+  const description = dbArticle?.description || `${name} — ${displayCategory} information on the IIT Gandhinagar campus wiki.`;
 
-  return {
-    title: `${name} | META IITGN`,
-    description: `${name} — ${displayCategory} on the IIT Gandhinagar campus wiki.`,
-  };
+  return getSeoMetadata({
+    title: name,
+    description,
+    path: `/wiki/${category}/${slug}`,
+    keywords: [name, displayCategory, "IIT Gandhinagar wiki", "IITGN campus documentation"],
+  });
 }
 
 export default async function ArticlePage({ params, searchParams }: ArticlePageProps) {
   const { category, slug } = await params;
   const { title, edit } = await searchParams;
+  const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
 
   if (slug === "new") {
     const displayCategoryName = category.charAt(0).toUpperCase() + category.slice(1);
@@ -72,36 +91,9 @@ Write your content here...`;
     return <WikiClient initialMarkdown={template} defaultEditing={true} categorySlug={category} />;
   }
 
-  let articleContent: string | undefined = undefined;
-  let dbPageId: number | undefined = undefined;
-  let version: number | undefined = undefined;
-  let initialMetadata: any = undefined;
-  let updatedAt: string | undefined = undefined;
-  let updatedByName: string | null = null;
-  let contributors: any = undefined;
-  let dbPageIcon: string | undefined = undefined;
-  let dbPageColor: string | undefined = undefined;
+  const dbArticle = await getCachedWikiPage(slug);
 
-  try {
-    const dbArticle = await apiService.getPage(slug);
-    if (dbArticle) {
-      articleContent = dbArticle.content;
-      dbPageId = dbArticle.page_id;
-      version = dbArticle.version;
-      initialMetadata = dbArticle.metadata;
-      updatedAt = dbArticle.updated_at;
-      updatedByName = dbArticle.updater?.name ?? null;
-      contributors = dbArticle.contributors;
-      dbPageIcon = dbArticle.icon;
-      dbPageColor = dbArticle.color;
-      // View counting moved to the client (WikiClient) so it doesn't block
-      // the SSR pass or add a third awaited round-trip.
-    }
-  } catch (e) {
-    console.warn("Could not find article in db:", slug, e);
-  }
-
-  if (!articleContent) {
+  if (!dbArticle) {
     return (
       <main className="flex-1 p-6 md:p-8 lg:p-12 bg-base-100">
         <div className="max-w-4xl mx-auto text-center py-20">
@@ -118,20 +110,61 @@ Write your content here...`;
     );
   }
 
+  const name = dbArticle.title || slugToTitle(slug);
+  
+  // JSON-LD Structured Data
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": name,
+    "description": dbArticle.description || `${name} — wiki page under ${displayCategory}.`,
+    "datePublished": dbArticle.created_at || new Date().toISOString(),
+    "dateModified": dbArticle.updated_at || dbArticle.created_at || new Date().toISOString(),
+    "author": {
+      "@type": "Organization",
+      "name": "META IITGN Community"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "META IITGN",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://meta.metis-iitgn.tech/icon-512.png"
+      }
+    }
+  };
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", item: "/" },
+    { name: "Wiki", item: "/wiki" },
+    { name: displayCategory, item: `/wiki/${category}` },
+    { name: name, item: `/wiki/${category}/${slug}` }
+  ]);
+
   return (
-    <WikiClient
-      initialMarkdown={articleContent}
-      dbPageId={dbPageId}
-      version={version}
-      categorySlug={category}
-      initialMetadata={initialMetadata}
-      updatedAt={updatedAt}
-      updatedByName={updatedByName}
-      contributors={contributors}
-      initialIcon={dbPageIcon}
-      initialColor={dbPageColor}
-      slug={slug}
-      defaultEditing={edit === "true"}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <WikiClient
+        initialMarkdown={dbArticle.content}
+        dbPageId={dbArticle.page_id}
+        version={dbArticle.version}
+        categorySlug={category}
+        initialMetadata={dbArticle.metadata}
+        updatedAt={dbArticle.updated_at}
+        updatedByName={dbArticle.updater?.name ?? null}
+        contributors={dbArticle.contributors}
+        initialIcon={dbArticle.icon}
+        initialColor={dbArticle.color}
+        slug={slug}
+        defaultEditing={edit === "true"}
+      />
+    </>
   );
 }

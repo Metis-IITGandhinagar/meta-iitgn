@@ -193,6 +193,7 @@ const Home = () => {
         </div>
 
         {/* Filter bar */}
+        <h2 className="sr-only">Filter Exam Papers</h2>
         <div className="md:sticky flex top-2 z-10 backdrop-blur supports-[backdrop-filter]:bg-base-100/70 bg-base-100/95 border border-base-300 rounded-xl p-3.5 mb-7 shadow-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[2fr_1.2fr_1.2fr_1.2fr_auto] gap-3 items-center">
             <div className="relative">
@@ -328,6 +329,7 @@ const Home = () => {
           </div>
         ) : (
           <div>
+            <h2 className="sr-only">Search Results</h2>
             <p className="text-xs text-base-content/40 font-medium mb-3">
               {totalPapers} paper{totalPapers !== 1 ? "s" : ""} found
             </p>
