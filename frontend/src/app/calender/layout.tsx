@@ -1,19 +1,31 @@
 import type { Metadata } from "next";
 import AppLayout from "@/components/helpers/AppLayout";
+import { getSeoMetadata, getBreadcrumbSchema } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: {
-    default: "META IITGN",
-    template: "%s | META IITGN",
-  },
-  description:
-    "META IITGN is the collaborative campus platform for IIT Gandhinagar featuring PYQs, campus news, articles, blogs, academic calendar, events, student resources, and more.",
-};
+export const metadata: Metadata = getSeoMetadata({
+  title: "Academic Calendar & Semester Schedule",
+  description: "Track key semester start dates, course registration deadlines, mid/end semester exam schedules, recess, and holidays for IIT Gandhinagar on META IITGN.",
+  path: "/calender",
+  keywords: ["IITGN Academic Calendar", "IIT Gandhinagar Semester Schedule", "IITGN Registration Deadlines"],
+});
 
 export default function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AppLayout>{children}</AppLayout>;
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", item: "/" },
+    { name: "Academic Calendar", item: "/calender" },
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <AppLayout>{children}</AppLayout>
+    </>
+  );
 }
