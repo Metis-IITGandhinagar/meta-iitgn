@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/ 
+            cd /root/meta-iitgn
 
             git fetch origin
             git reset --hard origin/main
