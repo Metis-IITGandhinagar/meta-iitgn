@@ -1,5 +1,74 @@
 # Changelog
 
+## [1.5.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-07-31)
+
+
+### Features
+
+* added meta data for seo ([f47c2ef](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/f47c2efe2c8ed262f0f2bf66eca1f86375023dc1))
+* added robots.txt and sitemap ([e9c636e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e9c636eae4e6f5681bff2c66069bae26bc368ed9))
+* added tanstack query ([bb29ce9](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/bb29ce9c380f47886d488ac6e218d425ed30c860))
+* better emoji picker ([25ceb67](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/25ceb67d6635f69fe8378a757f3a3bf5bb2c91be))
+* no article showcase ([2ad0cb8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/2ad0cb8f2a88c530d820ce590d3d236457344cb8))
+* seo improvements ([22253d7](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/22253d782ca63b4312b5633cb6d6d8bc2204e630))
+* seo optimizations ([7773472](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/77734727572c84ba646e9f088aff4933cf3c01e4))
+
+
+### Bug Fixes
+
+* added missing property ([8df003c](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/8df003c4b75777f96fea766ca5f24dde295f1eb5))
+* added more filter options in pyq ([0384e18](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/0384e18252f8d3c5a01664a98d0d323f0df7d506))
+* backend deployment fix ([a3cd0f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a3cd0f896477b486d2b6d614b674e26aa79e8a32))
+* card font fix ([8c2a3cb](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/8c2a3cbf3cb19a74c4bd69867bd21a25ba9abcbc))
+* category pages missing fix ([4764c76](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4764c76805d54ce0011208039d91c4210bfb8f68))
+* curved edges ([b38e820](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b38e820b516c9c18df73c0a98d86e46553b9a08a))
+* deafult card layout ([7272fec](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/7272fec19d37a3ccfab946d44e95462b375915d8))
+* deployment fixes ([40030ad](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/40030ada74575ea6ce6c877ce0700a0cf6bf1c72))
+* docker fix ([0c9c6f5](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/0c9c6f533301b27f469a8c21093cfc7b51d2cd2a))
+* drag and customize option for cards in home page ([b9bd1aa](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/b9bd1aadc67f82aa280b96307dbb99390335bf8b))
+* drag fix and separate mobile layout ([5f6f3c6](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5f6f3c6e0e603bb3c3164dc86dc9de2e6cc720cb))
+* edit category scroll issue ([297a992](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/297a992cf37e20b1a0a246a3f855c09e106c424a))
+* featured card size ([6b8ecf1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/6b8ecf19cc4ccaad982dfa46b8482173485495af))
+* fixed featured ([e7c3256](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e7c3256c4beff7ceb08abd7c72540417167b6355))
+* fixed home page grid ([1e8d2f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/1e8d2f8e861b31cbac17d4e408bbc251c1ac2472))
+* fixed hometab drag ([105794f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/105794f707142363dbbf4b2bedcf77add3604aa9))
+* fixed post likes issue ([2bf2fed](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/2bf2fed3a6cb11faee17be93e87c37cc9521a18e))
+* fixed search results issues ([ae23993](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ae2399356c1ddccd84c1612f487f729ddc84b4e4))
+* fixed ssr issues for server errors ([3edeca4](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3edeca4030ebe31fbab74cd48c5b65a45226a58e))
+* homepage fixes ([a443acc](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a443accafe4335b4cc75ca54a737e71d178807dd))
+* homepage fixes ([2f3f6e2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/2f3f6e26006cc0e9bda5558be3d21f218c74b593))
+* hometab loop render issue ([920252f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/920252fdac0dfd378dcdcde167212e36bf6e31cc))
+* icon alignment ([3a0be71](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/3a0be71b8379457357de6ef18db68b05c0f450f9))
+* left panel fixes ([107b9ae](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/107b9ae12b3a3af87b264cb51ed1a15d42a8da54))
+* left panel portal ([94a75c7](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/94a75c764ab42ad09676e7664e4e56263316c084))
+* left panel redesign ([29e09bd](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/29e09bdda5bc12ffc3e2e84e23d61240002418b7))
+* make store for common details to use from there ([c68e7f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c68e7f8874f933481210cd6b75d49ad6e1dfd3d0))
+* milkdown editor help text ([c540bb0](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/c540bb0f90bcf78bc37e16a09438fcb9f54d9712))
+* minor changes ([408fe82](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/408fe82aa8925c8d7433128964f7cdfe64395260))
+* minor changes ([62e76a2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/62e76a21eba00ecac81d9c591c4f41028e4fa2b8))
+* minor fix ([6fb4450](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/6fb4450ca87d83d8307efc52403ff7e1819bae80))
+* minor fix ([a6597f5](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a6597f58445cb1d517226f39dc1c56f4f2ba5545))
+* mobile ux issues ([d3dd831](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/d3dd831f6c03e9c24c2453a1dfc00efb4b3c95eb))
+* more fixes ([24f200e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/24f200e7522f8bc9a4cca99a666a3cacb88b8da9))
+* more fixes ([22b540e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/22b540e28dede3cc60ec6b3412036e6317e57cb7))
+* overlay fullscrenn issue ([decfe75](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/decfe75c9e3e8a237a7a9b134dc9d389bcfbfb2a))
+* Overlays full screen issues and email in post ([001faf0](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/001faf0f06ad828d3e6734b44bb9a7e810ea4718))
+* profile readme editing fix ([9e646a1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/9e646a1e1df703b176f489f25fe84be03ba25f55))
+* removed dev bypass ([a5afb7c](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a5afb7cb7decb75fdde6bea3db64f17fe662d38f))
+* search bar bg color ([92a5331](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/92a53310518d10d52d40c615e4df1e2ff7db66c8))
+* search page rotating text ([d585c06](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/d585c069d46928fc91cfbc7e04be1b974ababed1))
+* some ui fixes for mobiles and other devices ([58bd619](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/58bd619befe440b2f4c146d8ed226c8a38caae19))
+* sometime stats shows negative ([14e9f12](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/14e9f129cee945ac2adf8b6ccdfacea1af5a1467))
+* ui issues ([05a541d](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/05a541d47841267bc1a3bf8a0566a0fd5dce6f0d))
+* user dropdown points and streak ([aa11175](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/aa11175667235d9a10b0e94c8dcab54fe8f968ae))
+* various bug fixes ([a947b09](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a947b091a76f01b64b54b91eecc7743413b88f24))
+* various bug fixes ([64dc9f6](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/64dc9f60b78d61b55e6436aad03c59ffcfd99554))
+
+
+### Code Refactoring
+
+* added better caching ([48a7fc8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/48a7fc82998ab70caab0da3cb35134a7c4fa2d88))
+
 ## [1.4.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.3.0...frontend-v1.4.0) (2026-07-22)
 
 
