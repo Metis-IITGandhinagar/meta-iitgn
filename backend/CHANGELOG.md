@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.7.1](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.7.0...backend-v1.7.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* added more filter options in pyq ([0384e18](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/0384e18252f8d3c5a01664a98d0d323f0df7d506))
+* backend deployment fix ([a3cd0f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a3cd0f896477b486d2b6d614b674e26aa79e8a32))
+* deployment fixes ([40030ad](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/40030ada74575ea6ce6c877ce0700a0cf6bf1c72))
+* fixed home page grid ([1e8d2f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/1e8d2f8e861b31cbac17d4e408bbc251c1ac2472))
+* more fixes ([22b540e](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/22b540e28dede3cc60ec6b3412036e6317e57cb7))
+* Overlays full screen issues and email in post ([001faf0](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/001faf0f06ad828d3e6734b44bb9a7e810ea4718))
+* removed email from posts ([ac70c13](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ac70c138a842e7c7cdc3eabda60c6b5a9fd49db2))
+* some ui fixes for mobiles and other devices ([58bd619](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/58bd619befe440b2f4c146d8ed226c8a38caae19))
+* sometime stats shows negative ([14e9f12](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/14e9f129cee945ac2adf8b6ccdfacea1af5a1467))
+* user dropdown points and streak ([aa11175](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/aa11175667235d9a10b0e94c8dcab54fe8f968ae))
+* various bug fixes ([64dc9f6](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/64dc9f60b78d61b55e6436aad03c59ffcfd99554))
+
+
+### Code Refactoring
+
+* added better caching ([48a7fc8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/48a7fc82998ab70caab0da3cb35134a7c4fa2d88))
+
 ## [1.7.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.6.0...backend-v1.7.0) (2026-07-22)
 
 
