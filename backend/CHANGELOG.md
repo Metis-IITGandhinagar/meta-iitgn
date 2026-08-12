@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.7.1...backend-v1.7.2) (2026-08-12)
+
+
+### Bug Fixes
+
+* removed pyq feature ([ba83af1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ba83af129fa1b780aba29dc430d14d5d56a13ee9))
+
 ## [1.7.1](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/backend-v1.7.0...backend-v1.7.1) (2026-08-01)
 
 
