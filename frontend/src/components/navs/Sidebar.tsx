@@ -23,7 +23,6 @@ import {
   UserCircle2,
   InboxIcon,
   LogOut,
-  PackageCheck,
   ChartNoAxesCombined,
   X,
   Calendar,
@@ -268,23 +267,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 Tools
               </h3>
               <div className="space-y-0.5">
-                <Link
-                  href="/paper"
-                  onClick={() => {
-                    if (window.innerWidth < 1024) onClose();
-                  }}
-                  className={navRowClass(pathname === "/paper")}
-                >
-                  <NavIndicator isActive={pathname === "/paper"} />
-                  <PackageCheck
-                    className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
-                      pathname === "/paper"
-                        ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
-                    }`}
-                  />
-                  <span className="truncate">PYQs</span>
-                </Link>
                 <Link
                   href="/calender"
                   onClick={() => {

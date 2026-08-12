@@ -39,7 +39,6 @@ export default function HomePage() {
               Prepare for mid-semester and end-semester exams with access to previous year question papers (PYQs), course reviews, engineering studies materials, and lecture slides contributed by the student community of IIT Gandhinagar.
             </p>
             <ul>
-              <li><Link href="/paper">Explore PYQs (Past Exam Papers)</Link></li>
               <li><Link href="/wiki">Browse the Campus Wiki</Link></li>
               <li><Link href="/calender">View Academic Calendar</Link></li>
             </ul>

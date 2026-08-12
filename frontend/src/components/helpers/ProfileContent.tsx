@@ -558,7 +558,6 @@ export default function ProfileContent() {
             "bookmarks",
             "blogs",
             "interviews",
-            isOwnProfile ? "papers" : null,
           ]
             .filter(Boolean)
             .map((tab) => (

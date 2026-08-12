@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import AppLayout from "@/components/helpers/AppLayout";
 import { getSeoMetadata, getBreadcrumbSchema } from "@/lib/seo";
 
@@ -14,6 +15,8 @@ export default function Layout({
 }: {
   children: React.ReactNode;
 }) {
+  notFound();
+
   const breadcrumbSchema = getBreadcrumbSchema([
     { name: "Home", item: "/" },
     { name: "PYQs", item: "/paper" },

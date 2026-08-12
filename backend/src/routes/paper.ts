@@ -13,6 +13,10 @@ import { upload } from "../middlewares/multer.js";
 
 const router = Router();
 
+router.use((req, res) => {
+    res.status(403).json({ success: false, error: { code: "FORBIDDEN", message: "PYQ Tool is disabled" } });
+});
+
 router.get("/", handlePapersGet);
 router.get("/my", checkAuth, handleUserPapersGet);
 router.get("/:id", handlePaperGet);
