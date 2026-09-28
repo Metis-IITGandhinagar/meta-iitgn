@@ -14,7 +14,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 
-[**Live Demo**](https://meta-iitgn-vercel.vercel.app) • [**Documentation**](https://meta-iitgn-vercel.vercel.app/wiki/internal-pages) • [**Contribution Guide**](CONTRIBUTING.md) • [**Docker Guide**](DEVELOPMENT.MD)
+[**Live Demo**](https://meta.metis-iitgn.tech/) • [**Documentation**](https://meta.metis-iitgn.tech/wiki/internal-pages) • [**Contribution Guide**](CONTRIBUTING.md) • [**Docker Guide**](DEVELOPMENT.MD)
 
 </div>
 
