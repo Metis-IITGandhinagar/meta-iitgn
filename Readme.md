@@ -190,15 +190,17 @@ All PR titles and commit messages should follow the **Conventional Commits** for
 We welcome contributions of all kinds — bug fixes, UI improvements, new features, and documentation enhancements!
 
 1. Read our complete [**Contributing Guide (CONTRIBUTING.md)**](CONTRIBUTING.md).
-2. Check existing [Issues](https://github.com/Metis-IITGandhinagar/meta-iitgn/issues) or open a new one to discuss proposed changes.
-3. Follow the code guidelines in [`backend/AGENTS.md`](backend/AGENTS.md) and [`frontend/AGENTS.md`](frontend/AGENTS.md).
-4. Create a descriptive branch, test your changes, and submit a pull request!
+2. Browse our curated list of [**Recommended Issues (ISSUES.md)**](ISSUES.md) spanning Good First Issues, Mid-level tasks, and Hard projects.
+3. Check existing [Issues](https://github.com/Metis-IITGandhinagar/meta-iitgn/issues) or open a new one to discuss proposed changes.
+4. Follow the code guidelines in [`backend/AGENTS.md`](backend/AGENTS.md) and [`frontend/AGENTS.md`](frontend/AGENTS.md).
+5. Create a descriptive branch, test your changes, and submit a pull request!
 
 ---
 
 ## 📖 Additional Documentation
 
-- **[Internal Documentation Wiki](https://meta-iitgn-vercel.vercel.app/wiki/internal-pages)**: Architecture and subsystem overviews.
+- **[Internal Documentation Wiki](https://meta.metis-iitgn.tech/wiki/internal-pages)**: Architecture and subsystem overviews.
+- **[Curated Issues List](ISSUES.md)**: 11 ready-to-solve issues across all skill levels.
 - **[Development & Deployment Guide](DEVELOPMENT.MD)**: Docker workflows, production VPS deployment, and volume persistence.
 - **[Backend Guidelines](backend/AGENTS.md)**: Architectural and API envelope standards.
 - **[Frontend Guidelines](frontend/AGENTS.md)**: Next.js App Router, accessibility, and client architecture.

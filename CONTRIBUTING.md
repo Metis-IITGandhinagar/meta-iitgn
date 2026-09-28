@@ -336,11 +336,20 @@ git push origin feat/add-dark-mode-toggle
 
 ---
 
+## 🎯 Finding an Issue to Work On
+
+Looking for something to solve?
+- Check out our **[Curated Issues List (ISSUES.md)](ISSUES.md)**: Features 11 carefully planned tasks across **Good First Issues** (beginner-friendly), **Mid-Level** tasks, and **Hard** challenges.
+- Browse open community issues on [GitHub Issues](https://github.com/Metis-IITGandhinagar/meta-iitgn/issues). Look for the `good first issue` and `help wanted` tags!
+- Found a bug or have an idea? Open an issue using one of our [Issue Templates](.github/ISSUE_TEMPLATE/)!
+
+---
+
 ## Getting Help
 
 If you run into issues or have questions:
 - Open a question or issue on [GitHub Issues](https://github.com/Metis-IITGandhinagar/meta-iitgn/issues).
-- Check the [Internal Pages Documentation](https://meta-iitgn-vercel.vercel.app/wiki/internal-pages) for deep architectural overviews.
+- Check the [Internal Pages Documentation](https://meta.metis-iitgn.tech/wiki/internal-pages) for deep architectural overviews.
 - Connect with the Metis team members and maintainers.
 
 Happy coding! 🚀
