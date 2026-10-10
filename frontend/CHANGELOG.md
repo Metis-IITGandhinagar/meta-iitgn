@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.1](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.5.0...frontend-v1.5.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **frontend:** make find an article button navigate to categories ([4ca08f2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4ca08f249ea60620c26067372752c84aeba2b9b2))
+* **frontend:** make find an article button navigate to categories ([218c2bf](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/218c2bfee5bda2933457e1f862124783d1d9f7ab))
+* removed pyq feature ([ba83af1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ba83af129fa1b780aba29dc430d14d5d56a13ee9))
+
 ## [1.5.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-07-31)
 
 
