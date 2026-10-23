@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.6.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.5.0...frontend-v1.6.0) (2026-10-23)
+
+
+### Features
+
+* **frontend:** added prepmat ([02ee23f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/02ee23f7e8732f37cee834a105ef117633136b1a))
+* **frontend:** added prepmat ([29b7ccd](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/29b7ccd8bab2f8256b2f8da22962516707a6e5af))
+
+
+### Bug Fixes
+
+* **frontend:** fixed profile readme overflow and rendering ([ccd1c1d](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ccd1c1d0ff53c21a1a2f15595d5612d9fcb782b7))
+* **frontend:** make find an article button navigate to categories ([4ca08f2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4ca08f249ea60620c26067372752c84aeba2b9b2))
+* **frontend:** make find an article button navigate to categories ([218c2bf](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/218c2bfee5bda2933457e1f862124783d1d9f7ab))
+* **frontend:** ovelays and images ([5c3b2f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5c3b2f8ec2a1e3da34bef0adbff0b09b0023b737))
+* **frontend:** post auth verification ([824dc78](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/824dc78b42e95da70404170b784b8b8e66b98e58))
+* **frontend:** some uis ([66a2291](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/66a229135278acdd9c1f21249b9f7ee56064970b))
+* removed pyq feature ([ba83af1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ba83af129fa1b780aba29dc430d14d5d56a13ee9))
+
+
+### Code Refactoring
+
+* **frontend:** removed unused code ([fd025cf](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/fd025cf1498ae3ca409d9d8e2d4dae44349b91e4))
+* **frontend:** updated home page ui ([30159e8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/30159e8ed0dd782cdd35f419861f845ad1021bee))
+
 ## [1.5.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-07-31)
 
 
