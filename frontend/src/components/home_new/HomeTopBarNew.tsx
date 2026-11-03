@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCommonStore } from "@/store/useCommonStore";
+import { DARK_THEMES } from "@/lib/constants";
 
 interface HomeTopBarNewProps {
   activeTab: "home" | "search" | "bookmarks" | "profile";
@@ -33,15 +34,7 @@ export default function HomeTopBarNew({
   const { user,setSettingsTab } = useAuth();
   const { theme, setTheme } = useCommonStore();
 
-  const isDarkMode =
-    theme === "dark" ||
-    theme === "synthwave" ||
-    theme === "dracula" ||
-    theme === "night" ||
-    theme === "black" ||
-    theme === "forest" ||
-    theme === "halloween" ||
-    theme === "luxury";
+  const isDarkMode = DARK_THEMES.includes(theme);
 
   const handleToggleTheme = () => {
     setTheme(isDarkMode ? "light" : "dark");
