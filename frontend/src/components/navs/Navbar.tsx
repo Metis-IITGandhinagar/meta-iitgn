@@ -223,14 +223,14 @@ export default function Navbar({
             href="/"
             className="flex items-center gap-2 select-none cursor-pointer group ml-1"
           >
-            <div className="block">
-              <span className="font-serif text-2xl font-extrabold tracking-tight text-primary group-hover:text-primary/80 transition-colors duration-200">
-                META
-              </span>
-              <span className="ml-1 text-sm font-semibold text-base-content uppercase tracking-wider group-hover:opacity-80 transition-opacity duration-200">
-                IITGN
-              </span>
-            </div>
+            <img
+              src="/metaiitgn_logo.svg"
+              alt="META IITGN logo"
+              className="w-8 h-8 group-hover:opacity-80 transition-opacity duration-200 drop-shadow"
+            />
+            <span className="ml-1 font-serif text-2xl font-extrabold tracking-tight text-primary group-hover:text-primary/80 transition-colors duration-200">
+              META IITGN
+            </span>
           </Link>
         </div>
 

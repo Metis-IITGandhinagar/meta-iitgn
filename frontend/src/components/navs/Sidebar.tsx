@@ -164,13 +164,14 @@ export default function Sidebar({
         {/* Sidebar Header with Brand Logo, Controls & Close Button */}
         <div className="flex items-center justify-between px-4 sm:px-5 border-b border-base-200 h-16 shrink-0 bg-base-100">
           <Link href="/" className="flex items-center gap-2">
-            <span className="font-serif text-2xl font-extrabold tracking-tight text-blue-400">
-              META
+            <img
+              src="/metaiitgn_logo.svg"
+              alt="META IITGN logo"
+              className="w-7 h-7 drop-shadow"
+            />
+            <span className="ml-1 font-serif text-xl font-extrabold tracking-tight text-blue-400">
+              META IITGN
             </span>
-            <span className="text-xs font-sans font-bold uppercase tracking-wider text-base-content/70">
-              IITGN
-            </span>
-            
           </Link>
 
           <div className="flex items-center gap-1">
