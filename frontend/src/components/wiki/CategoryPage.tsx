@@ -156,8 +156,8 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   }
 
   return (
-    <main className={`flex-1 p-0.5 md:p-6 ${embedded ? "" : "mt-15"} bg-transparent ${embedded ? "" : "overflow-y-auto"} ${loading ? "no-scrollbar" : ""}`}>
-      <div className="max-w-5xl mx-auto space-y-6">
+    <main className={`flex-1 p-0.5 md:p-6 ${embedded ? "" : "mt-16"} bg-transparent ${embedded ? "" : "overflow-y-auto"} ${loading ? "no-scrollbar" : ""}`}>
+      <div className="max-w-6xl mx-auto space-y-8 px-4 lg:px-3 pt-6">
 
         {/* Category Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
@@ -191,7 +191,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
               </button>
             )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
+            <h1 className="t-display text-4xl md:text-5xl">
               {category.name}
             </h1>
             <p className="text-base-content/60 max-w-2xl text-sm md:text-base leading-relaxed">
@@ -243,7 +243,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
         {childCategories.length > 0 && (
           <div>
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="text-lg font-serif font-bold text-base-content tracking-tight">
+              <h2 className="text-[15px] font-medium text-base-content">
                 Subcategories
               </h2>
 
@@ -299,7 +299,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
         ) : articles.length > 0 ? (
           <div>
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="text-lg font-serif font-bold text-base-content tracking-tight">
+              <h2 className="text-[15px] font-medium text-base-content">
                 Articles in this Category
               </h2>
 
@@ -395,7 +395,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                 No articles yet
               </h3>
               
-              <p className="text-sm text-base-content/50 max-w-md mt-2.5 leading-relaxed font-medium">
+              <p className="text-sm text-base-content/65 max-w-md mt-2.5 leading-relaxed font-medium">
                 This category doesn&apos;t have any articles or subcategories published.
               </p>
               
@@ -417,7 +417,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
                   </Link>
                 </div>
               ) : (
-                <p className="text-xs text-base-content/40 italic mt-6">
+                <p className="text-xs text-base-content/65 italic mt-6">
                   Check back later for student-contributed content.
                 </p>
               )}

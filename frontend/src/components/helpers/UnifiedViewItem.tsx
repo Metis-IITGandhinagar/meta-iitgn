@@ -62,7 +62,7 @@ export default function UnifiedViewItem({
     return (
       <Wrapper
         {...wrapperProps}
-        className={`group relative flex flex-col items-center justify-center gap-2 p-2 rounded-xl hover:bg-primary/5 hover:border hover:border-primary transition-all duration-200 text-center ${baseButtonReset} ${className}`}
+        className={`group relative flex flex-col items-center justify-center gap-2 p-2 rounded-xl hover:bg-base-200 transition-colors duration-200 text-center ${baseButtonReset} ${className}`}
       >
         <div
           className={`${iconSizeClass} rounded-xl border flex items-center justify-center shrink-0 transition-all duration-300 ${
@@ -89,7 +89,7 @@ export default function UnifiedViewItem({
     return (
       <Wrapper
         {...wrapperProps}
-        className={`card card-compact card-border flex flex-col justify-between p-4 md:p-5 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-300 group cursor-pointer w-full h-full relative ${baseButtonReset} ${className}`}
+        className={`flex flex-col justify-between p-5 rounded-xl bg-base-100 border border-base-300 hover:border-base-content transition-colors duration-200 group cursor-pointer w-full h-full relative ${baseButtonReset} ${className}`}
       >
         {topRightAction && (
           <div className="absolute top-2 right-2 z-10">
@@ -107,7 +107,7 @@ export default function UnifiedViewItem({
             </div>
           )}
           <div className="space-y-1.5 flex-1 flex flex-col justify-center w-full">
-            <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300 line-clamp-2">
+            <h3 className="text-[15px] font-medium text-base-content group-hover:text-primary transition-colors duration-200 line-clamp-2">
               {title}
             </h3>
             {description && (
@@ -116,7 +116,7 @@ export default function UnifiedViewItem({
               </p>
             )}
             {subtitle && (
-              <div className="text-[10px] text-base-content/50 font-semibold mt-auto w-full">
+              <div className="text-[10px] text-base-content/65 font-semibold mt-auto w-full">
                 {subtitle}
               </div>
             )}
@@ -136,7 +136,7 @@ export default function UnifiedViewItem({
     return (
       <Wrapper
         {...wrapperProps}
-        className={`card card-compact card-border w-full flex flex-row items-center gap-3 p-3 md:p-4 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-300 group cursor-pointer ${baseButtonReset} ${className}`}
+        className={`w-full flex flex-row items-center gap-3 py-3 px-1 border-b border-base-300 hover:bg-base-200/60 transition-colors duration-200 group cursor-pointer ${baseButtonReset} ${className}`}
       >
         {!noIcon && (
           <div
@@ -147,7 +147,7 @@ export default function UnifiedViewItem({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300 truncate">
+          <h3 className="text-[15px] font-medium text-base-content group-hover:text-primary transition-colors duration-200 truncate">
             {title}
           </h3>
           {description && (
@@ -156,7 +156,7 @@ export default function UnifiedViewItem({
             </p>
           )}
           {subtitle && (
-            <div className="text-xs text-base-content/50 truncate mt-0.5 w-full">
+            <div className="text-xs text-base-content/65 truncate mt-0.5 w-full">
               {subtitle}
             </div>
           )}
@@ -176,7 +176,7 @@ export default function UnifiedViewItem({
   return (
     <Wrapper
       {...wrapperProps}
-      className={`card card-compact card-border w-full flex flex-row items-center gap-3 p-4 md:p-5 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-300 group cursor-pointer ${baseButtonReset} ${className}`}
+      className={`w-full flex flex-row items-center gap-3 p-4 rounded-xl bg-base-100 border border-base-300 hover:border-base-content transition-colors duration-200 group cursor-pointer ${baseButtonReset} ${className}`}
     >
       {!noIcon && (
         <div
@@ -187,11 +187,11 @@ export default function UnifiedViewItem({
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm md:text-base font-bold text-base-content font-serif group-hover:text-primary transition-colors duration-300 truncate">
+        <h3 className="text-[15px] font-medium text-base-content group-hover:text-primary transition-colors duration-200 truncate">
           {title}
         </h3>
         {subtitle && (
-          <div className="text-xs text-base-content/50 truncate mt-0.5 w-full">
+          <div className="text-xs text-base-content/65 truncate mt-0.5 w-full">
             {subtitle}
           </div>
         )}

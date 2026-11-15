@@ -219,67 +219,44 @@ export default function PrepMatPage() {
   // 2. Sensitive Information - Sign In Gate for Guest Users
   if (!user) {
     return (
-      <div className="h-full w-full overflow-y-auto bg-base-200/30 pt-16 pb-20 px-4 flex items-center justify-center">
-        <div className="max-w-xl w-full mx-auto my-auto">
-          <div className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100 p-8 sm:p-10 shadow-2xl text-center space-y-6">
-            {/* Background glowing gradient */}
-            <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
+      <div className="h-full w-full overflow-y-auto bg-base-100 pt-16 pb-20 px-5 flex items-center justify-center">
+        <div className="max-w-lg w-full mx-auto my-auto">
+          <p className="inline-flex items-center gap-2 rounded-full border border-base-300 px-3 py-1 text-[12px] text-base-content/75">
+            <Lock className="h-3.5 w-3.5" aria-hidden /> IITGN students only
+          </p>
+          <h1 className="t-display text-balance text-4xl sm:text-5xl mt-5">
+            Placement prep, <em className="italic text-primary">unlocked</em> with your account.
+          </h1>
+          <p className="mt-4 text-[16px] text-base-content/75 leading-relaxed">
+            Sign in to open PrepMat. It stays inside the student community.
+          </p>
 
-            {/* Icon & Badges */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-warning/15 text-warning border border-warning/30 shadow-inner">
-                <Lock className="h-8 w-8" />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="badge badge-outline text-xs py-2 px-3">
-                  IITGN Student Access Only
-                </span>
-              </div>
-            </div>
+          <ul className="mt-6 space-y-3 text-[14px]">
+            {[
+              "Year-wise internship and placement preparation documents",
+              "Verified interview experiences and guidance sessions",
+              "Direct links to Google Drive and Docs preparation sheets",
+            ].map((t) => (
+              <li key={t} className="flex items-start gap-3">
+                <BookmarkCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" aria-hidden />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
 
-            {/* Title & Description */}
-            <div className="space-y-2.5">
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-base-content">
-                Sign In Required to Access PrepMat
-              </h2>
-            </div>
-
-            {/* Feature Checklist */}
-            <div className="rounded-2xl bg-base-200/50 p-4 border border-base-200 text-left space-y-2 text-xs text-base-content/80">
-              <div className="flex items-center gap-2">
-                <BookmarkCheck className="h-4 w-4 text-primary shrink-0" />
-                <span>
-                  All year-wise Internship & Placement preparation documents
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BookmarkCheck className="h-4 w-4 text-primary shrink-0" />
-                <span>
-                  Verified company interview experiences & guidance sessions
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BookmarkCheck className="h-4 w-4 text-primary shrink-0" />
-                <span>
-                  Direct access to Google Drive & Google Docs preparation sheets
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Link
-                href="/login"
-                className="btn btn-primary w-full sm:w-auto px-8 gap-2 shadow-lg shadow-primary/25"
-              >
-                Sign In with IITGN Account
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href="/" className="btn btn-ghost w-full sm:w-auto">
-                Back to Home
-              </Link>
-            </div>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link
+              href="/login"
+              className="h-12 px-7 inline-flex items-center gap-2 rounded-full bg-primary text-primary-content text-[15px] font-medium hover:opacity-90 transition-opacity"
+            >
+              Sign in to continue <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link
+              href="/"
+              className="h-12 px-6 inline-flex items-center rounded-full border border-base-300 text-[15px] font-medium hover:border-base-content transition-colors"
+            >
+              Back to home
+            </Link>
           </div>
         </div>
       </div>
