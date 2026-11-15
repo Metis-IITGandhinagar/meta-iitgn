@@ -156,8 +156,8 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
   }
 
   return (
-    <main className={`flex-1 p-0.5 md:p-6 ${embedded ? "" : "mt-16"} bg-transparent ${embedded ? "" : "overflow-y-auto"} ${loading ? "no-scrollbar" : ""}`}>
-      <div className="max-w-6xl mx-auto space-y-8 px-4 lg:px-3 pt-6">
+    <main className={`flex-1 p-0 ${embedded ? "" : "mt-16"} bg-transparent ${embedded ? "" : "overflow-y-auto"} ${loading ? "no-scrollbar" : ""}`}>
+      <div className="max-w-6xl mx-auto space-y-8 px-5 lg:px-8 pt-8 pb-12">
 
         {/* Category Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">

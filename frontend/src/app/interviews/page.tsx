@@ -106,8 +106,8 @@ export default function InterviewFeedPage() {
   };
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-base-200/30 pt-14 pb-20 px-2 sm:px-4 mt-5">
-      <div className="mx-auto max-w-8xl md:px-5">
+    <div className="h-full w-full overflow-y-auto bg-base-100 pt-14 pb-20 px-0 mt-5">
+      <div className="mx-auto max-w-6xl px-5 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left Column: User Profile & Stats Widget (Desktop `lg` only) */}
           <aside className="hidden lg:block lg:col-span-3 space-y-6">

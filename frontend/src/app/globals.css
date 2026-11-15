@@ -1394,3 +1394,39 @@ html[data-reduce-motion="true"] .orbit-turn { animation: none; }
 .demo-caret { display: inline-block; width: 1.5px; height: 1.05em; margin-left: 1px; vertical-align: -2px; background: var(--color-primary); animation: caret 1s steps(1) infinite; }
 @media (prefers-reduced-motion: reduce) { .marquee-track, .demo-caret { animation: none; } .reveal { opacity: 1; transform: none; transition: none; } }
 html[data-reduce-motion="true"] .marquee-track, html[data-reduce-motion="true"] .demo-caret { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Consistency layer — one type, shape and control system app-wide.
+   Unlayered rules beat Tailwind utilities, so legacy classes used in
+   older components are retuned here instead of edited one by one.
+═══════════════════════════════════════════════════════════════ */
+
+/* Type: one sans family, no heavy "black" weights (article body keeps its own font) */
+.font-serif:not(.milkdown-container *, .prose *, .prose) { font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif; }
+.font-black, .font-extrabold { font-weight: 700; }
+h1, h2, h3 { letter-spacing: -0.025em; }
+
+/* Never below 12px; faint greys lifted to readable contrast */
+.text-\[9px\], .text-\[10px\] { font-size: 12px; }
+.text-base-content\/30, .text-base-content\/35, .text-base-content\/40,
+.text-base-content\/45, .text-base-content\/50, .text-base-content\/55 {
+  color: color-mix(in oklab, var(--color-base-content) 68%, transparent);
+}
+
+/* Shape: calmer corners everywhere */
+.rounded-3xl { border-radius: 1rem; }
+.rounded-2xl { border-radius: 0.75rem; }
+.rounded-xl { border-radius: 0.625rem; }
+.card { border-radius: 0.75rem; box-shadow: none; }
+
+/* Controls: one button, badge and field style */
+.btn:not(.btn-circle):not(.btn-square) { border-radius: 0.5rem; font-weight: 500; text-transform: none; box-shadow: none; min-height: 2.5rem; }
+.btn.btn-sm:not(.btn-circle):not(.btn-square) { min-height: 2.25rem; }
+.btn { box-shadow: none; --btn-shadow: 0 0 #0000; }
+.btn-primary { color: var(--color-primary-content); }
+.badge { border-radius: 0.375rem; font-weight: 500; text-transform: none; }
+.input, .select, .textarea { border-radius: 0.5rem; box-shadow: none; }
+.input:focus, .select:focus, .textarea:focus, .input:focus-within { outline-offset: 2px; }
+
+/* No glass or blur outside the top bar */
+.backdrop-blur-xl, .backdrop-blur-lg, .backdrop-blur-2xl, .backdrop-blur-3xl { -webkit-backdrop-filter: none; backdrop-filter: none; }

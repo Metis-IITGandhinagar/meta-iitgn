@@ -91,8 +91,8 @@ export default function BlogGridClient() {
   };
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-16 bg-transparent overflow-y-auto h-full w-full">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <main className="flex-1 px-5 lg:px-8 py-8 mt-16 bg-transparent overflow-y-auto h-full w-full">
+      <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Blog Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-base-200 pb-6">

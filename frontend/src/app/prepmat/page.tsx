@@ -198,7 +198,7 @@ export default function PrepMatPage() {
   if (authLoading || loadingData) {
     return (
       <div className="h-full w-full overflow-y-auto bg-base-200/30 pt-16 pb-20 px-4 sm:px-6">
-        <div className="mx-auto max-w-7xl space-y-6 animate-pulse">
+        <div className="mx-auto max-w-6xl px-5 lg:px-8 space-y-6 animate-pulse">
           <div className="h-8 w-64 bg-base-300 rounded-lg" />
           <div className="h-4 w-96 bg-base-300/60 rounded" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
@@ -265,8 +265,8 @@ export default function PrepMatPage() {
 
   // 3. Authenticated View: Full Dynamic Filterable PrepMat Resource Table
   return (
-    <div className="h-full w-full overflow-y-auto bg-base-200/30 pt-16 pb-24 px-3 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-8xl space-y-6">
+    <div className="h-full w-full overflow-y-auto bg-base-100 pt-16 pb-24">
+      <div className="mx-auto max-w-6xl px-5 lg:px-8 space-y-6">
         {/* Top Header Banner */}
         <div className="p-4 sm:p-8  relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
