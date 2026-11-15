@@ -1,5 +1,6 @@
 "use client";
 
+import Navbar from "@/components/navs/Navbar";
 import { useState, Suspense, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiService } from "@/api";
@@ -10,7 +11,6 @@ import {
   Newspaper,
   FolderOpen,
   FileText,
-  ArrowLeft,
   type LucideIcon,
 } from "lucide-react";
 import { BeautifulSearchBox, BeautifulTabBar } from "@/components/helpers/SearchDesign";
@@ -215,17 +215,11 @@ function SearchResultsContent() {
 
   return (
     <div className="min-h-screen bg-base-100 font-sans">
-      {/* Slim header — no full Navbar to avoid double header */}
-      <div className="sticky top-0 z-40 bg-base-100/95 backdrop-blur-md border-b border-base-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="btn btn-ghost btn-sm btn-circle shrink-0"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="flex-1">
+      <Navbar hideSearch />
+      <div className="border-b border-base-300">
+        <div className="max-w-6xl mx-auto px-5 lg:px-8 pt-6 pb-3 space-y-4">
+          <h1 className="text-[28px] font-bold tracking-[-0.03em]">Search</h1>
+          <div className="max-w-2xl">
             <BeautifulSearchBox
               value={searchQuery}
               onChange={setSearchQuery}
@@ -235,8 +229,6 @@ function SearchResultsContent() {
               autoFocus={autoFocus}
             />
           </div>
-        </div>
-        <div className="max-w-4xl mx-auto px-4 pb-2">
           <BeautifulTabBar
             categories={dynamicCategories}
             activeCategory={category}
@@ -247,7 +239,7 @@ function SearchResultsContent() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-28">
+      <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 pb-28">
         <div className="min-h-[2rem] flex flex-wrap items-center gap-2 mb-4">
           {history.length > 0 && (
             <>

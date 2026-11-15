@@ -1,19 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import { useCommonStore } from "@/store/useCommonStore";
 import Link from "next/link";
-import { BeautifulSearchBox } from "@/components/helpers/SearchDesign";
 import {
   Menu,
-  ChevronDown,
-  Sparkles,
-  Award,
-  Users2,
-  ChevronLeft,
+  X,
+  Search,
   History,
   MoreVertical,
   Share2,
@@ -24,6 +20,11 @@ import {
   Printer,
   AlertTriangle,
 } from "lucide-react";
+import { InstituteLogo } from "@/components/helpers/InstituteLogo";
+import { ThemeToggle } from "@/components/helpers/ThemeToggle";
+import { Spotlight } from "@/components/helpers/Spotlight";
+import { SECTIONS, sectionForPath } from "@/lib/sections";
+import { BrandMark } from "@/components/helpers/BrandMark";
 import Avatar from "@/components/helpers/Avatar";
 import ShareModal from "@/components/overlays/ShareModal";
 import { db } from "@/lib/db";
@@ -35,70 +36,23 @@ interface NavbarProps {
   hideSearch?: boolean;
   currentTier?: string;
   onChangeTier?: (tier: string) => void;
+  /** "overlay" floats transparently over a hero photo with white text. */
+  variant?: "default" | "overlay";
 }
 
-const TIERS = {
-  bronze: {
-    name: "Bronze Editor",
-    edits: "5 edits",
-    xp: "250 XP",
-    rank: "#4,102",
-    percent: 30,
-    badgeBg: "bg-amber-100 text-amber-800 border-amber-200",
-    progressBar: "bg-gradient-to-r from-amber-400 to-amber-500",
-    avatarBorder: "border-amber-400",
-    benefits: ["Basic Editing", "Add Comments"],
-    nextTier: "Silver",
-    iconComponent: Award,
-    activeButton: "bg-amber-50 text-amber-800 border-amber-200 shadow-xs",
-  },
-  silver: {
-    name: "Silver Contributor",
-    edits: "28 edits",
-    xp: "1,450 XP",
-    rank: "#1,840",
-    percent: 65,
-    badgeBg: "bg-slate-100 text-slate-800 border-slate-200",
-    progressBar: "bg-gradient-to-r from-slate-400 to-slate-500",
-    avatarBorder: "border-slate-400",
-    benefits: ["Create Pages", "Upload Images", "Markdown Editor"],
-    nextTier: "Gold",
-    iconComponent: Users2,
-    activeButton: "bg-slate-50 text-slate-800 border-slate-200 shadow-xs",
-  },
-  gold: {
-    name: "Gold Admin",
-    edits: "156 edits",
-    xp: "8,920 XP",
-    rank: "#234",
-    percent: 90,
-    badgeBg: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    progressBar: "bg-gradient-to-r from-yellow-400 to-amber-500",
-    avatarBorder: "border-yellow-400",
-    benefits: ["Approve Edits", "Lock Pages", "Rollback Tool", "Custom Badges"],
-    nextTier: null,
-    iconComponent: Sparkles,
-    activeButton: "bg-yellow-50 text-yellow-800 border-yellow-200 shadow-xs",
-  },
-};
-
 export default function Navbar({
-  onToggleSidebar,
-  searchQuery: externalQuery,
-  setSearchQuery: setExternalQuery,
   hideSearch = false,
+  variant = "default",
 }: NavbarProps) {
-  const router = useRouter();
-  const { user, activeTier, setSettingsTab } = useAuth();
+  const ov = variant === "overlay";
+  const { user, setSettingsTab } = useAuth();
   const addBookmark = useHomeStore((s) => s.addBookmark);
   const removeBookmark = useHomeStore((s) => s.removeBookmark);
   const bookmarks = useHomeStore((s) => s.bookmarks);
   const pathname = usePathname();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
-  const isWiki = (segments.length >= 1) || segments[0] === "search-results";
   const isWikiArticlePage = (segments[0] === "wiki" || segments[0] === "blog") && segments.length >= 3;
 
-  const [searchQuery, setSearchQuery] = useState(externalQuery || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -110,13 +64,7 @@ export default function Navbar({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
-  const activeTierData = TIERS[activeTier];
 
-  useEffect(() => {
-    if (externalQuery !== undefined) {
-      setSearchQuery(externalQuery);
-    }
-  }, [externalQuery]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -175,206 +123,197 @@ export default function Navbar({
     void loadUserStats(user.user_id);
   }, [dropdownOpen, user?.user_id, loadUserStats]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    if (!q) {
-      return;
-    }
-    if (setExternalQuery) {
-      setExternalQuery(q);
-    }
-    router.push(`/search-results?query=${encodeURIComponent(q)}`);
-  };
+
+  const [mobileOpen, setMobileOpen] = useState(false); // "Menu" popover
+  const [spotlightOpen, setSpotlightOpen] = useState(false);
+  const [isMac, setIsMac] = useState(true);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const current = sectionForPath(pathname);
+
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad/.test(navigator.platform));
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSpotlightOpen((o) => !o);
+      }
+      if (e.key === "Escape") {
+        setDropdownOpen(false);
+        setMoreMenuOpen(false);
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMobileOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onDown);
+    };
+  }, []);
+
+  useEffect(() => setMobileOpen(false), [pathname]);
+
+  const pill = ov
+    ? "text-white hover:bg-white/15"
+    : "text-base-content hover:bg-base-200";
 
   return (
-    <header
-      className={`h-16 shrink-0 sticky top-0 z-40 select-none w-full bg-base-100 border-b border-base-200 shadow-xs transition-all duration-200`}
-    >
-      {/* Actual Nav Content */}
-      <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-4 lg:px-8">
-        {/* Left side: Hamburger and Logo */}
-        <div className="flex items-center gap-2">
-          {isWiki ? (
-            <button
-              onClick={() => {
-                if (window.history.length > 1) {
-                  router.back();
-                } else {
-                  router.push("/");
-                }
-              }}
-              className="btn btn-ghost btn-circle p-2 text-base-content hover:bg-base-200/50 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center"
-              aria-label="Go Back"
-            >
-              <ChevronLeft className="h-6 w-6 text-base-content" />
-            </button>
-          ) : (
-            <button
-              onClick={onToggleSidebar}
-              className="btn btn-square btn-ghost btn-sm bg-base-200 border border-base-300 text-base-content hover:bg-base-300 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center shadow-xs"
-              aria-label="Toggle Sidebar"
-            >
-              <Menu className="h-5 w-5 text-base-content" />
-            </button>
-          )}
-
-          <Link
-            href="/"
-            className="flex items-center gap-2 select-none cursor-pointer group ml-1"
-          >
-            <div className="block">
-              <span className="font-serif text-2xl font-extrabold tracking-tight text-primary group-hover:text-primary/80 transition-colors duration-200">
-                META
-              </span>
-              <span className="ml-1 text-sm font-semibold text-base-content uppercase tracking-wider group-hover:opacity-80 transition-opacity duration-200">
-                IITGN
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Middle: Embedded Search input */}
-        {!hideSearch && (
-          <div className="hidden md:block flex-1 max-w-lg mx-8">
-            <BeautifulSearchBox
-              value={searchQuery}
-              onChange={setSearchQuery}
-              onSubmit={handleSearchSubmit}
-              placeholder="Search IITGN Wiki..."
-              variant="compact"
-            />
-          </div>
+    <header className={`h-16 shrink-0 z-40 select-none w-full ${ov ? "absolute inset-x-0 top-0 text-white bg-gradient-to-b from-black/60 to-transparent" : "sticky top-0 bg-base-100/85 backdrop-blur-md border-b border-base-300"}`}>
+      <a
+        href="#main-content"
+        onClick={(e) => {
+          e.preventDefault();
+          const m = document.querySelector<HTMLElement>("#main-content, main");
+          if (m) {
+            if (!m.hasAttribute("tabindex")) m.setAttribute("tabindex", "-1");
+            m.focus();
+          }
+        }}
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-base-content focus:px-4 focus:py-2 focus:text-sm focus:text-base-100"
+      >
+        Skip to main content
+      </a>
+      <div className="max-w-6xl mx-auto w-full h-full flex items-center gap-2 px-5 lg:px-8">
+        {/* Brand + where you are */}
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-full pr-2" aria-label="Meta IITGN home">
+          <BrandMark size={30} />
+          <span className="text-[15px] font-semibold tracking-tight" translate="no">Meta IITGN</span>
+        </Link>
+        {current && (
+          <span className="hidden sm:flex items-center gap-2 text-[14px] min-w-0" aria-label={`Current section: ${current.label}`}>
+            <span className={ov ? "text-white/60" : "text-base-content/40"} aria-hidden>/</span>
+            <span className="truncate">{current.label}</span>
+          </span>
         )}
 
-        {/* Right side: User avatar & dropdown & Kebab Actions */}
-        <div className="flex items-center gap-2">
-          {!user ? (
-            <Link
-              href="/login"
-              className="btn btn-primary btn-sm rounded-full text-primary-content font-semibold shadow-md cursor-pointer transition-all duration-200"
+        <div className="flex-1" />
+
+        {/* Search / jump */}
+        {!hideSearch && (
+          <button
+            type="button"
+            onClick={() => setSpotlightOpen(true)}
+            aria-label="Search or jump to"
+            className={`hidden md:flex items-center gap-2 h-10 pl-3.5 pr-2.5 rounded-full text-[13px] w-60 cursor-pointer touch-manipulation transition-colors ${ov ? "bg-white/15 text-white hover:bg-white/25" : "bg-base-200 text-base-content/70 hover:bg-base-300"}`}
+          >
+            <Search className="h-3.5 w-3.5" aria-hidden />
+            <span className="flex-1 text-left">Search or jump to…</span>
+            <kbd className="text-[11px] font-mono opacity-80" aria-hidden="true">{isMac ? "⌘K" : "Ctrl K"}</kbd>
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setSpotlightOpen(true)}
+          aria-label="Search or jump to"
+          className={`${hideSearch ? "" : "md:hidden"} h-11 w-11 inline-flex items-center justify-center rounded-full cursor-pointer touch-manipulation ${pill}`}
+        >
+          <Search className="h-[18px] w-[18px]" aria-hidden />
+        </button>
+
+        <ThemeToggle onPhoto={ov} />
+
+        {/* Menu: every place in the app */}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={mobileOpen}
+            className={`h-11 px-4 inline-flex items-center gap-2 rounded-full text-[13px] font-medium cursor-pointer touch-manipulation transition-colors ${pill}`}
+          >
+            {mobileOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
+            Menu
+          </button>
+          {mobileOpen && (
+            <nav
+              aria-label="Primary"
+              className="absolute right-0 top-12 w-[min(22rem,calc(100vw-2.5rem))] rounded-2xl border border-base-300 bg-base-100 text-base-content p-2 z-50 spot-pop"
             >
-              Sign In
+              {SECTIONS.map((sec) => {
+                const Icon = sec.icon;
+                const active = (sec.href === "/" ? pathname === "/" : current?.href === sec.href);
+                return (
+                  <Link
+                    key={sec.href}
+                    href={sec.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex items-center gap-3 rounded-xl px-3 min-h-14 py-2 transition-colors ${active ? "bg-base-200" : "hover:bg-base-200"}`}
+                  >
+                    <span className="h-9 w-9 rounded-lg border border-base-300 inline-flex items-center justify-center text-primary shrink-0">
+                      <Icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-medium">{sec.label}</span>
+                      <span className="block text-[12px] text-base-content/70 truncate">{sec.hint}</span>
+                    </span>
+                  </Link>
+                );
+              })}
+              <a
+                href="https://iitgn.ac.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 flex items-center gap-3 border-t border-base-300 px-3 min-h-14 pt-2 text-[12px] text-base-content/70 hover:text-base-content"
+              >
+                <InstituteLogo size={28} />
+                <span translate="no">IIT Gandhinagar website</span>
+              </a>
+            </nav>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {!user ? (
+            <Link href="/login" className={`h-11 px-5 inline-flex items-center rounded-full text-[13px] font-medium hover:opacity-85 transition-opacity ${ov ? "bg-white text-[#1B1A18]" : "bg-base-content text-base-100"}`}>
+              Sign in
             </Link>
           ) : (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSettingsTab?.("appearance")}
-                className="btn btn-ghost btn-circle btn-sm text-base-content hover:bg-base-200/50 transition-colors duration-200 cursor-pointer active:scale-95"
-                title="Open Settings"
-                aria-label="Open Settings"
-              >
-                <Settings className="w-5 h-5 text-base-content/80" />
-              </button>
-
-              <div className="relative" ref={dropdownRef}>
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setDropdownOpen(!dropdownOpen);
                 }}
-                className="flex items-center gap-2 py-1.5 px-3 rounded-full transition-all duration-200 cursor-pointer active:scale-97"
+                className="flex items-center rounded-full cursor-pointer"
+                aria-label="Account menu"
+                aria-haspopup="menu"
+                aria-expanded={dropdownOpen}
               >
-                <Avatar
-                  email={user.email}
-                  name={user.name}
-                  className="w-7 h-7 rounded-full shadow-inner object-cover"
-                />
-                <span
-                  className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full hidden md:inline-block transition-colors duration-300 ${activeTierData.badgeBg}`}
-                >
-                  {user.role}
-                </span>
-                <ChevronDown
-                  className={`h-4 w-4 text-base-content/60 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-                />
+                <Avatar email={user.email} name={user.name} className="w-8 h-8 rounded-full object-cover" />
               </button>
-
-              {/* Dropdown Menu */}
               {dropdownOpen && (
-                <div
-                  className={`absolute right-0  top-12 mt-2 w-80 sm:w-88 card card-bordered bg-base-100 shadow-xl p-4  z-50 animate-in fade-in slide-in-from-top-2 duration-200`}
-                >
-                  {/* Header info */}
-                  <div className="flex items-center gap-3 pb-3 border-b border-base-200">
-                    <Avatar
-                      email={user.email}
-                      name={user.name}
-                      className={`w-14 h-14 rounded-2xl border-2 transition-colors duration-300 ${activeTierData.avatarBorder} shadow-sm shrink-0 object-cover`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-base font-bold text-base-content truncate">
-                          {user.name}
-                        </h3>
-                        <span
-                          className={`text-[9px] font-black tracking-wider px-2.5 py-0.5 rounded-full shrink-0 uppercase transition-colors duration-300 ${activeTierData.badgeBg}`}
-                        >
-                          {user.role}
-                        </span>
-                      </div>
-                      <p className="text-xs text-base-content/60 truncate mt-0.5">
-                        {user.email}
-                      </p>
+                <div className="absolute right-0 top-11 w-64 rounded-xl border border-base-300 bg-base-100 p-1.5 z-50">
+                  <div className="px-3 py-2.5">
+                    <div className="text-sm font-medium truncate">{user.name}</div>
+                    <div className="text-xs text-base-content/65 truncate">{user.email}</div>
+                    <div className="mt-2 text-xs text-base-content/60">
+                      {userStats?.points ?? user.points} points
+                      {userStats ? ` · ${userStats.streak}-day streak` : ""}
                     </div>
                   </div>
-
-                {/* Stats — real contribution data from the user stats API */}
-                <div className="bg-base-200 border border-base-300 rounded-2xl p-3.5 mt-3.5">
-                  <div className="grid grid-cols-3 text-center">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
-                        Points
-                      </span>
-                      <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {userStats?.points ?? user.points}
-                      </span>
-                    </div>
-                    <div className="flex flex-col border-l border-base-300">
-                      <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
-                        Edits
-                      </span>
-                      <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {userStats ? userStats.editsThisMonth : "—"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col border-l border-base-300">
-                      <span className="text-[10px] font-bold text-base-content/60 tracking-wider uppercase">
-                        Streak
-                      </span>
-                      <span className="text-[13px] font-extrabold text-base-content mt-1 transition-all duration-300">
-                        {userStats ? `${userStats.streak}d` : "—"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Actions */}
-                <div className="border-t border-base-200 mt-4 pt-2.5 grid grid-cols-2 text-center">
-                  <Link
-                    href="/user/profile"
-                    className="flex flex-col items-center gap-1 py-1 text-base-content/80 hover:text-primary hover:bg-base-200 rounded-xl transition-colors duration-150"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    <User className="h-5 w-5 text-base-content/50" />
-                    <span className="text-[11px] font-bold">Profile</span>
-                  </Link>
-                  <Link
-                    href="/logout"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex flex-col items-center gap-1 py-1 text-base-content/75 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors duration-150 w-full"
-                  >
-                    <LogOut className="h-5 w-5 text-base-content/50" />
-                    <span className="text-[11px] font-bold text-red-400">
-                      Sign Out
-                    </span>
+                  <div className="h-px bg-base-300 my-1" />
+                  {[
+                    { href: "/user/profile", label: "Profile", icon: User },
+                    { href: "/user/contributions", label: "My contributions", icon: History },
+                  ].map(({ href, label, icon: Icon }) => (
+                    <Link key={href} href={href} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] hover:bg-base-200">
+                      <Icon className="h-4 w-4 text-base-content/65" /> {label}
+                    </Link>
+                  ))}
+                  <button onClick={() => { setDropdownOpen(false); setSettingsTab?.("appearance"); }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] hover:bg-base-200 text-left cursor-pointer">
+                    <Settings className="h-4 w-4 text-base-content/65" /> Settings
+                  </button>
+                  <Link href="/logout" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] hover:bg-base-200 text-error">
+                    <LogOut className="h-4 w-4" /> Sign out
                   </Link>
                 </div>
-              </div>
-            )}
+              )}
             </div>
-          </div>
           )}
+
           {/* Kebab More Menu (Wiki Page Only) */}
           {isWikiArticlePage && (
             <div className="relative flex items-center" ref={moreMenuRef}>
@@ -385,6 +324,8 @@ export default function Navbar({
                 }}
                 className="btn btn-circle btn-ghost btn-sm bg-base-200 hover:bg-base-300 border border-base-300 text-base-content hover:text-base-content/85 cursor-pointer flex items-center justify-center shadow-xs"
                 aria-label="More Actions"
+                aria-haspopup="menu"
+                aria-expanded={moreMenuOpen}
               >
                 <MoreVertical className="h-5 w-5 text-base-content" />
               </button>
@@ -502,6 +443,7 @@ export default function Navbar({
           )}
         </div>
       </div>
+      <Spotlight open={spotlightOpen} onClose={() => setSpotlightOpen(false)} />
       <ShareModal
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
