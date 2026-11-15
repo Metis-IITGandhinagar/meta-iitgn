@@ -34,17 +34,17 @@ export default function WelcomePage() {
 
       <header className="sticky top-0 z-30 border-b border-base-300/70 bg-base-100/80 backdrop-blur">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/welcome" className="flex items-center gap-2" aria-label="Meta IITGN">
+          <Link href="/welcome" className="flex items-center gap-2 shrink-0" aria-label="Meta IITGN">
             <BrandMark size={24} />
-            <span className="text-[14px] font-semibold tracking-tight" translate="no">Meta IITGN</span>
+            <span className="text-[14px] font-semibold tracking-tight whitespace-nowrap" translate="no">Meta IITGN</span>
           </Link>
           <nav aria-label="Primary" className="flex items-center gap-1 text-[14px]">
             <Link href="/wiki/categories" className="hidden sm:inline-flex min-h-11 items-center px-3 text-base-content/70 hover:text-base-content">Wiki</Link>
             <Link href="/blog" className="hidden sm:inline-flex min-h-11 items-center px-3 text-base-content/70 hover:text-base-content">Blogs</Link>
             <Link href="/prepmat" className="hidden sm:inline-flex min-h-11 items-center px-3 text-base-content/70 hover:text-base-content">PrepMat</Link>
-            <Link href="/login" className="min-h-11 inline-flex items-center px-3 text-base-content/70 hover:text-base-content">Sign in</Link>
+            <Link href="/login" className="hidden sm:inline-flex min-h-11 items-center px-3 text-base-content/70 hover:text-base-content whitespace-nowrap">Sign in</Link>
             <ThemeToggle />
-            <Link href="/wiki/categories" className="ml-1 h-9 inline-flex items-center rounded-md bg-base-content px-3.5 font-medium text-base-100 hover:opacity-90">
+            <Link href="/wiki/categories" className="ml-1 h-9 inline-flex items-center whitespace-nowrap rounded-md bg-base-content px-3.5 font-medium text-base-100 hover:opacity-90">
               Open wiki
             </Link>
           </nav>
@@ -54,12 +54,12 @@ export default function WelcomePage() {
       <main id="main" tabIndex={-1} className="outline-none">
         {/* Hero */}
         <section className="max-w-5xl mx-auto px-5 pt-16 sm:pt-24 pb-14 text-center">
-          <h1 className="text-[44px] sm:text-[72px] lg:text-[92px] font-bold tracking-[-0.045em] leading-[0.98] text-balance rise">
+          <h1 className="text-[34px] sm:text-[48px] lg:text-[60px] font-bold tracking-[-0.04em] leading-[1.04] rise">
             Everything about IITGN,
             <br />
             <span className="text-primary">one search away.</span>
           </h1>
-          <p className="mt-6 mx-auto max-w-xl text-[17px] leading-relaxed text-base-content/70 rise" style={{ "--i": 1 } as React.CSSProperties}>
+          <p className="mt-5 mx-auto max-w-xl text-[16px] leading-relaxed text-base-content/70 rise" style={{ "--i": 1 } as React.CSSProperties}>
             The student-written knowledge base for IIT Gandhinagar. Hostels, mess, courses, clubs and placements, free to read and open to edit.
           </p>
           <div className="mt-9 flex justify-center gap-3 rise" style={{ "--i": 2 } as React.CSSProperties}>
@@ -84,7 +84,7 @@ export default function WelcomePage() {
               <ul key={k} className="flex shrink-0 items-center">
                 {TOPICS.map((t, i) => (
                   <li key={`${k}-${t}`} className="flex items-center">
-                    <span className={`px-6 text-[44px] sm:text-[60px] font-bold tracking-[-0.04em] leading-none ${i % 2 ? "text-base-content/20" : "text-base-content"}`}>{t}</span>
+                    <span className={`px-6 text-[32px] sm:text-[44px] font-bold tracking-[-0.04em] leading-none ${i % 2 ? "text-base-content/20" : "text-base-content"}`}>{t}</span>
                     <span className="h-2 w-2 rounded-full bg-primary" />
                   </li>
                 ))}
@@ -97,7 +97,7 @@ export default function WelcomePage() {
         <section aria-labelledby="why-h" className="border-t border-base-300/70">
           <div className="max-w-5xl mx-auto px-5 py-16">
             <Reveal>
-              <h2 id="why-h" className="text-[32px] sm:text-[48px] font-bold tracking-[-0.04em] leading-[1.02] text-balance max-w-xl">
+              <h2 id="why-h" className="text-[26px] sm:text-[36px] font-bold tracking-[-0.035em] leading-[1.1] text-balance max-w-xl">
                 Built for the questions <span className="text-primary">every batch asks.</span>
               </h2>
             </Reveal>
@@ -134,7 +134,7 @@ export default function WelcomePage() {
         {/* Close */}
         <section className="border-t border-base-300/70">
           <div className="max-w-5xl mx-auto px-5 py-16 text-center">
-            <h2 className="text-[36px] sm:text-[56px] font-bold tracking-[-0.045em] leading-none">Know something? <span className="text-primary">Add it.</span></h2>
+            <h2 className="text-[28px] sm:text-[40px] font-bold tracking-[-0.04em] leading-tight">Know something? <span className="text-primary">Add it.</span></h2>
             <p className="mt-3 text-[16px] text-base-content/70">Every page started with one student writing down what they wished they had known.</p>
             <Link href="/login" className="mt-7 h-11 px-5 inline-flex items-center gap-2 rounded-lg bg-primary text-primary-content text-[14px] font-medium hover:opacity-90">
               Sign in to contribute <ArrowRight className="h-4 w-4" aria-hidden />
@@ -160,7 +160,7 @@ export default function WelcomePage() {
             </span>
           </a>
         </div>
-        <p className="select-none whitespace-nowrap text-center font-bold tracking-[-0.06em] leading-[0.8] text-base-content/[0.07] text-[22vw] sm:text-[17vw] mt-2 -mb-[4.5vw]" aria-hidden translate="no">
+        <p className="select-none whitespace-nowrap text-center font-bold tracking-[-0.06em] leading-[0.8] text-base-content/[0.07] text-[18vw] sm:text-[13vw] mt-2 -mb-[4.5vw]" aria-hidden translate="no">
           Meta IITGN
         </p>
       </footer>
