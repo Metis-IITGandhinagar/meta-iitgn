@@ -1,14 +1,117 @@
+@import "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap";
+
 @import "tailwindcss";
+@source "../**";
 @plugin "@tailwindcss/typography";
 
 @plugin "daisyui" {
-  themes: all;
+  themes: light --default, dark --prefersdark;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   META IITGN — "Quiet paper" design system
+   One neutral scale, one accent (IITGN brick), hairlines not shadows,
+   type does the work. Token names stay daisyUI-compatible.
+═══════════════════════════════════════════════════════════════ */
+
+:root,
+[data-theme="meta"],
+[data-theme="light"] {
+  color-scheme: light;
+  --color-base-100: #F7FAFC;
+  --color-base-200: #EAF3F9;
+  --color-base-300: #D3E3EE;
+  --color-base-content: #0A2540;
+
+  --color-primary: #045D8A;          /* IITGN deep blue: links, buttons */
+  --color-primary-content: #FFFFFF;
+  --color-secondary: #0A2540;
+  --color-secondary-content: #F7FAFC;
+  --color-accent: #079BD8;           /* emblem blue: fills, rings */
+  --color-accent-content: #0A2540;
+  --color-neutral: #0A2540;
+  --color-neutral-content: #F7FAFC;
+
+  --color-info: #045D8A;    --color-info-content: #fff;
+  --color-success: #1F7A4D; --color-success-content: #fff;
+  --color-warning: #8A5A00; --color-warning-content: #fff;
+  --color-error: #B8000C;   --color-error-content: #fff;
+
+  --radius-box: 10px;
+  --radius-field: 8px;
+  --radius-selector: 999px;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+
+  --color-text-secondary: #46607A;
+  --color-text-tertiary: #4F6A83;
+  --color-border-strong: #B7CDDD;
+}
+
+[data-theme="meta-dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-base-100: #09090B;
+  --color-base-200: #18181B;
+  --color-base-300: #27272A;
+  --color-base-content: #FAFAFA;
+
+  --color-primary: #5CC0EE;          /* blue stays as the accent */
+  --color-primary-content: #09090B;
+  --color-secondary: #FAFAFA;
+  --color-secondary-content: #09090B;
+  --color-accent: #079BD8;
+  --color-accent-content: #09090B;
+  --color-neutral: #FAFAFA;
+  --color-neutral-content: #09090B;
+
+  --color-info: #5CC0EE;    --color-info-content: #09090B;
+  --color-success: #5BAE82; --color-success-content: #09090B;
+  --color-warning: #D9A54A; --color-warning-content: #09090B;
+  --color-error: #F0707A;   --color-error-content: #09090B;
+
+  --radius-box: 10px;
+  --radius-field: 8px;
+  --radius-selector: 999px;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #8E8E97;
+  --color-border-strong: #3F3F46;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F7FAFC;
+  --foreground: #0A2540;
+  --font-geist-sans: "Plus Jakarta Sans", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-newsreader: "Newsreader", Georgia, Cambria, serif;
+  --font-fraunces: var(--font-newsreader);
+  --font-instrument-serif: var(--font-newsreader);
+  --font-instrument-sans: var(--font-geist-sans);
+  --font-hanken-grotesk: var(--font-geist-sans);
+  --font-jetbrains-mono: var(--font-geist-mono);
+  --font-lora: var(--font-newsreader);
+  --font-playfair: var(--font-newsreader);
+  --font-display: var(--font-geist-sans);
+  --font-inter: var(--font-geist-sans);
 }
+
+/* Quiet surfaces: soften every legacy drop shadow, keep hairlines */
+.shadow-xs,.shadow-sm,.shadow,.shadow-md,.shadow-lg,.shadow-xl,.shadow-2xl { --tw-shadow: 0 0 #0000 !important; box-shadow: none !important; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Reusable design-system primitives */
+.t-display { font-family: var(--font-geist-sans); font-weight: 700; letter-spacing: -0.04em; line-height: 1.02; }
+.t-display em { font-style: normal !important; color: var(--color-primary); }
+.t-eyebrow { font-family: var(--font-geist-mono); font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--color-text-secondary); }
+.hairline { border-color: var(--color-base-300); }
+.row-link { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; border-bottom:1px solid var(--color-base-300); transition: padding .2s ease, color .2s ease; }
+.row-link:hover { padding-left:.5rem; color: var(--color-primary); }
+
 
 /* Universal scrollbar styling across all scrollable elements */
 * {
@@ -42,8 +145,9 @@
 @theme inline {
   --color-background: var(--color-base-100, var(--b1, var(--background)));
   --color-foreground: var(--color-base-content, var(--bc, var(--foreground)));
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:  var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:  var(--font-geist-mono), ui-monospace, "JetBrains Mono", monospace;
+  --font-serif: var(--font-newsreader, var(--font-lora)), Georgia, "Times New Roman", serif;
 
   --color-slate-900: var(--color-base-content, var(--bc, #0f172a));
   --color-slate-800: color-mix(in srgb, var(--color-base-content, var(--bc, #1e293b)) 90%, transparent);
@@ -123,7 +227,11 @@
 body {
   background: var(--color-base-100, var(--b1, var(--background)));
   color: var(--color-base-content, var(--bc, var(--foreground)));
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans, var(--font-geist-sans), sans-serif);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Theme-aware text selection + caret.
@@ -204,11 +312,39 @@ body {
 
 /* Typography System mapping for global consistency */
 .font-sans {
-  font-family: var(--font-geist-sans), sans-serif !important;
+  font-family: var(--font-instrument-sans, var(--font-geist-sans)), ui-sans-serif, system-ui, sans-serif;
 }
 
 .font-serif {
-  font-family: var(--font-lora), Georgia, serif !important;
+  font-family: var(--font-newsreader, var(--font-lora)), Georgia, Cambria, serif;
+}
+
+.font-mono {
+  font-family: var(--font-jetbrains-mono, var(--font-geist-mono)), ui-monospace, monospace;
+}
+
+.font-newsreader {
+  font-family: "Newsreader", var(--font-newsreader), Georgia, Cambria, "Times New Roman", serif !important;
+}
+
+.font-fraunces {
+  font-family: "Fraunces", var(--font-fraunces), Georgia, Cambria, serif !important;
+}
+
+.font-instrument-serif {
+  font-family: "Instrument Serif", var(--font-instrument-serif), Georgia, Cambria, serif !important;
+}
+
+.font-instrument-sans {
+  font-family: "Instrument Sans", var(--font-instrument-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.font-hanken-grotesk {
+  font-family: "Hanken Grotesk", var(--font-hanken-grotesk), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.font-jetbrains-mono {
+  font-family: "JetBrains Mono", var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace !important;
 }
 
 .font-display {
@@ -421,63 +557,6 @@ html[data-interface-font-size="normal"] {
   white-space: nowrap !important;
   display: flex !important;
   max-width: 100% !important;
-}
-
-/* High-contrast premium text shadow to maintain legibility on colorful backdrops */
-.text-shadow-premium {
-  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.65), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* Custom animated moving gradient for premium headers, buttons and tags */
-@keyframes gradient-xy {
-
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.animate-gradient-slow {
-  background-size: 200% auto;
-  animation: gradient-xy 6s ease infinite;
-}
-
-/* Premium design depth utilities */
-.shadow-depth {
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
-}
-
-.shadow-depth-hover {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.shadow-depth-hover:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.12), 0 10px 20px -6px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* Pill-style shadows for the left panel portal cards */
-.pill-shadow-green { box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.39); }
-.pill-shadow-blue { box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39); }
-.pill-shadow-purple { box-shadow: 0 4px 14px 0 rgba(168, 85, 247, 0.39); }
-.pill-shadow-pink { box-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.39); }
-.pill-shadow-light-pink { box-shadow: 0 4px 14px 0 rgba(244, 114, 182, 0.2); }
-.pill-shadow-yellow { box-shadow: 0 4px 14px 0 rgba(234, 179, 8, 0.39); }
-.pill-shadow-gray { box-shadow: 0 4px 14px 0 rgba(75, 85, 99, 0.39); }
-.pill-shadow-indigo { box-shadow: 0 4px 20px 0 rgba(79, 70, 229, 0.4); }
-.pill-shadow-white { box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.04); }
-
-/* Icon circle for pill cards */
-.icon-circle {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Hide scrollbars for sidebars and other specific panels */
@@ -1011,46 +1090,150 @@ html[data-compact="true"] div.grid > .card {
    translucent white so content stays readable on any theme.
    =========================================================================== */
 
+/* ═══════════════════════════════════════════════════════════════
+   Typography Scale — editorial system
+   Headings: Newsreader (serif) 500. UI: Geist (sans) 400/500/600.
+   Mono: Geist Mono (codes, dates, IDs in tables).
+═══════════════════════════════════════════════════════════════ */
+
+/* Global base overrides */
+html {
+  font-optical-sizing: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Display — hero-level (pages use .text-display) */
+.text-display {
+  font-family: inherit;
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+/* H1 */
+.text-h1 {
+  font-family: inherit;
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+/* H2 */
+.text-h2 {
+  font-family: inherit;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+/* H3 — switches to sans-serif */
+.text-h3 {
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+/* Body Large — long-form reading */
+.text-body-lg {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* Body */
+.text-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Small */
+.text-sm-ui {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Label — overline/metadata style */
+.text-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary, #5F5F5B);
+}
+
+/* Caption */
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-text-tertiary, #8A8A85);
+}
+
+/* Tabular/lining numbers for data columns */
+.tabular-nums {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Link style — accent with hairline underline */
+.link-styled,
+.prose a {
+  color: var(--color-primary);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease-out, color 150ms ease-out;
+}
+.link-styled:hover,
+.prose a:hover {
+  text-decoration-color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* Focus ring — 2px accent, 2px offset */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Motion — 150–200ms ease-out only. Respects prefers-reduced-motion.
+═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
 .font-display {
-  font-family: var(--font-display), "Space Grotesk", sans-serif;
+  font-family: var(--font-display, var(--font-sans)), "Space Grotesk", sans-serif;
 }
 
 .font-inter {
   font-family: var(--font-inter), "Inter", sans-serif;
-}
-
-/* Gentle hover-lift (mirrors the mock's .card-hover). */
-.card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.card-hover:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
-  z-index: 10;
-}
-
-/* Card gradients — exact stops from the mock. */
-.bg-grad-blue {
-  background: linear-gradient(to bottom right, #e0f2fe 0%, #bae6fd 100%);
-}
-.bg-grad-pink {
-  background: linear-gradient(to bottom right, #fce7f3 0%, #fbcfe8 100%);
-}
-.bg-grad-yellow {
-  background: #fef08a;
-}
-.bg-grad-indigo {
-  background: linear-gradient(to bottom right, #6366f1 0%, #8b5cf6 100%);
-}
-.bg-grad-mint {
-  background: #34d399;
-}
-.bg-grad-rainbow {
-  background: linear-gradient(to top right, #7dd3fc 0%, #e879f9 50%, #fde047 100%);
-}
-.bg-grad-gray {
-  background: #f8fafc;
-  border: 2px solid #f1f5f9;
 }
 
 /* Hide scrollbar helper (used by inner feeds/carousels). */
@@ -1062,16 +1245,6 @@ html[data-compact="true"] div.grid > .card {
   scrollbar-width: none;
 }
 
-/* Pill-style shadows matching the mock */
-.pill-shadow-green { box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.39); }
-.pill-shadow-blue { box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39); }
-.pill-shadow-purple { box-shadow: 0 4px 14px 0 rgba(168, 85, 247, 0.39); }
-.pill-shadow-pink { box-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.39); }
-.pill-shadow-light-pink { box-shadow: 0 4px 14px 0 rgba(244, 114, 182, 0.2); }
-.pill-shadow-yellow { box-shadow: 0 4px 14px 0 rgba(234, 179, 8, 0.39); }
-.pill-shadow-gray { box-shadow: 0 4px 14px 0 rgba(75, 85, 99, 0.39); }
-.pill-shadow-indigo { box-shadow: 0 4px 20px 0 rgba(79, 70, 229, 0.4); }
-.pill-shadow-white { box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05); }
 /* Markdown & README Content Typography */
 .prose h1,
 .readme-content h1 {
@@ -1187,3 +1360,73 @@ html[data-compact="true"] div.grid > .card {
   background: transparent;
   padding: 0;
 }
+
+/* Article reading comfort: 17px body, relaxed leading, quiet headings */
+.milkdown-container .ProseMirror,
+.milkdown-container.prose { font-size: 1.0625rem; line-height: 1.75; }
+.milkdown-container h2 { font-family: var(--font-newsreader); font-weight: 500 !important; letter-spacing: -0.015em !important; font-size: 1.75rem !important; }
+.milkdown-container h3 { font-weight: 600 !important; }
+
+/* Motion: transform + opacity only, off for reduced motion */
+@keyframes spot-pop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.spot-pop { animation: spot-pop .16s cubic-bezier(.2,.8,.2,1) both; }
+.rise { animation: rise .7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+@media (prefers-reduced-motion: reduce) { .rise, .spot-pop { animation: none !important; } }
+html[data-reduce-motion="true"] .rise, html[data-reduce-motion="true"] .spot-pop { animation: none !important; }
+
+/* Brand type: heavy condensed + italic serif with a highlighter underline */
+.t-brand { font-family: "Archivo Narrow", var(--font-geist-sans), sans-serif; font-weight: 700; letter-spacing: -0.01em; line-height: 1; }
+.t-voice { font-family: "Instrument Serif", var(--font-newsreader), serif; font-style: italic; font-weight: 400; }
+.t-mark { background: linear-gradient(transparent 62%, color-mix(in srgb, var(--color-accent) 55%, transparent) 62%); padding-right: 4px; }
+@keyframes orbit-turn { to { transform: rotate(360deg); } }
+.orbit-turn { animation: orbit-turn 80s linear infinite; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) { .orbit-turn { animation: none; } }
+html[data-reduce-motion="true"] .orbit-turn { animation: none; }
+
+/* Landing motion: transform and opacity only, off for reduced motion */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1); }
+.reveal-in { opacity: 1; transform: none; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee-track { display: flex; width: max-content; animation: marquee 45s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes caret { 50% { opacity: 0; } }
+.demo-caret { display: inline-block; width: 1.5px; height: 1.05em; margin-left: 1px; vertical-align: -2px; background: var(--color-primary); animation: caret 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .marquee-track, .demo-caret { animation: none; } .reveal { opacity: 1; transform: none; transition: none; } }
+html[data-reduce-motion="true"] .marquee-track, html[data-reduce-motion="true"] .demo-caret { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Consistency layer — one type, shape and control system app-wide.
+   Unlayered rules beat Tailwind utilities, so legacy classes used in
+   older components are retuned here instead of edited one by one.
+═══════════════════════════════════════════════════════════════ */
+
+/* Type: one sans family, no heavy "black" weights (article body keeps its own font) */
+.font-serif:not(.milkdown-container *, .prose *, .prose) { font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif; }
+.font-black, .font-extrabold { font-weight: 700; }
+h1, h2, h3 { letter-spacing: -0.025em; }
+
+/* Never below 12px; faint greys lifted to readable contrast */
+.text-\[9px\], .text-\[10px\] { font-size: 12px; }
+.text-base-content\/30, .text-base-content\/35, .text-base-content\/40,
+.text-base-content\/45, .text-base-content\/50, .text-base-content\/55 {
+  color: color-mix(in oklab, var(--color-base-content) 68%, transparent);
+}
+
+/* Shape: calmer corners everywhere */
+.rounded-3xl { border-radius: 1rem; }
+.rounded-2xl { border-radius: 0.75rem; }
+.rounded-xl { border-radius: 0.625rem; }
+.card { border-radius: 0.75rem; box-shadow: none; }
+
+/* Controls: one button, badge and field style */
+.btn:not(.btn-circle):not(.btn-square) { border-radius: 0.5rem; font-weight: 500; text-transform: none; box-shadow: none; min-height: 2.5rem; }
+.btn.btn-sm:not(.btn-circle):not(.btn-square) { min-height: 2.25rem; }
+.btn { box-shadow: none; --btn-shadow: 0 0 #0000; }
+.btn-primary { color: var(--color-primary-content); }
+.badge { border-radius: 0.375rem; font-weight: 500; text-transform: none; }
+.input, .select, .textarea { border-radius: 0.5rem; box-shadow: none; }
+.input:focus, .select:focus, .textarea:focus, .input:focus-within { outline-offset: 2px; }
+
+/* No glass or blur outside the top bar */
+.backdrop-blur-xl, .backdrop-blur-lg, .backdrop-blur-2xl, .backdrop-blur-3xl { -webkit-backdrop-filter: none; backdrop-filter: none; }

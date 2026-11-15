@@ -131,6 +131,11 @@ export default function HomeClient() {
     loadHomeData({ user: null, setTotalPagesCount });
   }, [loadHomeData, setTotalPagesCount]);
 
+  // Guests land on the welcome page; signed-in users get the wiki home.
+  useEffect(() => {
+    if (!authLoading && auth === false && !user) router.replace("/welcome");
+  }, [authLoading, auth, user, router]);
+
   const lastUserRef = useRef<string | null>("guest");
   useEffect(() => {
     if (authLoading || auth === null) return;
@@ -237,6 +242,8 @@ export default function HomeClient() {
   }, [newPages, updatedPages, popularPages, router]);
 
   if (authLoading || auth === null) return null;
+
+  if (!authLoading && auth === false && !user) return null;
 
   return (
     <>

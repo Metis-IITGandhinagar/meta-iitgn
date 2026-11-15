@@ -91,17 +91,15 @@ export default function BlogGridClient() {
   };
 
   return (
-    <main className="flex-1 p-6 md:p-8 mt-16 bg-transparent overflow-y-auto h-full w-full">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <main className="flex-1 px-5 lg:px-8 py-8 mt-16 bg-transparent overflow-y-auto h-full w-full">
+      <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Blog Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-base-200 pb-6">
           <div className="space-y-3 flex-1">
-            <div className="inline-flex items-center justify-center p-3 bg-primary/10 text-primary rounded-2xl shadow-xs">
-              <BookOpen className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
-              Explore Campus Blogs
+            <p className="t-eyebrow">Blogs</p>
+            <h1 className="t-display text-5xl md:text-6xl">
+              Stories from <em className="italic text-primary">campus</em>
             </h1>
             <p className="text-base-content/60 max-w-2xl text-sm md:text-base leading-relaxed">
               Discover stories, technical guides, research experiences, and student life articles from across the IITGN community.

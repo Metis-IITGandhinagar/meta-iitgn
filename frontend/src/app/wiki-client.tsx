@@ -824,7 +824,7 @@ export default function WikiClient({
         {" "}
         {/* Main Scrollable Article Body */}
         <main className="flex-1 min-w-full lg:min-w-0 px-4 md:px-8 pt-20 pb-28 overflow-y-auto bg-base-100 relative scroll-smooth text-base-content">
-          <article className="w-full max-w-5xl mx-auto space-y-6">
+          <article className="w-full max-w-3xl mx-auto space-y-6">
             {/* Teleported editor toolbar container */}
             {isEditing && (
               <div
@@ -847,7 +847,7 @@ export default function WikiClient({
                     />
                   ) : (
                     <div
-                      className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm w-12 h-12"
+                      className="inline-flex items-center justify-center p-2 rounded-xl w-10 h-10"
                       style={{
                         backgroundColor: `${pageColor || DEFAULT_COLOR}1a`,
                         color: pageColor || DEFAULT_COLOR,
@@ -864,10 +864,10 @@ export default function WikiClient({
                       initialValue={parsed.title}
                       onChange={handleTitleChange}
                       placeholder="Untitled Page"
-                      className="text-3xl sm:text-4xl font-display font-black tracking-tight text-base-content w-full border-none focus:outline-none focus:ring-0 mb-8 bg-transparent placeholder-base-content/30"
+                      className="t-display text-4xl sm:text-6xl text-base-content w-full border-none focus:outline-none focus:ring-0 mb-8 bg-transparent placeholder-base-content/30"
                     />
                   ) : (
-                    <h1 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-base-content mb-8">
+                    <h1 className="t-display text-4xl sm:text-6xl text-base-content mb-8">
                       {parsed.title}
                     </h1>
                   )}

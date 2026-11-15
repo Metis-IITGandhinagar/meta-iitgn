@@ -106,8 +106,8 @@ export default function InterviewFeedPage() {
   };
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-base-200/30 pt-14 pb-20 px-2 sm:px-4 mt-5">
-      <div className="mx-auto max-w-8xl md:px-5">
+    <div className="h-full w-full overflow-y-auto bg-base-100 pt-14 pb-20 px-0 mt-5">
+      <div className="mx-auto max-w-6xl px-5 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left Column: User Profile & Stats Widget (Desktop `lg` only) */}
           <aside className="hidden lg:block lg:col-span-3 space-y-6">
@@ -123,7 +123,7 @@ export default function InterviewFeedPage() {
             />
 
             {/* Quick Community Guidelines */}
-            <div className="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-sm space-y-3 text-xs">
+            <div className="rounded-2xl border border-base-200 bg-base-100 p-5  space-y-3 text-xs">
               <h4 className="font-black text-base-content flex items-center gap-1.5">
                 <Award className="h-4 w-4 text-warning" /> Feed Guidelines
               </h4>
@@ -139,7 +139,7 @@ export default function InterviewFeedPage() {
           <main className="lg:col-span-6 space-y-5">
             <h1 className="sr-only">Placement & Internship Interviews Feed</h1>
             {/* Create Post Bar (Mobile & Desktop Top) */}
-            <div className="rounded-3xl border border-base-200 bg-base-100 p-4 shadow-sm flex items-center gap-3">
+            <div className="rounded-2xl border border-base-200 bg-base-100 p-4  flex items-center gap-3">
               <div className="h-10 w-10 rounded-2xl bg-base-200 border border-base-300 overflow-hidden shrink-0">
                 <Avatar email={currentUser?.email} name={currentUser?.name || "User"} className="h-full w-full object-cover" />
               </div>
@@ -173,7 +173,7 @@ export default function InterviewFeedPage() {
              {/* Search & Tag Filter Bar */}
             <div className="space-y-3">
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/40" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/65" />
                 <input
                   type="text"
                   placeholder="Search by company, role, or keywords..."
@@ -197,7 +197,7 @@ export default function InterviewFeedPage() {
                           : "bg-base-100 border border-base-200 text-base-content/70 hover:bg-base-200"
                       }`}
                     >
-                      {tag === "All" ? "🔥 All Stories" : `#${tag}`}
+                      {tag === "All" ? "All stories" : `#${tag}`}
                     </button>
                   );
                 })}
@@ -208,12 +208,12 @@ export default function InterviewFeedPage() {
             {loadingFeed ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-44 w-full bg-base-100 rounded-3xl animate-pulse border border-base-200" />
+                  <div key={i} className="h-44 w-full bg-base-100 rounded-2xl animate-pulse border border-base-200" />
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="text-center py-16 border border-dashed border-base-300 rounded-3xl bg-base-100 p-6 space-y-3">
-                <MessageSquare className="h-12 w-12 mx-auto text-base-content/30" />
+              <div className="text-center py-16 border border-dashed border-base-300 rounded-2xl bg-base-100 p-6 space-y-3">
+                <MessageSquare className="h-12 w-12 mx-auto text-base-content/55" />
                 <h3 className="text-base font-black text-base-content">No Interview Stories Found</h3>
                 <p className="text-xs text-base-content/60 max-w-sm mx-auto">
                   Be the first student to share your interview experience for this tag or company!
@@ -256,11 +256,11 @@ export default function InterviewFeedPage() {
                 <div className="py-4 text-center">
                   {loadingMore && (
                     <div className="flex items-center justify-center gap-2 text-xs font-bold text-base-content/60">
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" /> Loading more experiences...
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" /> Loading more experiences…
                     </div>
                   )}
                   {!hasMore && posts.length > 0 && (
-                    <p className="text-xs text-base-content/40 font-medium">You&apos;ve reached the end of the feed!</p>
+                    <p className="text-xs text-base-content/65 font-medium">You&apos;ve reached the end of the feed!</p>
                   )}
                 </div>
               </div>
@@ -269,7 +269,7 @@ export default function InterviewFeedPage() {
 
           {/* Right Column: Featured Posts Showcase (Desktop `lg` only) */}
           <aside className="hidden lg:block lg:col-span-3 space-y-2">
-            <div className="rounded-3xl border border-accent/25 bg-base-100 p-3 shadow-sm space-y-3.5">
+            <div className="rounded-2xl border border-base-300 bg-base-100 p-3  space-y-3.5">
               <div className="flex items-center justify-between px-1">
                 <h3 className="text-xs font-black uppercase text-base-content tracking-wider flex items-center gap-1.5">
                   <Star className="h-4 w-4 text-accent fill-accent" /> Top Featured Stories
@@ -284,7 +284,7 @@ export default function InterviewFeedPage() {
                   ))}
                 </div>
               ) : featuredPosts.length === 0 ? (
-                <p className="text-xs text-base-content/50 italic py-4 text-center">
+                <p className="text-xs text-base-content/65 italic py-4 text-center">
                   No featured stories yet. Check back soon!
                 </p>
               ) : (
@@ -293,7 +293,7 @@ export default function InterviewFeedPage() {
                     <div
                       key={post.post_id}
                       onClick={() => setSelectedFeaturedPost(post)}
-                      className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-base-100 via-base-200/40 to-base-100 border border-base-200/80 hover:border-accent/50 hover:shadow-md transition-all duration-200 cursor-pointer group relative overflow-hidden flex flex-col gap-2.5"
+                      className="p-3 sm:p-3.5 rounded-2xl bg-base-100 border border-base-200/80 hover:border-accent/50  transition-all duration-200 cursor-pointer group relative overflow-hidden flex flex-col gap-2.5"
                     >
                       {/* Author Header */}
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -310,14 +310,14 @@ export default function InterviewFeedPage() {
                               {post.owner?.name || "Campus Student"}
                             </h4>
                             {post.company && (
-                              <span className="badge badge-accent badge-outline badge-xs text-[10px] font-bold shrink-0">
+                              <span className="badge badge-accent badge-outline badge-xs text-[12px] font-bold shrink-0">
                                 {post.company}
                               </span>
                             )}
                           </div>
                           {post.role && (
-                            <p className="text-[10px] font-medium text-base-content/60 truncate flex items-center gap-1">
-                              <Briefcase className="h-2.5 w-2.5 text-base-content/40" /> {post.role}
+                            <p className="text-[12px] font-medium text-base-content/60 truncate flex items-center gap-1">
+                              <Briefcase className="h-2.5 w-2.5 text-base-content/65" /> {post.role}
                             </p>
                           )}
                         </div>
@@ -329,10 +329,10 @@ export default function InterviewFeedPage() {
                       </p>
 
                       {/* Card Footer */}
-                      <div className="flex items-center justify-between pt-1.5 border-t border-base-200/60 text-[10px] text-base-content/60 font-semibold">
+                      <div className="flex items-center justify-between pt-1.5 border-t border-base-200/60 text-[12px] text-base-content/60 font-semibold">
                         <div className="flex items-center gap-1.5">
                           {post.tags && post.tags.length > 0 && (
-                            <span className="badge badge-ghost badge-xs text-[10px] font-medium">
+                            <span className="badge badge-ghost badge-xs text-[12px] font-medium">
                               #{post.tags[0]}
                             </span>
                           )}

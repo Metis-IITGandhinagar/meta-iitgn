@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { api } from "@/lib/api";
-import { BookOpen, AlertCircle, CheckCircle, X, ChevronLeft } from "lucide-react";
+import Image from "next/image";
+import { AlertCircle, CheckCircle, ChevronLeft } from "lucide-react";
+import { BrandMark } from "@/components/helpers/BrandMark";
 
 export default function LoginPage() {
   useDocumentTitle("Log In");
@@ -20,17 +22,6 @@ export default function LoginPage() {
 
 
   
-  // Cursor-following 3D tilt for the login card (interaction-safe alternative to
-  // daisyUI's hover-3d, whose overlay zones would block the close button / form).
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
-  const handleCardTilt = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    setTilt({ rx: (0.5 - py) * 10, ry: (px - 0.5) * 10 });
-  };
-  const resetCardTilt = () => setTilt({ rx: 0, ry: 0 });
-
   // If already authenticated, redirect to home page
   useEffect(() => {
     if (auth) {
@@ -81,114 +72,76 @@ export default function LoginPage() {
   });
 
 
+  const goBack = () => {
+    if (window.history.length > 1) router.back();
+    else router.push("/");
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/65 overflow-hidden font-sans p-4">
-      {/* Background decoration blobs inside popover */}
-      <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-neutral font-sans text-white">
+      <Image
+        src="/homepage_bg.webp"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+      />
+      <div className="absolute inset-0 bg-black/55" aria-hidden />
 
-      {/* Popover container card */}
-      <div
-        onMouseMove={handleCardTilt}
-        onMouseLeave={resetCardTilt}
-        style={{
-          transform: `perspective(1200px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
-          transition: tilt.rx === 0 && tilt.ry === 0 ? "transform .4s ease-out" : "transform .08s ease-out",
-        }}
-        className="relative w-full max-w-md bg-base-100 border border-base-300/80 rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.25)] p-8 flex flex-col items-center animate-in zoom-in-95 duration-200 will-change-transform"
-      >
-        {/* Close Button */}
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              router.back();
-            } else {
-              router.push("/");
-            }
-          }}
-          className="absolute top-5 right-5 p-1.5 text-base-content/50 hover:text-base-content/85 hover:bg-base-200 rounded-xl transition-all duration-200 cursor-pointer active:scale-95"
-          aria-label="Close Login Modal"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 mb-2 mt-2">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/25 shrink-0">
-            <BookOpen className="w-4.5 h-4.5 text-primary-content" />
+      <main id="main-content" className="relative min-h-full flex items-center justify-center p-5">
+        <div className="w-full max-w-md rounded-3xl bg-base-100 text-base-content p-8 sm:p-10">
+          <div className="flex items-center gap-3">
+            <BrandMark size={36} />
+            <span className="text-[17px] font-semibold tracking-tight" translate="no">Meta IITGN</span>
           </div>
-          <span className="text-xl font-serif font-black tracking-tight text-base-content">
-            META <span className="text-primary">IITGN</span>
-          </span>
-        </div>
-        <p className="text-base-content/50 text-xs text-center mb-8 font-medium tracking-wide uppercase">
-          The Collaborative Campus Wiki
-        </p>
 
-        {/* Notifications */}
-        {status.type && (
-          <div
-            className={`w-full mb-5 p-3.5 rounded-2xl flex items-start gap-3 border text-xs transition-all duration-300 ${
-              status.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                : "bg-rose-50 border-rose-200 text-rose-800"
-            }`}
-          >
-            {status.type === "success" ? (
-              <CheckCircle className="w-4.5 h-4.5 shrink-0 text-emerald-600" />
-            ) : (
-              <AlertCircle className="w-4.5 h-4.5 shrink-0 text-rose-600" />
+          <h1 className="t-display text-balance text-4xl mt-8">Welcome back.</h1>
+          <p className="mt-3 text-[15px] text-base-content/75 leading-relaxed">
+            Sign in to edit pages, save articles and read PrepMat.
+          </p>
+
+          <div role="status" aria-live="polite">
+            {status.type && (
+              <div
+                className={`mt-6 p-3.5 rounded-xl flex items-start gap-3 border text-[13px] ${
+                  status.type === "success"
+                    ? "bg-success/10 border-success/40 text-base-content"
+                    : "bg-error/10 border-error/40 text-base-content"
+                }`}
+              >
+                {status.type === "success" ? (
+                  <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-success" aria-hidden />
+                ) : (
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-error" aria-hidden />
+                )}
+                <p className="leading-relaxed">{status.message}</p>
+              </div>
             )}
-            <div>
-              <p className="font-bold">{status.type === "success" ? "Success" : "Error"}</p>
-              <p className="mt-0.5 opacity-90 font-medium leading-relaxed">{status.message}</p>
-            </div>
           </div>
-        )}
 
-        {/* Google Login Button */}
-        <button
-          onClick={() => handleGoogleLogin()}
-          disabled={loading}
-          className="w-full h-11 flex items-center justify-center gap-3 px-6 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-content font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed select-none active:scale-98 text-sm"
-        >
-          <svg className="w-4.5 h-4.5 text-primary-content fill-current shrink-0" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.58c-.28 1.48-1.12 2.74-2.38 3.58v2.98h3.84c2.24-2.06 3.53-5.1 3.53-8.41z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.84-2.98c-1.08.72-2.45 1.16-4.09 1.16-3.15 0-5.81-2.13-6.76-5.01H1.44v3.08C3.42 21.09 7.43 24 12 24z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.24 14.26c-.24-.72-.38-1.5-.38-2.31s.14-1.59.38-2.31V6.56H1.44C.52 8.4.02 10.46.02 12.63c0 2.17.5 4.23 1.42 6.07l3.8-2.97z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0 7.43 0 3.42 2.91 1.44 6.56l3.8 2.97c.95-2.88 3.61-5.01 6.76-5.01z"
-            />
-          </svg>
-          {loading ? "Signing in..." : "Continue with Google"}
-        </button>
+          <button
+            onClick={() => handleGoogleLogin()}
+            disabled={loading}
+            className="mt-7 w-full h-12 flex items-center justify-center gap-3 rounded-full border border-base-300 bg-white text-[#1B1A18] text-[15px] font-medium hover:border-base-content disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer touch-manipulation"
+          >
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.58c-.28 1.48-1.12 2.74-2.38 3.58v2.98h3.84c2.24-2.06 3.53-5.1 3.53-8.41z" />
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.84-2.98c-1.08.72-2.45 1.16-4.09 1.16-3.15 0-5.81-2.13-6.76-5.01H1.44v3.08C3.42 21.09 7.43 24 12 24z" />
+              <path fill="#FBBC05" d="M5.24 14.26c-.24-.72-.38-1.5-.38-2.31s.14-1.59.38-2.31V6.56H1.44C.52 8.4.02 10.46.02 12.63c0 2.17.5 4.23 1.42 6.07l3.8-2.97z" />
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0 7.43 0 3.42 2.91 1.44 6.56l3.8 2.97c.95-2.88 3.61-5.01 6.76-5.01z" />
+            </svg>
+            {loading ? "Signing in…" : "Continue with Google"}
+          </button>
 
-        {/* Go Back button */}
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              router.back();
-            } else {
-              router.push("/");
-            }
-          }}
-          className="mt-6 p-1.5 text-base-content/50 hover:text-base-content hover:bg-base-200 rounded-lg cursor-pointer flex items-center justify-center active:scale-95 transition-all select-none"
-          aria-label="Go back"
-          title="Go back"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      </div>
+          <button
+            onClick={goBack}
+            className="mt-4 w-full min-h-11 inline-flex items-center justify-center gap-1.5 rounded-full text-[14px] text-base-content/75 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer touch-manipulation"
+          >
+            <ChevronLeft className="w-4 h-4" aria-hidden /> Back
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

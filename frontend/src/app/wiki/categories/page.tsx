@@ -28,11 +28,11 @@ export default function AllCategoriesPage() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto bg-base-100 mt-15">
-      <div className="max-w-5xl mx-auto px-6 py-6">
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <h1 className="text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
-            All Categories
+    <main className="flex-1 overflow-y-auto bg-base-100 mt-16">
+      <div className="max-w-6xl mx-auto px-5 lg:px-8 pt-10 pb-16">
+        <div className="flex items-center justify-between gap-3 mb-8">
+          <h1 className="t-display text-4xl md:text-5xl">
+            Browse the <em className="italic text-primary">wiki</em>
           </h1>
           {canManage && (
             <button
