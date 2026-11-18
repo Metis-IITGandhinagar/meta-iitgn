@@ -220,7 +220,7 @@ function RepoCard({ repo, featured }: RepoCardProps) {
           </div>
 
           {/* Topics */}
-          {repo.topics?.length > 0 && (
+          {(repo.topics ?? []).length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               {repo.topics.slice(0, 3).map((topic) => (
                 <span
