@@ -233,7 +233,7 @@ function RepoCard({ repo, featured }: RepoCardProps) {
                 </span>
               ))}
 
-              {repo.topics.length > 3 && (
+              {repo.topics && (repo.topics.length > 3) && (
                 <span className="px-1 py-1 text-xs
                   text-base-content/50">
                   +{repo.topics.length - 3}
