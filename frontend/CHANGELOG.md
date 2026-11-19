@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.6.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.5.0...frontend-v1.6.0) (2026-11-19)
+
+
+### Features
+
+* **frontend:** added prepmat ([02ee23f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/02ee23f7e8732f37cee834a105ef117633136b1a))
+* **frontend:** added prepmat ([29b7ccd](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/29b7ccd8bab2f8256b2f8da22962516707a6e5af))
+* **ui:** redesign landing, wiki home and shared design system ([27d44fa](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/27d44fa2fcd463ecde8851e0a7c980b2d73e98b1))
+* **ui:** redesign landing, wiki home and shared design system ([4ce5413](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4ce541397cd57105d2ec7faf1791d15dce310dba))
+
+
+### Bug Fixes
+
+* **frontend:** fixed profile readme overflow and rendering ([ccd1c1d](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ccd1c1d0ff53c21a1a2f15595d5612d9fcb782b7))
+* **frontend:** make find an article button navigate to categories ([4ca08f2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/4ca08f249ea60620c26067372752c84aeba2b9b2))
+* **frontend:** make find an article button navigate to categories ([218c2bf](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/218c2bfee5bda2933457e1f862124783d1d9f7ab))
+* **frontend:** ovelays and images ([5c3b2f8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5c3b2f8ec2a1e3da34bef0adbff0b09b0023b737))
+* **frontend:** post auth verification ([824dc78](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/824dc78b42e95da70404170b784b8b8e66b98e58))
+* **frontend:** some uis ([66a2291](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/66a229135278acdd9c1f21249b9f7ee56064970b))
+* removed pyq feature ([ba83af1](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/ba83af129fa1b780aba29dc430d14d5d56a13ee9))
+* **ui:** make every page and overlay follow the shared design system ([eb7d1a2](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/eb7d1a2c7f438029330cff9ce19398e36a4e815b))
+* **ui:** make every page and overlay follow the shared design system ([e177350](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/e1773509cba3ffb706500d3ac444dc933d601698))
+* **ui:** make every page work properly on phones ([beac19f](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/beac19f998061a66a1c512262773ffbd9d11fba1))
+* **ui:** make every page work properly on phones ([461eb12](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/461eb129fda6718becf0e819afd10d204492640a))
+* **ui:** make theme reduction robust and regenerate ([55ce4ad](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/55ce4ad4b1346fe1a3794336667e40f47faac8b3))
+* **ui:** Reduce themes to 3 (cupcake, dark, light) ([0dc43be](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/0dc43be19d4722a621e66a1c148db5ccf0fcf4d2))
+* **ui:** Reduce themes to 3 (cupcake, dark, light) ([5eff82c](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/5eff82cb19b7ce78dc8bbdd2189b4d98c28aec8b))
+* **ui:** restore missing actions and fix focus, overlay and button bugs ([a1ef6ad](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/a1ef6ad1f64ff57e66e6487a7a2fb43deeed3473))
+* **ui:** restore missing actions and fix focus, overlay and button bugs ([070b275](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/070b275b170bce1592eef3b8149825f54885c604))
+
+
+### Code Refactoring
+
+* **frontend:** removed unused code ([fd025cf](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/fd025cf1498ae3ca409d9d8e2d4dae44349b91e4))
+* **frontend:** updated home page ui ([30159e8](https://github.com/Metis-IITGandhinagar/meta-iitgn/commit/30159e8ed0dd782cdd35f419861f845ad1021bee))
+
 ## [1.5.0](https://github.com/Metis-IITGandhinagar/meta-iitgn/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-07-31)
 
 
