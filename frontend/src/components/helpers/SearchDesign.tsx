@@ -13,45 +13,53 @@ interface BeautifulSearchBoxProps {
   autoFocus?: boolean;
 }
 
+/** Search field in the shared style: hairline box, focus shown on the box, not the bare input. */
 export function BeautifulSearchBox({
   value,
   onChange,
   onSubmit,
-  placeholder = "Find...",
+  placeholder = "Find…",
   variant = "default",
   autoFocus = false,
 }: BeautifulSearchBoxProps) {
   const isCompact = variant === "compact";
 
   return (
-    <div className={`relative w-full mx-auto select-none ${isCompact ? "py-1" : "py-4 px-2"}`}>
-      <form
-        onSubmit={onSubmit}
-        className="relative z-10 w-full"
+    <form onSubmit={onSubmit} role="search" className="w-full">
+      <label className="sr-only" htmlFor="page-search">
+        Search
+      </label>
+      <div
+        className={`flex items-center gap-3 px-4 rounded-xl border border-base-300 bg-base-100 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition ${
+          isCompact ? "h-12" : "h-14"
+        }`}
       >
-        <div className="relative">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={`input border-none focus:border-none focus:outline-none focus:ring-0 focus-visible:ring-4 focus-visible:ring-indigo-500 block w-full pl-12 pr-4 py-4 bg-transparent  rounded-[2rem] text-slate-700 placeholder-slate-400  focus:ring-indigo-500  transition-all pill-shadow-white text-base shadow-[0_8px_30px_rgba(0,0,0,0.04)] ${isCompact ? "py-3 text-sm" : ""}`}
-            autoFocus={autoFocus}
-          />
-          {value && (
-            <button
-              type="button"
-              onClick={() => onChange("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-              aria-label="Clear search"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </form>
-    </div>
+        <Search className="h-[18px] w-[18px] shrink-0 text-base-content/55" aria-hidden />
+        <input
+          id="page-search"
+          type="search"
+          name="query"
+          spellCheck={false}
+          enterKeyHint="search"
+          autoComplete="off"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`flex-1 min-w-0 bg-transparent outline-none placeholder:text-base-content/50 ${isCompact ? "text-[15px]" : "text-base"}`}
+          autoFocus={autoFocus}
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="h-9 w-9 -mr-2 inline-flex items-center justify-center rounded-lg text-base-content/60 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        )}
+      </div>
+    </form>
   );
 }
 
@@ -63,6 +71,7 @@ interface BeautifulTabBarProps {
   categoryIconMap?: Record<string, React.ComponentType<{ className?: string }>>;
 }
 
+/** Filter chips in the shared style. */
 export function BeautifulTabBar({
   categories,
   activeCategory,
@@ -70,29 +79,28 @@ export function BeautifulTabBar({
   categoryIconMap,
 }: BeautifulTabBarProps) {
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-4 py-2 select-none">
-      {/* Elevated tab container with balanced border and centered omnidirectional shadow */}
-      <div className="flex gap-2 overflow-x-auto p-2 bg-base-100/90 backdrop-blur-md border border-base-300 rounded-2xl scrollbar-none shadow-[0_0_28px_rgba(0,0,0,0.08)]">
-        {categories.map((cat) => {
-          const isSelected = activeCategory === cat;
-          const Icon = categoryIconMap?.[cat];
+    <div role="tablist" aria-label="Filter results" className="flex gap-2 overflow-x-auto scrollbar-none select-none">
+      {categories.map((cat) => {
+        const isSelected = activeCategory === cat;
+        const Icon = categoryIconMap?.[cat];
 
-          return (
-            <button
-              key={cat}
-              onClick={() => onCategoryChange(cat)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border border-transparent transition-all duration-200 cursor-pointer ${
-                isSelected
-                  ? "bg-primary text-primary-content shadow-lg transform scale-[1.02]"
-                  : "bg-base-200 text-base-content/70 hover:bg-base-300 hover:text-base-content"
-              }`}
-            >
-              {Icon && <Icon className={`w-4 h-4 ${isSelected ? "text-primary-content/90" : "text-base-content/50"}`} />}
-              <span>{cat}</span>
-            </button>
-          );
-        })}
-      </div>
+        return (
+          <button
+            key={cat}
+            role="tab"
+            aria-selected={isSelected}
+            onClick={() => onCategoryChange(cat)}
+            className={`inline-flex items-center gap-2 min-h-9 px-3.5 rounded-full border text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
+              isSelected
+                ? "bg-base-content text-base-100 border-base-content"
+                : "border-base-300 text-base-content/75 hover:border-base-content/40 hover:text-base-content"
+            }`}
+          >
+            {Icon && <Icon className="h-4 w-4" aria-hidden />}
+            <span>{cat}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

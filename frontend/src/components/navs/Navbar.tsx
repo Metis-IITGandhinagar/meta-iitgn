@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
 import { useCommonStore } from "@/store/useCommonStore";
 import Link from "next/link";
 import {
+  ChevronLeft,
   Menu,
   X,
   Search,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { InstituteLogo } from "@/components/helpers/InstituteLogo";
 import { ThemeToggle } from "@/components/helpers/ThemeToggle";
+import { Portal } from "@/components/helpers/Portal";
 import { Spotlight } from "@/components/helpers/Spotlight";
 import { SECTIONS, sectionForPath } from "@/lib/sections";
 import { BrandMark } from "@/components/helpers/BrandMark";
@@ -50,6 +52,7 @@ export default function Navbar({
   const removeBookmark = useHomeStore((s) => s.removeBookmark);
   const bookmarks = useHomeStore((s) => s.bookmarks);
   const pathname = usePathname();
+  const router = useRouter();
   const segments = pathname?.split("/").filter(Boolean) ?? [];
   const isWikiArticlePage = (segments[0] === "wiki" || segments[0] === "blog") && segments.length >= 3;
 
@@ -178,6 +181,16 @@ export default function Navbar({
       </a>
       <div className="max-w-6xl mx-auto w-full h-full flex items-center gap-2 px-5 lg:px-8">
         {/* Brand + where you are */}
+        {segments.length >= 2 && (
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            aria-label="Go back"
+            className={`h-11 w-11 -ml-2 inline-flex shrink-0 items-center justify-center rounded-full cursor-pointer touch-manipulation ${ov ? "hover:bg-white/15" : "hover:bg-base-200"}`}
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden />
+          </button>
+        )}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-full pr-2" aria-label="Meta IITGN home">
           <BrandMark size={30} />
           <span className="text-[15px] font-semibold tracking-tight" translate="no">Meta IITGN</span>
@@ -222,10 +235,11 @@ export default function Navbar({
             onClick={() => setMobileOpen((o) => !o)}
             aria-haspopup="menu"
             aria-expanded={mobileOpen}
-            className={`h-11 px-4 inline-flex items-center gap-2 rounded-full text-[13px] font-medium cursor-pointer touch-manipulation transition-colors ${pill}`}
+            aria-label="Menu"
+            className={`h-11 min-w-11 px-3 sm:px-4 inline-flex items-center justify-center gap-2 rounded-full text-[13px] font-medium cursor-pointer touch-manipulation transition-colors ${pill}`}
           >
             {mobileOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
-            Menu
+            <span className="hidden sm:inline">Menu</span>
           </button>
           {mobileOpen && (
             <nav
@@ -267,7 +281,7 @@ export default function Navbar({
 
         <div className="flex items-center gap-1.5">
           {!user ? (
-            <Link href="/login" className={`h-11 px-5 inline-flex items-center rounded-full text-[13px] font-medium hover:opacity-85 transition-opacity ${ov ? "bg-white text-[#1B1A18]" : "bg-base-content text-base-100"}`}>
+            <Link href="/login" className={`h-11 px-4 sm:px-5 inline-flex items-center whitespace-nowrap rounded-full text-[13px] font-medium hover:opacity-85 transition-opacity ${ov ? "bg-white text-[#1B1A18]" : "bg-base-content text-base-100"}`}>
               Sign in
             </Link>
           ) : (
@@ -444,12 +458,14 @@ export default function Navbar({
         </div>
       </div>
       <Spotlight open={spotlightOpen} onClose={() => setSpotlightOpen(false)} />
+      <Portal>
       <ShareModal
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
         url={shareData.url}
         title={shareData.title}
       />
+      </Portal>
     </header>
   );
 }

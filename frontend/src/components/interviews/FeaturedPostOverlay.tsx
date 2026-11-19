@@ -31,7 +31,7 @@ export default function FeaturedPostOverlay({ post, onClose }: FeaturedPostOverl
     >
       <div className="flex flex-col gap-6 font-sans select-text pb-8">
         {/* Banner header */}
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-accent/15 via-primary/10 to-secondary/15 border border-accent/20">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-300">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-accent/20 text-accent font-bold">
               <Star className="h-5 w-5 fill-current" />

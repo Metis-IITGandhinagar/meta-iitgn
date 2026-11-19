@@ -334,6 +334,7 @@ export default function GitHubExplorer() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // ---------------------------------------------------------------------------
   // Initial / filter-change load
@@ -370,7 +371,7 @@ export default function GitHubExplorer() {
 
     return () => abortRef.current?.abort();
      
-  }, [category, level, search]);
+  }, [category, level, search, reloadKey]);
 
   // ---------------------------------------------------------------------------
   // Load more
@@ -520,9 +521,18 @@ export default function GitHubExplorer() {
 
       {/* ── Error ── */}
       {error && (
-        <div className="alert alert-error">
-          <AlertCircle className="h-5 w-5 shrink-0" />
-          <span>{error}</span>
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-[14px]">
+          <span className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-error" aria-hidden />
+            Couldn&apos;t load projects right now.
+          </span>
+          <button
+            type="button"
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="min-h-9 rounded-lg border border-base-300 px-3 text-[13px] font-medium hover:bg-base-200 cursor-pointer"
+          >
+            Try again
+          </button>
         </div>
       )}
 
@@ -598,20 +608,20 @@ export default function GitHubExplorer() {
           </div>
 
           {/* CTA card */}
-          <div className="card bg-gradient-to-br from-primary to-secondary text-primary-content">
+          <div className="card bg-accent/[0.08] border border-base-300">
             <div className="card-body p-5 gap-3">
-              <span className="badge badge-sm bg-primary-content/20 border-none text-primary-content">
+              <span className="badge badge-sm bg-primary/10 border-none text-primary">
                 New to open source?
               </span>
               <h3 className="font-bold text-base">Start with a good first issue</h3>
-              <p className="text-sm opacity-90 leading-relaxed">
+              <p className="text-sm text-base-content/75 leading-relaxed">
                 Switch to Beginner level to find welcoming, well-documented projects that are perfect
                 for first-time contributors.
               </p>
               <div className="card-actions mt-1">
                 <button
                   onClick={() => setLevel(LEVELS[1])}
-                  className="btn btn-sm bg-primary-content/10 border-primary-content/30 hover:bg-primary-content/20 text-primary-content"
+                  className="btn btn-sm btn-primary"
                 >
                   Browse beginner repos
                 </button>

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownLeft, History, PenLine, Search, type LucideIcon } from "lucide-react";
 import { SECTIONS } from "@/lib/sections";
+import { Portal } from "@/components/helpers/Portal";
 import { addSearchHistory, getSearchHistory } from "@/lib/searchHistory";
 
 interface Item {
@@ -86,6 +87,7 @@ export function Spotlight({ open, onClose }: { open: boolean; onClose: () => voi
 
   let lastGroup = "";
   return (
+    <Portal>
     <div className="fixed inset-0 z-[10050] flex items-start justify-center px-4 pt-[12vh]" onKeyDown={onKey}>
       <button type="button" aria-label="Close search" tabIndex={-1} onClick={onClose} className="absolute inset-0 bg-black/55 backdrop-blur-[2px] cursor-default" />
       <div
@@ -146,5 +148,6 @@ export function Spotlight({ open, onClose }: { open: boolean; onClose: () => voi
         </ul>
       </div>
     </div>
+    </Portal>
   );
 }
