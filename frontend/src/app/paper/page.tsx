@@ -169,7 +169,7 @@ const Home = () => {
 
           <Link
             href={user ? "/paper/upload" : "/login"}
-            className="group inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30 hover:-translate-y-0.5"
+            className="group inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30 "
           >
             <svg
               className="h-4 w-4 transition-transform group-hover:rotate-90"
@@ -262,7 +262,7 @@ const Home = () => {
             <div className="flex items-center gap-2 w-full sm:col-span-2 md:col-span-1">
               <button
                 onClick={handleGo}
-                className="flex-1 md:flex-initial px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30 hover:-translate-y-0.5 active:translate-y-0"
+                className="flex-1 md:flex-initial px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30  active:translate-y-0"
               >
                 Go
               </button>
@@ -338,7 +338,7 @@ const Home = () => {
               {papers.map((paper) => (
                 <div
                   key={paper.paper_id}
-                  className="group rounded-xl border border-base-300 bg-base-100 hover:border-blue-500/40 hover:shadow-lg hover:shadow-black/5 hover:-translate-y-0.5 transition-all duration-200"
+                  className="group rounded-xl border border-base-300 bg-base-100 hover:border-blue-500/40 hover:shadow-lg hover:shadow-black/5  transition-all duration-200"
                 >
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-3">

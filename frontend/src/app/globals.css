@@ -1441,3 +1441,6 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appe
 .alert-warning { background: color-mix(in oklab, var(--color-warning) 9%, var(--color-base-100)); border-color: color-mix(in oklab, var(--color-warning) 30%, transparent); }
 .alert-success { background: color-mix(in oklab, var(--color-success) 8%, var(--color-base-100)); border-color: color-mix(in oklab, var(--color-success) 30%, transparent); }
 .alert-info { background: color-mix(in oklab, var(--color-info) 8%, var(--color-base-100)); border-color: color-mix(in oklab, var(--color-info) 30%, transparent); }
+
+/* No blur on scrims and cards (the top bar keeps its own) */
+:not(header).backdrop-blur-xs, :not(header).backdrop-blur-sm, :not(header).backdrop-blur-md, :not(header).backdrop-blur { -webkit-backdrop-filter: none; backdrop-filter: none; }

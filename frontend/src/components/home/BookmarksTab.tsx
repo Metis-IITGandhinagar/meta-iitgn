@@ -263,7 +263,7 @@ export default function BookmarksTab({
             {setActiveTab && (
               <button
                 onClick={() => setActiveTab("home")}
-                className="btn btn-primary btn-sm mt-6 px-6 font-bold rounded-full text-xs uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:shadow-primary/20 active:scale-95 text-primary-content"
+                className="btn btn-primary btn-sm mt-6 px-6 font-bold rounded-full text-xs uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-md  active:scale-95 text-primary-content"
               >
                 <Compass className="w-4 h-4" />
                 Explore Wiki

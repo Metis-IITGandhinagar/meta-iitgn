@@ -89,7 +89,7 @@ export default function IconColorPicker({
         ref={emojiTriggerRef}
         type="button"
         onClick={() => setEmojiPickerOpen((o) => !o)}
-        className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm transition-transform duration-200 cursor-pointer hover:scale-105 active:scale-95"
+        className="inline-flex items-center justify-center p-3 rounded-2xl shadow-sm transition-transform duration-200 cursor-pointer  active:scale-95"
         style={{
           backgroundColor: `${currentColor || "#4f46e5"}1a`,
           color: currentColor || "#4f46e5",
@@ -106,7 +106,7 @@ export default function IconColorPicker({
           ref={colorTriggerRef}
           type="button"
           onClick={() => setColorPickerOpen((o) => !o)}
-          className="w-8 h-8 rounded-full border-2 shadow-sm transition-transform duration-200 cursor-pointer hover:scale-110 active:scale-95 flex-shrink-0"
+          className="w-8 h-8 rounded-full border-2 shadow-sm transition-transform duration-200 cursor-pointer  active:scale-95 flex-shrink-0"
           style={{ backgroundColor: currentColor, borderColor: currentColor }}
           title="Set color"
           aria-label="Set color"
@@ -167,7 +167,7 @@ export default function IconColorPicker({
                 key={c}
                 type="button"
                 onClick={() => handleColorSelect(c)}
-                className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 active:scale-95 ${
+                className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer  active:scale-95 ${
                   currentColor === c
                     ? "border-base-content shadow-md scale-110"
                     : "border-transparent"

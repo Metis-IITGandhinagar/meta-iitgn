@@ -97,7 +97,7 @@ export default function InterviewMediaSlider({ media }: InterviewMediaSliderProp
                 alt={`Post image ${idx + 1}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                className="object-cover transition-transform duration-300 "
                 unoptimized={true}
               />
             </div>
@@ -121,7 +121,7 @@ export default function InterviewMediaSlider({ media }: InterviewMediaSliderProp
           <button
             type="button"
             onClick={prevSlide}
-            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-base-100/90 text-base-content shadow-lg backdrop-blur-md opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all hover:scale-110 cursor-pointer z-10"
+            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-base-100/90 text-base-content shadow-lg backdrop-blur-md opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all  cursor-pointer z-10"
             aria-label="Previous image"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -129,7 +129,7 @@ export default function InterviewMediaSlider({ media }: InterviewMediaSliderProp
           <button
             type="button"
             onClick={nextSlide}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-base-100/90 text-base-content shadow-lg backdrop-blur-md opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all hover:scale-110 cursor-pointer z-10"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-base-100/90 text-base-content shadow-lg backdrop-blur-md opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all  cursor-pointer z-10"
             aria-label="Next image"
           >
             <ChevronRight className="h-5 w-5" />
@@ -160,7 +160,7 @@ export default function InterviewMediaSlider({ media }: InterviewMediaSliderProp
       {/* Fullscreen Lightbox Modal rendered via Portal directly onto document.body */}
       {fullscreenImage && mounted && createPortal(
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 p-4 animate-fade-in"
           onClick={() => setFullscreenImage(null)}
         >
           <button

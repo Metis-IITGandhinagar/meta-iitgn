@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "@/components/helpers/confirmDialog";
 import React, { useState, useEffect } from "react";
 import { Loader2, Plus, Pencil, Trash2, Calendar, MapPin, Clock, Save } from "lucide-react";
 import { apiService } from "@/api";
@@ -137,7 +138,7 @@ export default function EventsOverlay({ isOpen, onClose, onSaved }: EventsOverla
   };
 
   const handleDelete = async (eventId: number) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+    if (!(await confirmDialog({ title: "Delete this event?", message: "It will be removed for everyone. This can't be undone.", confirmText: "Delete", type: "danger" }))) return;
     try {
       await apiService.deleteEvent(eventId);
       toast.success("Event deleted successfully!");

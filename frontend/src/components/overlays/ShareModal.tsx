@@ -84,7 +84,7 @@ export default function ShareModal({ isOpen, onClose, url, title }: ShareModalPr
 
   return (
     <div
-      className="fixed inset-0 bg-base-content/40 backdrop-blur-xs flex items-center justify-center z-[21000] p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[21000] p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

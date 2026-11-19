@@ -96,7 +96,7 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
   const videoId = newsItem.video_url ? getYouTubeId(newsItem.video_url) : null;
 
   return (
-    <main className="flex-1 p-6 md:p-8 lg:p-12 bg-base-100 mt-10 overflow-y-auto h-full w-full select-text">
+    <main className="flex-1 px-5 lg:px-8 pt-8 pb-16 bg-base-100 mt-16 overflow-y-auto h-full w-full select-text">
       <div className="max-w-3xl mx-auto space-y-6">
         
         {/* Breadcrumb Navigation */}
@@ -220,7 +220,7 @@ export default function NewsDetailClient({ initialNewsItem }: NewsDetailClientPr
           /* View Mode */
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl font-serif font-black text-base-content leading-tight">
+              <h1 className="t-display text-balance text-4xl md:text-5xl text-base-content">
                 {newsItem.title}
               </h1>
               <div className="flex items-center gap-4 text-xs text-base-content/60 font-semibold border-b border-base-200 pb-4">

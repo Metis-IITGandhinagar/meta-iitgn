@@ -1,3 +1,4 @@
+import { PageMessage, pagePrimaryAction } from "@/components/helpers/PageMessage";
 import type { Metadata } from "next";
 import { cache } from "react";
 import Link from "next/link";
@@ -55,15 +56,18 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
   if (!blog) {
     return (
-      <main className="flex-1 p-6 md:p-8 mt-16 bg-transparent">
-        <div className="max-w-3xl mx-auto text-center py-20">
-          <h1 className="text-3xl font-bold text-base-content font-serif">Blog Post Not Found</h1>
-          <p className="text-base-content/60 mt-2">The requested blog post does not exist or has been deleted.</p>
-          <Link href="/blog" className="btn btn-primary inline-flex items-center gap-2 mt-6 rounded-xl text-primary-content">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Blogs</span>
-          </Link>
-        </div>
+      <main className="flex-1 mt-16 overflow-y-auto">
+        <PageMessage
+          eyebrow="Blogs"
+          title="This post isn't here."
+          actions={
+            <Link href="/blog" className={pagePrimaryAction}>
+              <ArrowLeft className="h-4 w-4" aria-hidden /> Back to blogs
+            </Link>
+          }
+        >
+          It may have been moved or deleted.
+        </PageMessage>
       </main>
     );
   }

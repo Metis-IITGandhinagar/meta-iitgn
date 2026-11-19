@@ -1,5 +1,6 @@
 "use client";
 
+import { PageMessage, pagePrimaryAction } from "@/components/helpers/PageMessage";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -96,15 +97,18 @@ export default function BlogDetailClient({ blog: initialBlog, slug }: BlogDetail
 
   if (error || !blog) {
     return (
-      <main className="flex-1 p-6 md:p-8 mt-16 bg-transparent">
-        <div className="max-w-3xl mx-auto text-center py-20">
-          <h1 className="text-3xl font-bold text-base-content font-serif">Blog Post Not Found</h1>
-          <p className="text-base-content/60 mt-2">{error || "The requested blog post does not exist or has been deleted."}</p>
-          <Link href="/blog" className="btn btn-primary inline-flex items-center gap-2 mt-6 rounded-xl text-primary-content">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Blogs</span>
-          </Link>
-        </div>
+      <main className="flex-1 mt-16 overflow-y-auto">
+        <PageMessage
+          eyebrow="Blogs"
+          title="This post isn't here."
+          actions={
+            <Link href="/blog" className={pagePrimaryAction}>
+              <ArrowLeft className="h-4 w-4" aria-hidden /> Back to blogs
+            </Link>
+          }
+        >
+          It may have been moved or deleted.
+        </PageMessage>
       </main>
     );
   }
@@ -146,24 +150,24 @@ export default function BlogDetailClient({ blog: initialBlog, slug }: BlogDetail
   ].filter(Boolean) as any[];
 
   return (
-    <main className="flex-1 p-3 sm:p-6 md:p-8 mt-16 bg-transparent overflow-y-auto h-full w-full pb-32">
-      <article className="md:max-w-6xl w-dvw mx-auto space-y-4 sm:space-y-6">
+    <main className="flex-1 px-5 lg:px-8 pt-8 mt-16 bg-transparent overflow-y-auto h-full w-full pb-32">
+      <article className="w-full max-w-3xl mx-auto space-y-4 sm:space-y-6">
         
         {/* Blog Title & Meta */}
         <div className="pb-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-black text-base-content tracking-tight leading-tight">
+          <h1 className="t-display text-balance text-4xl md:text-5xl text-base-content">
             {blog.title}
           </h1>
 
           {blog.description && (
-            <p className="text-base-content/70 text-sm sm:text-base md:text-lg italic font-medium leading-relaxed">
+            <p className="mt-3 text-[17px] leading-relaxed text-base-content/70">
               {blog.description}
             </p>
           )}
 
           <div className="flex flex-col justify-end gap-4 pt-4 border-t border-base-200">            
             {/* Read Stats */}
-            <div className="flex items-center gap-4 text-xs text-base-content/50 font-bold uppercase tracking-wider">
+            <div className="flex flex-wrap items-center gap-4 text-[13px] text-base-content/65">
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 {formatDate(blog.created_at)}

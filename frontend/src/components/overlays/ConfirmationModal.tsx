@@ -45,7 +45,7 @@ export default function ConfirmationModal({
   const getIcon = () => {
     switch (type) {
       case "danger":
-        return <AlertTriangle className="h-6 w-6 text-error shrink-0 animate-bounce" />;
+        return <AlertTriangle className="h-6 w-6 text-error shrink-0" />;
       case "warning":
         return <AlertCircle className="h-6 w-6 text-warning shrink-0" />;
       default:
@@ -56,11 +56,11 @@ export default function ConfirmationModal({
   const getConfirmButtonClass = () => {
     switch (type) {
       case "danger":
-        return "bg-error text-error-content hover:bg-error/95 hover:shadow-error/15";
+        return "bg-error text-error-content hover:bg-error/95 ";
       case "warning":
-        return "bg-warning text-warning-content hover:bg-warning/95 hover:shadow-warning/15";
+        return "bg-warning text-warning-content hover:bg-warning/95 ";
       default:
-        return "bg-primary text-primary-content hover:bg-primary/95 hover:shadow-primary/15";
+        return "bg-primary text-primary-content hover:bg-primary/95 ";
     }
   };
 
@@ -69,11 +69,11 @@ export default function ConfirmationModal({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-neutral-900/65 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
+        className="absolute inset-0 bg-black/50"
       />
 
       {/* Card */}
-      <div className="relative w-full max-w-md overflow-hidden bg-base-100 border border-base-300/80 rounded-3xl shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200 pointer-events-auto flex flex-col gap-4 font-sans select-none">
+      <div className="relative w-full max-w-md overflow-hidden bg-base-100 border border-base-300/80 rounded-2xl p-6 md:p-7 spot-pop pointer-events-auto flex flex-col gap-4 font-sans select-none">
         
         {/* Close Button */}
         <button

@@ -513,7 +513,7 @@ const AllCategoriesBrowser = forwardRef<AllCategoriesBrowserHandle>(
               openCategory(cat.slug);
             }
           }}
-          className={`group relative flex flex-col gap-3 p-4 md:p-5 rounded-2xl border cursor-pointer select-none transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+          className={`group relative flex flex-col gap-3 p-4 md:p-5 rounded-2xl border cursor-pointer select-none transition-all duration-200   focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
             isPinned
               ? "border-[color:var(--pin-border)] bg-[color:var(--pin-tint)]"
               : "bg-base-100 border-base-200 hover:border-primary"
@@ -539,7 +539,7 @@ const AllCategoriesBrowser = forwardRef<AllCategoriesBrowserHandle>(
           <div className="flex items-start gap-3">
             {/* Icon badge */}
             <div
-              className="w-10 h-10 shrink-0 rounded-xl border flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-105"
+              className="w-10 h-10 shrink-0 rounded-xl border flex items-center justify-center shadow-sm transition-transform duration-300 "
               style={{
                 backgroundColor: colorTint(color, 12),
                 borderColor: colorTint(color, 30),
