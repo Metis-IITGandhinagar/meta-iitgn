@@ -131,7 +131,7 @@ export default function Sidebar({
         className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
           isActive
             ? "text-primary"
-            : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
+            : "text-base-content/50 group-hover:text-base-content/80 "
         }`}
       />
     );
@@ -287,7 +287,7 @@ export default function Sidebar({
                         className={`shrink-0 transition-all duration-200 ease-out ${
                           isActive
                             ? "text-primary"
-                            : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
+                            : "text-base-content/50 group-hover:text-base-content/80 "
                         }`}
                       />
                       <span className="truncate">{category.name}</span>
@@ -307,7 +307,7 @@ export default function Sidebar({
                     </span>
                     <span
                       className={`text-primary/60 transition-transform duration-300 ease-out ${
-                        showAllCategories ? "rotate-180" : "group-hover:translate-y-0.5"
+                        showAllCategories ? "rotate-180" : ""
                       }`}
                     >
                       ⌄
@@ -335,7 +335,7 @@ export default function Sidebar({
                   className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                     pathname === "/prepmat"
                       ? "text-primary"
-                      : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
+                      : "text-base-content/50 group-hover:text-base-content/80 "
                   }`}
                 />
                 <span className="truncate">PrepMat</span>
@@ -352,7 +352,7 @@ export default function Sidebar({
                   className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                     pathname === "/interviews"
                       ? "text-primary"
-                      : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
+                      : "text-base-content/50 group-hover:text-base-content/80 "
                   }`}
                 />
                 <span className="truncate">Posts</span>
@@ -369,7 +369,7 @@ export default function Sidebar({
                   className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                     pathname === "/competitions"
                       ? "text-primary"
-                      : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
+                      : "text-base-content/50 group-hover:text-base-content/80 "
                   }`}
                 />
                 <span className="truncate">Competitions</span>
@@ -396,7 +396,7 @@ export default function Sidebar({
                     className={`h-5 w-5 shrink-0 transition-all duration-200 ease-out ${
                       pathname === "/user/profile"
                         ? "text-primary"
-                        : "text-base-content/50 group-hover:text-base-content/80 group-hover:scale-110"
+                        : "text-base-content/50 group-hover:text-base-content/80 "
                     }`}
                   />
                   <span className="truncate">Profile</span>
@@ -409,7 +409,7 @@ export default function Sidebar({
                   className={navRowClass(false, "error")}
                 >
                   <NavIndicator isActive={false} tone="error" />
-                  <LogOut className="h-5 w-5 shrink-0 text-error transition-transform duration-200 ease-out group-hover:scale-110" />
+                  <LogOut className="h-5 w-5 shrink-0 text-error transition-transform duration-200 ease-out " />
                   <span className="truncate">Sign Out</span>
                 </Link>
               </div>
@@ -421,7 +421,7 @@ export default function Sidebar({
                 onClick={() => {
                   if (window.innerWidth < 1024) onClose();
                 }}
-                className="btn btn-primary btn-sm w-full font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-200 ease-out hover:scale-[1.03] hover:shadow-lg active:scale-95"
+                className="btn btn-primary btn-sm w-full font-semibold rounded-xl shadow-md cursor-pointer transition-all duration-200 ease-out  hover:shadow-lg active:scale-95"
               >
                 <User className="w-4 h-4" />
                 <span>Login</span>

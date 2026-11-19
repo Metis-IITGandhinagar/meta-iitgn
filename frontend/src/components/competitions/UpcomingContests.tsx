@@ -11,8 +11,7 @@ import {
   RefreshCw,
   ChevronRight,
   AlertCircle,
-  BookOpen,
-} from "lucide-react";
+  BookOpen, Zap } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -234,7 +233,7 @@ function ContestCard({ contest, isFirst }: ContestCardProps) {
       href={contest.url}
       target="_blank"
       rel="noreferrer"
-      className={`group card bg-base-100 border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${
+      className={`group card bg-base-100 border transition-all duration-200 hover:shadow-md  cursor-pointer ${
         isFirst
           ? "border-primary/40 ring-1 ring-primary/20"
           : "border-base-200 hover:border-base-300"
@@ -249,7 +248,7 @@ function ContestCard({ contest, isFirst }: ContestCardProps) {
             </span>
             {isFirst && (
               <span className="badge badge-sm badge-outline text-primary border-primary/50 animate-pulse">
-                ⚡ Next up
+                <Zap className="h-3 w-3" aria-hidden /> Next up
               </span>
             )}
           </div>

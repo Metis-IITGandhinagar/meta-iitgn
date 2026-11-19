@@ -20,6 +20,7 @@ import {
   ArrowRight,
   BookmarkCheck,
   Briefcase,
+  X,
 } from "lucide-react";
 
 export default function PrepMatPage() {
@@ -271,7 +272,7 @@ export default function PrepMatPage() {
         <div className="p-4 sm:p-8  relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div className="space-y-2">
-              <h1 className="text-3xl  lg:text-4xl font-black text-base-content tracking-tight flex items-center gap-2">
+              <h1 className="t-display text-4xl md:text-5xl text-base-content flex items-center gap-3">
                 IITGN Placement & Internship PrepMat
               </h1>
               <p className="text-xs sm:text-sm text-base-content/70 max-w-2xl leading-relaxed hidden md:flex">
@@ -362,10 +363,10 @@ export default function PrepMatPage() {
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content text-xs p-1"
-                  title="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-lg text-base-content/60 hover:text-base-content hover:bg-base-200"
+                  aria-label="Clear search"
                 >
-                  ✕
+                  <X className="h-4 w-4" aria-hidden />
                 </button>
               )}
             </div>

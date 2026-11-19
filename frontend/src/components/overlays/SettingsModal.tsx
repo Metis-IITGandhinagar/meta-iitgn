@@ -315,7 +315,7 @@ export default function SettingsModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center bg-transparent overflow-hidden font-sans ${
+      className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center bg-black/45 overflow-hidden font-sans ${
         isMaximized ? "p-0" : "p-0 sm:p-4"
       }`}
     >
@@ -580,7 +580,7 @@ export default function SettingsModal({
                               className={`group flex items-center gap-2 rounded-lg border-2 bg-base-100 px-2.5 py-2 transition-transform duration-150 cursor-pointer ${
                                 isSel
                                   ? "border-primary ring-2 ring-primary ring-offset-1 ring-offset-base-100"
-                                  : "border-base-300 hover:scale-[1.03]"
+                                  : "border-base-300 "
                               }`}
                             >
                               <div className="flex shrink-0 gap-0.5">

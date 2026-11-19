@@ -359,7 +359,7 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
 
   return (
     <div
-      className={`fixed inset-0 bg-transparent flex items-center justify-center z-[21000] animate-in fade-in duration-200 ${
+      className={`fixed inset-0 bg-black/45 flex items-center justify-center z-[21000] ${
         isMaximized ? "p-0" : "p-0 sm:p-4"
       }`}
     >

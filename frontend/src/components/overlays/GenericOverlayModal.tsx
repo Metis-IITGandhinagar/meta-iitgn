@@ -199,7 +199,7 @@ export default function GenericOverlayModal({
         @keyframes modalEnter {
           from {
             opacity: 0;
-            transform: scale(0.9) translateY(40px);
+            transform: scale(0.98) translateY(8px);
           }
           to {
             opacity: 1;
@@ -213,7 +213,7 @@ export default function GenericOverlayModal({
           }
           to {
             opacity: 0;
-            transform: scale(0.93) translateY(25px);
+            transform: scale(0.98) translateY(8px);
           }
         }
         .animate-backdrop-enter {
@@ -223,16 +223,16 @@ export default function GenericOverlayModal({
           animation: backdropExit 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         .animate-modal-enter {
-          animation: modalEnter 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          animation: modalEnter 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         .animate-modal-exit {
-          animation: modalExit 0.26s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: modalExit 0.16s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
       `}</style>
 
       {/* Premium Backdrop Overlay (no dim, no blur) */}
       <div
-        className="absolute inset-0 bg-transparent cursor-default"
+        className="absolute inset-0 bg-black/45 cursor-default"
         onClick={onClose}
       />
 

@@ -126,7 +126,7 @@ export default function FeaturedEditOverlay({
         pageId = page?.page_id;
       }
       if (pageId == null) {
-        alert("That page can't be featured (no page id).");
+        toast.error("That page can't be featured (no page id).");
         return;
       }
       await apiService.setFeaturedPage({ page_id: pageId });
@@ -139,7 +139,7 @@ export default function FeaturedEditOverlay({
         err?.response?.data?.error?.message ||
         err?.message ||
         "Failed to add featured page.";
-      alert(msg);
+      toast.error(msg);
     } finally {
       setBusyId(null);
     }
@@ -152,7 +152,7 @@ export default function FeaturedEditOverlay({
       await refresh();
     } catch (err) {
       console.error(err);
-      alert("Failed to remove featured page.");
+      toast.error("Couldn't remove the featured page. Try again.");
     } finally {
       setBusyId(null);
     }

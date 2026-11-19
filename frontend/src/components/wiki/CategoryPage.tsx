@@ -1,5 +1,6 @@
 "use client";
 
+import { PageMessage, pagePrimaryAction } from "@/components/helpers/PageMessage";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/store/useHomeStore";
@@ -41,7 +42,7 @@ const CATEGORY_VIEW_KEY = "meta_iitgn_category_view";
 const SUBCATEGORY_VIEW_KEY = "meta_iitgn_subcategory_view";
 
 const ArticleSkeleton = () => (
-  <div className="card card-compact card-border w-full flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.01)] animate-pulse select-none">
+  <div className="card card-compact card-border w-full flex flex-col justify-between p-4 md:p-6 bg-base-100 border-base-200  animate-pulse select-none">
     <div className="space-y-3">
       <div className="h-4 bg-base-300 rounded-md w-3/4"></div>
       <div className="space-y-2">
@@ -140,17 +141,18 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
 
   if (!category) {
     return (
-      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-transparent">
-        <div className="max-w-4xl mx-auto text-center py-20">
-          <h1 className="text-3xl font-bold text-base-content">Category Not Found</h1>
-          <p className="text-base-content/60 mt-2">The requested wiki category does not exist.</p>
-          <Link
-            href="/"
-            className="btn btn-primary inline-flex items-center gap-2 mt-6 text-primary-content rounded-lg text-sm font-semibold transition-colors"
-          >
-            Go to Home
-          </Link>
-        </div>
+      <main className="flex-1 mt-16 overflow-y-auto">
+        <PageMessage
+          eyebrow="Wiki"
+          title="This category isn't here."
+          actions={
+            <Link href="/wiki/categories" className={pagePrimaryAction}>
+              Browse all categories
+            </Link>
+          }
+        >
+          It may have been renamed or removed.
+        </PageMessage>
       </main>
     );
   }
@@ -382,7 +384,7 @@ export default function CategoryPage({ categorySlug, embedded = false }: Categor
             <div className="relative z-10 flex flex-col items-center">
               {/* Icon Container with radial background and subtle pulse */}
               <div 
-                className="inline-flex items-center justify-center p-4.5 rounded-2xl mb-5 shadow-xs border border-base-content/5 transition-transform duration-500 group-hover:scale-105"
+                className="inline-flex items-center justify-center p-4.5 rounded-2xl mb-5 shadow-xs border border-base-content/5 transition-transform duration-500 "
                 style={{
                   backgroundColor: `${category.color || "#4f46e5"}12`,
                   color: category.color || "#4f46e5",

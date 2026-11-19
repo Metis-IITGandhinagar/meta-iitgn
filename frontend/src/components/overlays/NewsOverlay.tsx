@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "@/components/helpers/confirmDialog";
 import React, { useState, useEffect } from "react";
 import { Loader2, ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { apiService } from "@/api";
@@ -151,7 +152,7 @@ export default function NewsOverlay({
 
   const handleDeleteNews = async () => {
     if (!selectedNews) return;
-    if (!window.confirm("Are you sure you want to delete this news article?")) return;
+    if (!(await confirmDialog({ title: "Delete this article?", message: "It will be removed from campus news. This can't be undone.", confirmText: "Delete", type: "danger" }))) return;
     try {
       await apiService.deleteNews(selectedNews.slug);
       toast.success("News article deleted successfully.");

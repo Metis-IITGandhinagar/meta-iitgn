@@ -156,7 +156,7 @@ function RepoCard({ repo, featured }: RepoCardProps) {
       rel="noopener noreferrer"
       className={`group block rounded-[20px] border bg-base-100
         p-4 transition-all duration-200
-        hover:-translate-y-0.5 hover:border-primary/40
+         hover:border-primary/40
         hover:shadow-lg hover:shadow-base-content/[0.04]
         ${
           featured

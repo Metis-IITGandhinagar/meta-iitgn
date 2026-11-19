@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "@/components/helpers/confirmDialog";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
@@ -56,7 +57,7 @@ export default function InterviewPendingChangesView({ setShowPendingChanges }: I
   };
 
   const handleReject = async (postId: number) => {
-    if (!confirm("Are you sure you want to reject and delete this post?")) return;
+    if (!(await confirmDialog({ title: "Reject this post?", message: "The post will be rejected and deleted. This can't be undone.", confirmText: "Reject", type: "danger" }))) return;
     try {
       await deleteInterviewPost(postId);
       toast.success("Post rejected and deleted.");

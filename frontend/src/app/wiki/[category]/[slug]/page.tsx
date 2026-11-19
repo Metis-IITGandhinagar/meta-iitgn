@@ -1,3 +1,4 @@
+import { PageMessage, pagePrimaryAction, pageSecondaryAction } from "@/components/helpers/PageMessage";
 import type { Metadata } from "next";
 import { cache } from "react";
 import WikiClient from "../../../wiki-client";
@@ -95,17 +96,23 @@ Write your content here...`;
 
   if (!dbArticle) {
     return (
-      <main className="flex-1 p-6 md:p-8 lg:p-12 bg-base-100">
-        <div className="max-w-4xl mx-auto text-center py-20">
-          <h1 className="text-3xl font-bold text-gray-800">Article Not Found</h1>
-          <p className="text-gray-500 mt-2">The requested article could not be found.</p>
-          <Link
-            href={`/wiki/${category}/new?title=${encodeURIComponent(slug.replace(/-/g, ' '))}`}
-            className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-content rounded-lg text-sm font-semibold transition-colors"
-          >
-            Create this article
-          </Link>
-        </div>
+      <main className="flex-1 mt-16 overflow-y-auto bg-base-100">
+        <PageMessage
+          eyebrow="Wiki"
+          title="No page here yet."
+          actions={
+            <>
+              <Link href={`/wiki/${category}/new?title=${encodeURIComponent(slug.replace(/-/g, ' '))}`} className={pagePrimaryAction}>
+                Write this page
+              </Link>
+              <Link href={`/wiki/${category}`} className={pageSecondaryAction}>
+                Back to category
+              </Link>
+            </>
+          }
+        >
+          Nobody has written about this yet. You can be the first.
+        </PageMessage>
       </main>
     );
   }

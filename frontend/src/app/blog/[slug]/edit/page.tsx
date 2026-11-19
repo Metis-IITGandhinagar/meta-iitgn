@@ -210,7 +210,7 @@ export default function BlogEditPage() {
           {/* Header */}
           <div className="flex justify-between items-start gap-4 p-2">
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-black text-base-content tracking-tight">
+              <h1 className="t-display text-3xl md:text-4xl text-base-content">
                 {isNew ? "Write a New Blog Post" : "Edit Blog Post"}
               </h1>
               <p className="text-[10px] sm:text-xs text-base-content/50 font-bold uppercase tracking-wider mt-1">

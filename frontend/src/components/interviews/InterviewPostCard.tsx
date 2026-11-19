@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "@/components/helpers/confirmDialog";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import Avatar from "@/components/helpers/Avatar";
@@ -146,7 +147,7 @@ export default function InterviewPostCard({ post, onPostUpdated, onSelectFeature
   };
 
   const handleAdminDelete = async () => {
-    if (!confirm("Are you sure you want to delete this interview post?")) return;
+    if (!(await confirmDialog({ title: "Delete this post?", message: "It will be removed for everyone. This can't be undone.", confirmText: "Delete", type: "danger" }))) return;
     try {
       await deleteInterviewPost(post.post_id);
       toast.success("Post deleted.");

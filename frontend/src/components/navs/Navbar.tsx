@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "react-hot-toast";
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -311,7 +312,7 @@ export default function Navbar({
                   <div className="h-px bg-base-300 my-1" />
                   {[
                     { href: "/user/profile", label: "Profile", icon: User },
-                    { href: "/user/contributions", label: "My contributions", icon: History },
+                    { href: "/user/profile", label: "My contributions", icon: History },
                   ].map(({ href, label, icon: Icon }) => (
                     <Link key={href} href={href} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] hover:bg-base-200">
                       <Icon className="h-4 w-4 text-base-content/65" /> {label}
@@ -336,7 +337,7 @@ export default function Navbar({
                   e.stopPropagation();
                   setMoreMenuOpen(!moreMenuOpen);
                 }}
-                className="btn btn-circle btn-ghost btn-sm bg-base-200 hover:bg-base-300 border border-base-300 text-base-content hover:text-base-content/85 cursor-pointer flex items-center justify-center shadow-xs"
+                className={`h-11 w-11 inline-flex items-center justify-center rounded-full cursor-pointer touch-manipulation transition-colors ${ov ? "hover:bg-white/15" : "hover:bg-base-200"}`}
                 aria-label="More Actions"
                 aria-haspopup="menu"
                 aria-expanded={moreMenuOpen}
@@ -344,7 +345,7 @@ export default function Navbar({
                 <MoreVertical className="h-5 w-5 text-base-content" />
               </button>
               {moreMenuOpen && (
-                <div className="absolute -right-2 md:right-0 top-10 mt-1 w-52 max-h-[calc(100vh-80px)] overflow-y-auto card card-bordered bg-base-100 shadow-[0_0_25px_rgba(0,0,0,0.15)] py-1 z-[100] select-none animate-in fade-in duration-200 rounded-xl no-scrollbar">
+                <div role="menu" className="absolute right-0 top-12 w-56 max-h-[calc(100vh-80px)] overflow-y-auto rounded-xl border border-base-300 bg-base-100 text-base-content p-1.5 z-[100] select-none spot-pop no-scrollbar">
                   <button
                     onClick={() => {
                       const cleanPath = pathname.replace(/\/$/, "");
@@ -358,9 +359,9 @@ export default function Navbar({
                       setShareOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none animate-none"
+                    className="w-full text-left px-3 min-h-10 text-[13px] text-base-content hover:bg-base-200 transition-colors flex items-center gap-2.5 whitespace-nowrap truncate cursor-pointer rounded-lg"
                   >
-                    <Share2 className="h-4.5 w-4.5 text-slate-500 shrink-0" />
+                    <Share2 className="h-4 w-4 text-base-content/65 shrink-0" />
                     <span>Share Page</span>
                   </button>
                   <button
@@ -401,11 +402,11 @@ export default function Navbar({
                         }
                       }
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-3 min-h-10 text-[13px] text-base-content hover:bg-base-200 transition-colors flex items-center gap-2.5 whitespace-nowrap truncate cursor-pointer rounded-lg"
                   >
                     <Bookmark
-                      className={`h-4.5 w-4.5 shrink-0 ${
-                        isBookmarked ? "text-primary fill-primary" : "text-slate-500"
+                      className={`h-4 w-4 shrink-0 ${
+                        isBookmarked ? "text-primary fill-primary" : "text-base-content/65"
                       }`}
                     />
                     <span>{isBookmarked ? "Remove Bookmark" : "Bookmark Page"}</span>
@@ -415,9 +416,9 @@ export default function Navbar({
                       window.print();
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-3 min-h-10 text-[13px] text-base-content hover:bg-base-200 transition-colors flex items-center gap-2.5 whitespace-nowrap truncate cursor-pointer rounded-lg"
                   >
-                    <Printer className="h-4.5 w-4.5 text-slate-500 shrink-0" />
+                    <Printer className="h-4 w-4 text-base-content/65 shrink-0" />
                     <span>Print Article</span>
                   </button>
                   <button
@@ -425,9 +426,9 @@ export default function Navbar({
                       setSettingsTab("layout");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-3 min-h-10 text-[13px] text-base-content hover:bg-base-200 transition-colors flex items-center gap-2.5 whitespace-nowrap truncate cursor-pointer rounded-lg"
                   >
-                    <Settings className="h-4.5 w-4.5 text-slate-500 shrink-0" />
+                    <Settings className="h-4 w-4 text-base-content/65 shrink-0" />
                     <span>Page Settings</span>
                   </button>
                   <button
@@ -435,20 +436,20 @@ export default function Navbar({
                       window.dispatchEvent(new CustomEvent("show-wiki-revisions"));
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-3 min-h-10 text-[13px] text-base-content hover:bg-base-200 transition-colors flex items-center gap-2.5 whitespace-nowrap truncate cursor-pointer rounded-lg"
                   >
-                    <History className="h-4.5 w-4.5 text-slate-500 shrink-0" />
+                    <History className="h-4 w-4 text-base-content/65 shrink-0" />
                     <span>History</span>
                   </button>
                   <div className="border-t border-base-200 my-1" />
                   <button
                     onClick={() => {
-                      alert("Report page submitted.");
+                      toast("Reporting isn't connected yet. Please tell a moderator about this page.");
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-base-content hover:text-base-content/85 hover:bg-base-200 font-semibold transition-colors flex items-center gap-3 whitespace-nowrap truncate cursor-pointer rounded-none"
+                    className="w-full text-left px-3 min-h-10 text-[13px] text-base-content hover:bg-base-200 transition-colors flex items-center gap-2.5 whitespace-nowrap truncate cursor-pointer rounded-lg"
                   >
-                    <AlertTriangle className="h-4.5 w-4.5 text-slate-500 shrink-0" />
+                    <AlertTriangle className="h-4 w-4 text-base-content/65 shrink-0" />
                     <span>Report Content</span>
                   </button>
                 </div>

@@ -62,7 +62,7 @@ export default function CategoryCreateForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="card card-border bg-base-100 border-base-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-2xl p-5 sm:p-6 space-y-4"
+      className="card card-border bg-base-100 border-base-200  rounded-2xl p-5 sm:p-6 space-y-4"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-primary font-bold">

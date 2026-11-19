@@ -218,7 +218,7 @@ function SearchResultsContent() {
       <Navbar hideSearch />
       <div className="border-b border-base-300">
         <div className="max-w-6xl mx-auto px-5 lg:px-8 pt-6 pb-3 space-y-4">
-          <h1 className="text-[28px] font-bold tracking-[-0.03em]">Search</h1>
+          <h1 className="t-display text-4xl md:text-5xl">Search</h1>
           <div className="max-w-2xl">
             <BeautifulSearchBox
               value={searchQuery}
@@ -366,7 +366,7 @@ function SearchResultsContent() {
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="btn btn-primary btn-sm rounded-xl px-6 font-bold cursor-pointer hover:scale-102 active:scale-98 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="btn btn-primary btn-sm rounded-xl px-6 font-bold cursor-pointer  active:scale-98 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loadingMore ? (
                     <>

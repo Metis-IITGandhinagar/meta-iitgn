@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "react-hot-toast";
 import React, { useEffect, useState } from "react";
 import GenericOverlayModal from "@/components/overlays/GenericOverlayModal";
 import ConfirmationModal from "@/components/overlays/ConfirmationModal";
@@ -164,7 +165,7 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
 
   const triggerRoleChange = (userId: number, userName: string, oldRole: string, newRole: string) => {
     if (userId === currentUser?.user_id) {
-      alert("You cannot change your own admin role.");
+      toast.error("You can't change your own admin role.");
       return;
     }
     setConfirmModal({
@@ -181,7 +182,7 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
     if (userId === null) return;
     try {
       await apiService.updateUserRole(userId, newRole as any);
-      alert(`Successfully updated ${userName}'s role to ${newRole}.`);
+      toast.success(`${userName} is now ${newRole}.`);
 
       // Update local state
       setUsers((prev) =>
@@ -191,7 +192,7 @@ export default function AdminDashboardOverlay({ setShowDashboard }: AdminDashboa
       setLogsPage(1);
       fetchLogs(1, false);
     } catch (err: any) {
-      alert(err.response?.data?.error || err.message || "Failed to change user role.");
+      toast.error(err.response?.data?.error || err.message || "Couldn't change the role. Try again.");
     } finally {
       setConfirmModal({ isOpen: false, userId: null, userName: "", oldRole: "", newRole: "" });
     }

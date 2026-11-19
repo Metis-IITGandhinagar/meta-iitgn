@@ -174,7 +174,7 @@ export default function HomePageNew({
             >
               <ArrowRight className="h-4 w-4 rotate-180" aria-hidden /> Back
             </button>
-            <h1 className="text-[28px] font-semibold tracking-[-0.03em] mt-1 mb-6">{activeTab === "bookmarks" ? "Saved pages" : "You"}</h1>
+            <h1 className="t-display text-4xl md:text-5xl mt-1 mb-6">{activeTab === "bookmarks" ? "Saved pages" : "You"}</h1>
             {activeTab === "bookmarks" ? bookmarksComponent : profileComponent}
           </div>
         </main>
@@ -188,7 +188,7 @@ export default function HomePageNew({
 
       <main id="main-content" tabIndex={-1} className="flex-1 min-h-0 lg:overflow-y-auto outline-none">
         <div className="max-w-6xl mx-auto px-5 lg:px-8 pt-10 pb-12">
-          <h1 className="text-[30px] sm:text-[40px] font-semibold tracking-[-0.035em] leading-[1.05] text-balance">
+          <h1 className="t-display text-balance text-4xl md:text-5xl">
             What do you want to <span className="text-primary">know?</span>
           </h1>
           <p className="mt-3 text-[15px] text-base-content/70">

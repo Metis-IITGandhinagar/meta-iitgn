@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { LogOut, ChevronLeft, Loader2 } from "lucide-react";
+import { LogOut, Loader2 } from "lucide-react";
+import Navbar from "@/components/navs/Navbar";
+import { PageMessage, pageSecondaryAction } from "@/components/helpers/PageMessage";
 
 export default function LogoutPage() {
-  useDocumentTitle("Log Out");
+  useDocumentTitle("Sign out");
   const router = useRouter();
   const { logout } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -24,53 +26,36 @@ export default function LogoutPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-radial from-base-300 via-base-200 to-base-100 overflow-hidden font-sans">
-      {/* Background blur blobs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-error/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-amber-600/5 rounded-full blur-3xl" />
-
-      {/* Confirmation card */}
-      <div className="relative w-full max-w-sm mx-4 p-8 bg-base-100/80 backdrop-blur-xl border border-base-300 rounded-2xl shadow-2xl flex flex-col items-center text-center">
-        {/* Warning Icon */}
-        <div className="w-16 h-16 rounded-2xl bg-rose-950/40 border border-rose-800/50 flex items-center justify-center mb-6 shadow-inner text-rose-400">
-          <LogOut className="w-8 h-8" />
-        </div>
-
-        <h1 className="text-xl font-bold text-base-content mb-2">
-          Confirm Sign Out
-        </h1>
-        <p className="text-sm text-base-content/60 mb-8 font-medium leading-relaxed">
-          Are you sure you want to sign out of your META IITGN account? Any unsaved edits will be discarded.
-        </p>
-
-        {/* Buttons */}
-        <div className="w-full flex flex-col gap-3">
-          <button
-            onClick={handleLogout}
-            disabled={loading}
-            className="w-full h-11 flex items-center justify-center gap-2 bg-error hover:bg-error/90 disabled:bg-error/80 text-error-content font-semibold rounded-xl shadow-lg transition-colors cursor-pointer disabled:cursor-not-allowed text-sm"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Signing out...
-              </>
-            ) : (
-              "Yes, Sign Out"
-            )}
-          </button>
-
-          <button
-            onClick={() => router.back()}
-            disabled={loading}
-            className="mx-auto p-1.5 text-base-content/60 hover:text-base-content hover:bg-base-300 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
-            aria-label="Go back"
-            title="Go back"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-        </div>
-      </div>
+    <div className="min-h-dvh bg-base-100 font-sans">
+      <Navbar hideSearch />
+      <main id="main-content">
+        <PageMessage
+          icon={<LogOut className="h-5 w-5" aria-hidden />}
+          title="Sign out?"
+          actions={
+            <>
+              <button
+                onClick={handleLogout}
+                disabled={loading}
+                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg bg-error text-error-content text-[14px] font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Signing out…
+                  </>
+                ) : (
+                  "Sign out"
+                )}
+              </button>
+              <button onClick={() => router.back()} disabled={loading} className={`${pageSecondaryAction} cursor-pointer`}>
+                Stay signed in
+              </button>
+            </>
+          }
+        >
+          Any unsaved edits will be lost.
+        </PageMessage>
+      </main>
     </div>
   );
 }

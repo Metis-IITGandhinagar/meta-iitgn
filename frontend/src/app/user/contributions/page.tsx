@@ -1,9 +1,6 @@
-import React from 'react'
+import { redirect } from "next/navigation";
 
-const Contributions = () => {
-  return (
-    <div>Contributions</div>
-  )
+// Contributions are listed on the profile page.
+export default function ContributionsPage() {
+  redirect("/user/profile");
 }
-
-export default Contributions

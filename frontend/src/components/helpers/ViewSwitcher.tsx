@@ -160,7 +160,7 @@ export default function ViewSwitcher({
               width: MENU_WIDTH,
               zIndex: MENU_Z,
             }}
-            className="card card-bordered bg-base-100 shadow-[0_0_25px_rgba(0,0,0,0.15)] py-1 rounded-xl no-scrollbar animate-in fade-in duration-200"
+            className="card card-bordered bg-base-100  py-1 rounded-xl no-scrollbar animate-in fade-in duration-200"
           >
             <Row mode="default" icon={<List className="h-4 w-4 shrink-0" />} label="Default" />
             <Row mode="tiles" icon={<LayoutGrid className="h-4 w-4 shrink-0" />} label="Tiles" />
