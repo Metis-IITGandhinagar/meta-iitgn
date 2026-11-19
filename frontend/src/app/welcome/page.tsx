@@ -34,7 +34,7 @@ export default function WelcomePage() {
 
       <header className="sticky top-0 z-30 border-b border-base-300/70 bg-base-100/80 backdrop-blur">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/welcome" className="flex items-center gap-2 shrink-0" aria-label="Meta IITGN">
+          <Link href="/welcome" className="flex items-center gap-2 shrink-0 min-h-11" aria-label="Meta IITGN">
             <BrandMark size={24} />
             <span className="text-[14px] font-semibold tracking-tight whitespace-nowrap" translate="no">Meta IITGN</span>
           </Link>

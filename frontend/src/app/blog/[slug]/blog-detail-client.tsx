@@ -89,7 +89,7 @@ export default function BlogDetailClient({ blog: initialBlog, slug }: BlogDetail
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-4rem)] mt-16 bg-transparent">
+      <div className="flex-1 flex items-center justify-center min-h-[calc(100dvh-4rem)] mt-16 bg-transparent">
         <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
@@ -186,7 +186,7 @@ export default function BlogDetailClient({ blog: initialBlog, slug }: BlogDetail
         </div>
 
         {/* BlockNote Article content */}
-        <div className="bg-base-100 select-text w-dvw md:w-auto -mx-6 md:m-0 mb-20">
+        <div className="bg-base-100 select-text -mx-5 w-[calc(100%+2.5rem)] md:mx-0 md:w-auto mb-20">
           <BlockNoteReader contentJson={blog.content} theme={editorTheme} />
         </div>
 

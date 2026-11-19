@@ -23,7 +23,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
 
-      <main className="relative min-h-screen w-full">
+      <main className="relative min-h-dvh w-full">
         {/* SEO Semantic Shell: Hidden from UI display but accessible to Search Crawlers */}
         <article className="sr-only absolute width-[1px] height-[1px] p-0 -m-[1px] overflow-hidden clip-[rect(0,0,0,0)] border-0 whitespace-nowrap">
           <header>

@@ -7,7 +7,7 @@ export default function BlogListSkeleton() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="space-y-3">
           <div className="h-8 bg-base-300 rounded-lg w-48"></div>
-          <div className="h-4 bg-base-300 rounded w-80"></div>
+          <div className="h-4 bg-base-300 rounded w-full max-w-80"></div>
         </div>
         <div className="h-10 bg-base-300 rounded-xl w-32 shrink-0"></div>
       </div>

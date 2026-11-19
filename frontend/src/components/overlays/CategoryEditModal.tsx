@@ -375,7 +375,7 @@ export default function CategoryEditModal({ category, onClose }: CategoryEditMod
         } ${
           isMaximized
             ? "w-full h-full max-w-none rounded-none shadow-none border-0"
-            : "w-full h-full sm:h-auto sm:max-h-[calc(100vh-2rem)] sm:max-w-lg rounded-none sm:rounded-2xl shadow-2xl"
+            : "w-full h-full sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg rounded-none sm:rounded-2xl shadow-2xl"
         }`}
       >
         {/* Window Header — icon + title (left) · maximize + close (right) */}

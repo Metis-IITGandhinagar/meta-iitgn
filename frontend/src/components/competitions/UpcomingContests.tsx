@@ -273,7 +273,7 @@ function ContestCard({ contest, isFirst }: ContestCardProps) {
             {formatDuration(contest.duration)}
           </span>
           <span
-            className={`ml-auto font-semibold text-[11px] ${
+            className={`ml-auto font-semibold text-[12px] ${
               countdown.urgent ? "text-error animate-pulse" : "text-base-content/60"
             }`}
           >
@@ -300,7 +300,7 @@ function PlatformPill({ label, active, onClick, dotClass }: PlatformPillProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+      className={`flex items-center gap-1.5 min-h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors duration-200 cursor-pointer touch-manipulation whitespace-nowrap ${
         active
           ? "bg-primary text-primary-content shadow-sm"
           : "bg-base-200 text-base-content/70 hover:bg-base-300 hover:text-base-content"
@@ -507,11 +507,11 @@ export default function UpcomingContests() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-base-100 rounded-xl p-3 text-center">
                   <p className="text-2xl font-bold text-primary">{contests.length}</p>
-                  <p className="text-[11px] text-base-content/50 mt-0.5">Total contests</p>
+                  <p className="text-[12px] text-base-content/50 mt-0.5">Total contests</p>
                 </div>
                 <div className="bg-base-100 rounded-xl p-3 text-center">
                   <p className="text-2xl font-bold text-secondary">{platforms.length - 1}</p>
-                  <p className="text-[11px] text-base-content/50 mt-0.5">Platforms</p>
+                  <p className="text-[12px] text-base-content/50 mt-0.5">Platforms</p>
                 </div>
               </div>
             </div>

@@ -200,7 +200,7 @@ export default function InterviewFeedPage() {
                     <button
                       key={tag}
                       onClick={() => setSelectedTag(tag)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      className={`min-h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer touch-manipulation whitespace-nowrap ${
                         isActive
                           ? "bg-primary text-primary-content shadow-xs"
                           : "bg-base-100 border border-base-200 text-base-content/70 hover:bg-base-200"
