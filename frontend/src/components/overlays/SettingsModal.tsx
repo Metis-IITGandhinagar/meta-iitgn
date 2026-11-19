@@ -315,7 +315,7 @@ export default function SettingsModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center bg-black/45 overflow-hidden font-sans ${
+      className={`fixed inset-0 z-[20000] flex min-h-dvh items-center justify-center bg-black/45 overflow-hidden font-sans ${
         isMaximized ? "p-0" : "p-0 sm:p-4"
       }`}
     >
@@ -333,8 +333,8 @@ export default function SettingsModal({
           isDragging ? "" : "transition-all duration-200"
         } ${
           isMaximized
-            ? "w-full h-full max-w-none max-h-none sm:w-screen sm:h-screen sm:max-h-none sm:rounded-none sm:border-0"
-            : "w-full h-full max-w-5xl sm:h-[min(680px,calc(100vh-2rem))] sm:min-h-0 md:h-[min(620px,calc(100vh-2rem))] lg:h-[min(680px,calc(100vh-2rem))] sm:max-h-[calc(100vh-2rem)] sm:rounded-lg sm:border sm:border-base-200 md:max-w-2xl lg:max-w-5xl"
+            ? "w-full h-full max-w-none max-h-none sm:w-full sm:h-dvh sm:max-h-none sm:rounded-none sm:border-0"
+            : "w-full h-full max-w-5xl sm:h-[min(680px,calc(100dvh-2rem))] sm:min-h-0 md:h-[min(620px,calc(100dvh-2rem))] lg:h-[min(680px,calc(100dvh-2rem))] sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg sm:border sm:border-base-200 md:max-w-2xl lg:max-w-5xl"
         }`}
       >
         {/* Unified Settings Header - using theme color, not too dark */}

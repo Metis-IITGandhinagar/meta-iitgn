@@ -21,7 +21,7 @@ interface RevisionsViewProps {
 
 const PreviewWikiInfoBox = ({ infobox }: { infobox: any }) => {
   return (
-    <div className="w-80 border-l border-base-200 bg-base-100 flex flex-col shrink-0 h-full overflow-y-auto no-scrollbar select-none">
+    <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-base-200 bg-base-100 flex flex-col shrink-0 lg:h-full overflow-y-auto no-scrollbar select-none">
       {/* Infobox Image */}
       <div className="w-full relative bg-base-200/50 border-b border-base-200 flex items-center justify-center overflow-hidden shrink-0 p-1">
         <div className="w-full h-48 relative overflow-hidden">

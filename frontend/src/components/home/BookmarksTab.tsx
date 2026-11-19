@@ -153,7 +153,7 @@ export default function BookmarksTab({
   };
 
   return (
-    <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col bg-base-200/30 overflow-hidden pb-24 pt-16 lg:pt-22">
+    <div className="relative w-full min-h-dvh lg:min-h-dvh flex flex-col bg-base-200/30 overflow-hidden pb-24 pt-16 lg:pt-22">
       <div className="relative z-10 max-w-6xl mx-auto w-full flex flex-col h-full overflow-hidden px-8 md:px-12 pb-28 md:pb-0 animate-in fade-in duration-300">
         
         {bookmarks.length > 0 ? (

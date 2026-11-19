@@ -4,7 +4,7 @@ import Navbar from "@/components/navs/Navbar";
 
 export default function WikiLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative h-screen w-screen bg-base-100 overflow-hidden font-sans">
+    <div className="relative h-dvh w-full bg-base-100 overflow-hidden font-sans">
       <div className="z-[10010] fixed top-0 left-0 right-0">
         <Navbar />
       </div>

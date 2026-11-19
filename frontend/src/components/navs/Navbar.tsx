@@ -180,7 +180,7 @@ export default function Navbar({
       >
         Skip to main content
       </a>
-      <div className="max-w-6xl mx-auto w-full h-full flex items-center gap-2 px-5 lg:px-8">
+      <div className="max-w-6xl mx-auto w-full h-full flex items-center gap-1 sm:gap-2 px-4 sm:px-5 lg:px-8">
         {/* Brand + where you are */}
         {segments.length >= 2 && (
           <button
@@ -192,9 +192,9 @@ export default function Navbar({
             <ChevronLeft className="h-5 w-5" aria-hidden />
           </button>
         )}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-full pr-2" aria-label="Meta IITGN home">
+        <Link href="/" className="flex items-center justify-center gap-2.5 shrink-0 rounded-full pr-1 sm:pr-2 min-h-11 min-w-11" aria-label="Meta IITGN home">
           <BrandMark size={30} />
-          <span className="text-[15px] font-semibold tracking-tight" translate="no">Meta IITGN</span>
+          <span className="hidden sm:inline text-[15px] font-semibold tracking-tight whitespace-nowrap" translate="no">Meta IITGN</span>
         </Link>
         {current && (
           <span className="hidden sm:flex items-center gap-2 text-[14px] min-w-0" aria-label={`Current section: ${current.label}`}>
@@ -222,12 +222,12 @@ export default function Navbar({
           type="button"
           onClick={() => setSpotlightOpen(true)}
           aria-label="Search or jump to"
-          className={`${hideSearch ? "" : "md:hidden"} h-11 w-11 inline-flex items-center justify-center rounded-full cursor-pointer touch-manipulation ${pill}`}
+          className={`${hideSearch ? "" : "md:hidden"} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full cursor-pointer touch-manipulation ${pill}`}
         >
           <Search className="h-[18px] w-[18px]" aria-hidden />
         </button>
 
-        <ThemeToggle onPhoto={ov} />
+        <ThemeToggle onPhoto={ov} className="hidden sm:inline-flex" />
 
         {/* Menu: every place in the app */}
         <div className="relative" ref={menuRef}>
@@ -237,7 +237,7 @@ export default function Navbar({
             aria-haspopup="menu"
             aria-expanded={mobileOpen}
             aria-label="Menu"
-            className={`h-11 min-w-11 px-3 sm:px-4 inline-flex items-center justify-center gap-2 rounded-full text-[13px] font-medium cursor-pointer touch-manipulation transition-colors ${pill}`}
+            className={`h-11 min-w-11 shrink-0 px-3 sm:px-4 inline-flex items-center justify-center gap-2 rounded-full text-[13px] font-medium cursor-pointer touch-manipulation transition-colors ${pill}`}
           >
             {mobileOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
             <span className="hidden sm:inline">Menu</span>
@@ -245,7 +245,7 @@ export default function Navbar({
           {mobileOpen && (
             <nav
               aria-label="Primary"
-              className="absolute right-0 top-12 w-[min(22rem,calc(100vw-2.5rem))] rounded-2xl border border-base-300 bg-base-100 text-base-content p-2 z-50 spot-pop"
+              className="fixed sm:absolute inset-x-3 sm:inset-x-auto sm:right-0 top-[4.25rem] sm:top-12 sm:w-[22rem] max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-base-300 bg-base-100 text-base-content p-2 z-50 spot-pop"
             >
               {SECTIONS.map((sec) => {
                 const Icon = sec.icon;
@@ -267,6 +267,9 @@ export default function Navbar({
                   </Link>
                 );
               })}
+              <div className="sm:hidden mt-1 border-t border-base-300 pt-1">
+                <ThemeToggle variant="row" />
+              </div>
               <a
                 href="https://iitgn.ac.in"
                 target="_blank"
@@ -280,7 +283,7 @@ export default function Navbar({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {!user ? (
             <Link href="/login" className={`h-11 px-4 sm:px-5 inline-flex items-center whitespace-nowrap rounded-full text-[13px] font-medium hover:opacity-85 transition-opacity ${ov ? "bg-white text-[#1B1A18]" : "bg-base-content text-base-100"}`}>
               Sign in
@@ -337,7 +340,7 @@ export default function Navbar({
                   e.stopPropagation();
                   setMoreMenuOpen(!moreMenuOpen);
                 }}
-                className={`h-11 w-11 inline-flex items-center justify-center rounded-full cursor-pointer touch-manipulation transition-colors ${ov ? "hover:bg-white/15" : "hover:bg-base-200"}`}
+                className={`h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full cursor-pointer touch-manipulation transition-colors ${ov ? "hover:bg-white/15" : "hover:bg-base-200"}`}
                 aria-label="More Actions"
                 aria-haspopup="menu"
                 aria-expanded={moreMenuOpen}
@@ -345,7 +348,7 @@ export default function Navbar({
                 <MoreVertical className="h-5 w-5 text-base-content" />
               </button>
               {moreMenuOpen && (
-                <div role="menu" className="absolute right-0 top-12 w-56 max-h-[calc(100vh-80px)] overflow-y-auto rounded-xl border border-base-300 bg-base-100 text-base-content p-1.5 z-[100] select-none spot-pop no-scrollbar">
+                <div role="menu" className="absolute right-0 top-12 w-56 max-h-[calc(100dvh-80px)] overflow-y-auto rounded-xl border border-base-300 bg-base-100 text-base-content p-1.5 z-[100] select-none spot-pop no-scrollbar">
                   <button
                     onClick={() => {
                       const cleanPath = pathname.replace(/\/$/, "");

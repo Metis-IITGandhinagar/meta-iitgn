@@ -102,7 +102,7 @@ export default function BlogEditPage() {
 
   if (loading || authLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-4rem)] mt-16 bg-transparent">
+      <div className="flex-1 flex items-center justify-center min-h-[calc(100dvh-4rem)] mt-16 bg-transparent">
         <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
@@ -203,7 +203,7 @@ export default function BlogEditPage() {
   ];
 
   return (
-    <main className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)] w-full mt-16 bg-transparent relative">
+    <main className="flex-1 flex overflow-hidden h-[calc(100dvh-4rem)] w-full mt-16 bg-transparent relative">
       {/* Editor Main Workspace */}
       <div className="flex-1 flex flex-col overflow-y-auto p-4 sm:p-6 md:p-8 pb-32">
         <div className="max-w-5xl w-full mx-auto space-y-3 sm:space-y-6">

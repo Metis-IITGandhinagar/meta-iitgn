@@ -22,7 +22,7 @@ interface BlogRevisionsViewProps {
 
 const PreviewBlogInfoBox = ({ revision }: { revision: any }) => {
   return (
-    <div className="w-80 border-l border-base-200 bg-base-100 flex flex-col shrink-0 h-full overflow-y-auto no-scrollbar p-6 space-y-6 select-none">
+    <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-base-200 bg-base-100 flex flex-col shrink-0 lg:h-full overflow-y-auto no-scrollbar p-6 space-y-6 select-none">
       <div>
         <h4 className="text-xs font-black text-primary uppercase tracking-wider mb-4">Blog Metadata</h4>
         <div className="space-y-4">

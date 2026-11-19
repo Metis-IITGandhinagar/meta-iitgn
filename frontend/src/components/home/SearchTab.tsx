@@ -32,7 +32,7 @@ export default function SearchTab({
   const autoFocus = localStorage.getItem("wiki_autofocus_search") === "true";
 
   return (
-    <div className="relative w-full min-h-screen lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-base-100 overflow-hidden select-none">
+    <div className="relative w-full min-h-dvh lg:min-h-dvh flex flex-col items-center justify-center text-center p-4 md:p-8 bg-base-100 overflow-hidden select-none">
       {styleBlock}
 
       <div className="relative z-10 max-w-2xl w-full px-4 space-y-8 flex flex-col items-center animate-hero-content pb-28 md:pb-0">

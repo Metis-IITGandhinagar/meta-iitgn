@@ -214,7 +214,7 @@ function SearchResultsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 font-sans">
+    <div className="min-h-dvh bg-base-100 font-sans">
       <Navbar hideSearch />
       <div className="border-b border-base-300">
         <div className="max-w-6xl mx-auto px-5 lg:px-8 pt-6 pb-3 space-y-4">
@@ -403,7 +403,7 @@ function SearchResultsContent() {
 export default function SearchResultsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-base-100 font-sans text-sm text-base-content/50 font-bold select-none">
+      <div className="min-h-dvh flex items-center justify-center bg-base-100 font-sans text-sm text-base-content/50 font-bold select-none">
         <span className="loading loading-spinner loading-md" />
       </div>
     }>

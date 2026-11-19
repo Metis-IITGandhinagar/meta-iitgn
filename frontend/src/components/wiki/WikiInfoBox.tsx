@@ -245,7 +245,7 @@ export default function WikiInfoBox({
         className={`
           border-l border-base-200 shrink-0 overflow-y-auto overflow-x-hidden bg-base-100 flex flex-col select-none right-sidebar-mobile-toggle no-scrollbar 
           transition-transform duration-300 ease-in-out order-3
-          fixed lg:relative top-16 lg:top-0 bottom-0 right-0 z-[10001] h-[calc(100vh-4rem)] lg:h-full
+          fixed lg:relative top-16 lg:top-0 bottom-0 right-0 z-[10001] h-[calc(100dvh-4rem)] lg:h-full
           ${
             rightSidebarOpen
               ? "translate-x-0 w-80 shadow-2xl lg:shadow-none"

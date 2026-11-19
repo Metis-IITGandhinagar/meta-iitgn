@@ -183,7 +183,7 @@ export default function GenericOverlayModal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[20000] flex min-h-screen items-center justify-center overflow-hidden font-sans ${
+      className={`fixed inset-0 z-[20000] flex min-h-dvh items-center justify-center overflow-hidden font-sans ${
         isMaximized ? "p-0" : "p-0 sm:p-4"
       }`}
     >
@@ -252,8 +252,8 @@ export default function GenericOverlayModal({
           isDragging ? "" : "transition-all duration-200"
         } ${
           isMaximized
-            ? "w-full h-full max-w-none max-h-none sm:w-screen sm:h-screen sm:max-h-none sm:rounded-none sm:border-0"
-            : `w-full h-full ${maxWidthClass} sm:h-[min(640px,calc(100vh-2rem))] sm:min-h-0 sm:max-h-[calc(100vh-2rem)] sm:rounded-lg border border-base-300/60`
+            ? "w-full h-full max-w-none max-h-none sm:w-full sm:h-dvh sm:max-h-none sm:rounded-none sm:border-0"
+            : `w-full h-full ${maxWidthClass} sm:h-[min(640px,calc(100dvh-2rem))] sm:min-h-0 sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg border border-base-300/60`
         } ${
           animationClass === "animate-enter"
             ? "animate-modal-enter"
