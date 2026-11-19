@@ -29,7 +29,7 @@ export default function ResourcesSection() {
       </div>
 
       {/* Coming-soon banner */}
-      <div className="card bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 border border-primary/20">
+      <div className="card bg-accent/[0.08] border border-base-300">
         <div className="card-body items-center text-center gap-4 py-10">
           <div className="p-4 rounded-2xl bg-primary/10">
             <BookOpen className="h-8 w-8 text-primary" />

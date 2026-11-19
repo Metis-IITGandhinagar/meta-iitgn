@@ -481,7 +481,7 @@ export default function ProfileContent() {
       {/* ── Profile Header Card ─────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-3xl border border-base-200 bg-base-100 shadow-sm">
         {/* Banner */}
-        <div className="h-24 bg-linear-to-r from-primary/30 via-secondary/20 to-accent/20" />
+        <div className="h-24 bg-accent/[0.12]" />
 
         <div className="relative px-5 pb-6 sm:px-8">
           {/* Avatar - overlaps banner */}

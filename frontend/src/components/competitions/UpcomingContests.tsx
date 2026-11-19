@@ -500,7 +500,7 @@ export default function UpcomingContests() {
 
         {/* Stats card */}
         {!loading && contests.length > 0 && (
-          <div className="card bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 border border-primary/20">
+          <div className="card bg-accent/[0.08] border border-base-300">
             <div className="card-body p-5 gap-3">
               <h3 className="font-semibold text-sm text-base-content/70 uppercase tracking-wider">
                 Quick stats

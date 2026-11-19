@@ -41,7 +41,7 @@ export default function BottomNavbar({
         className={`z-9999 w-[min(92vw,42rem)] transition-all duration-300 ${hidden ? "pointer-events-none translate-y-24 opacity-0" : "translate-y-0 opacity-100"} ${className}`}
       >
       <div className="relative flex items-center gap-3">
-        <div className="relative flex min-w-0 flex-1 items-center overflow-hidden bg-base-100 border-2 border-base-300 shadow-[0_18px_44px_rgba(0,0,0,0.22)] rounded-full px-2 py-1 gap-1 select-none">
+        <nav aria-label="Sections" className="relative flex min-w-0 flex-1 items-center overflow-hidden bg-base-100 border border-base-300 rounded-2xl p-1 gap-1 select-none">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -51,34 +51,35 @@ export default function BottomNavbar({
               <button
                 key={tab.id}
                 onClick={tab.onClick}
-                aria-label={tab.label}
-                className={`relative z-10 flex flex-1 items-center justify-center rounded-full px-2.5 py-2 transition-all duration-200 group active:scale-95 ${
+                aria-current={isActive ? "page" : undefined}
+                className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 rounded-xl px-2 py-1.5 transition-colors duration-200 group touch-manipulation ${
                   isActive
-                    ? `${tab.colorClass ?? "bg-primary text-primary-content"} shadow-sm`
+                    ? `${tab.colorClass ?? "bg-primary/10 text-primary"}`
                     : `${tab.colorClass ?? "text-base-content/70 hover:bg-base-200 hover:text-base-content"}`
                 }`}
               >
                 <span className="relative flex items-center justify-center">
                   <Icon
-                    className={`${isProfile ? "h-6 w-6" : "h-5 w-5"} transition-transform duration-200 ${isActive ? "scale-105" : "group-hover:scale-105"}`}
+                    className={isProfile ? "h-5 w-5" : "h-[18px] w-[18px]"}
                   />
                   {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-error hover:bg-error/90 text-[9px] font-black text-error-content leading-none shadow-sm">
+                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-error text-[11px] font-semibold text-error-content leading-none">
                       {tab.badgeCount}
                     </span>
                   )}
                 </span>
+                <span className="text-[11px] font-medium leading-none whitespace-nowrap">{tab.label}</span>
               </button>
             );
           })}
-        </div>
+        </nav>
 
         {mobileAction && (
           <button
             type="button"
             onClick={mobileAction.onClick}
             aria-label={mobileAction.label}
-            className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-200 active:scale-95 ${
+            className={`relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border transition-colors duration-200 ${
               mobileAction.active
                 ? "bg-primary text-primary-content border-primary"
                 : "bg-base-100 border-base-300 text-base-content/80 hover:bg-base-200 hover:text-base-content"

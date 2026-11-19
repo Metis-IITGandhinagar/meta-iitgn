@@ -11,6 +11,11 @@ import {
   CalendarDays,
   Compass,
   Library,
+  ClipboardCheck,
+  Shuffle,
+  Sparkles,
+  Bookmark,
+  UserRound,
   MessageSquare,
   PenLine,
   Search,
@@ -66,6 +71,9 @@ const JUMP: { title: string; href: string; icon: LucideIcon }[] = [
   { title: "All categories", href: "/wiki/categories", icon: Library },
 ];
 
+const toolBtn =
+  "min-h-11 inline-flex items-center gap-2 rounded-lg border border-base-300 px-3.5 text-[14px] font-medium hover:border-base-content/40 hover:bg-base-200/60 transition-colors cursor-pointer touch-manipulation";
+
 const QUICK_SEARCHES = ["Hostel", "Mess menu", "Placements", "Clubs", "Courses"];
 
 function pageHref(p: PageLike) {
@@ -77,16 +85,30 @@ function List({
   title,
   items,
   empty,
+  onSeeAll,
 }: {
   title: string;
   items: { key: string; label: string; href: string; time: string }[];
   empty: React.ReactNode;
+  onSeeAll?: () => void;
 }) {
+  const id = title.toLowerCase().replace(/\s+/g, "-");
   return (
-    <section aria-labelledby={`${title}-h`} className="min-w-0">
-      <h2 id={`${title}-h`} className="text-[13px] font-medium text-base-content/65 pb-2 border-b border-base-300">
-        {title}
-      </h2>
+    <section aria-labelledby={`${id}-h`} className="min-w-0">
+      <div className="flex items-center justify-between border-b border-base-300">
+        <h2 id={`${id}-h`} className="text-[13px] font-medium text-base-content/65 py-2">
+          {title}
+        </h2>
+        {onSeeAll && (
+          <button
+            type="button"
+            onClick={onSeeAll}
+            className="min-h-9 px-2 -mr-2 inline-flex items-center gap-1 rounded-md text-[13px] font-medium text-primary hover:bg-base-200 cursor-pointer touch-manipulation"
+          >
+            See all <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          </button>
+        )}
+      </div>
       {items.length === 0 ? (
         <p className="py-5 text-[14px] text-base-content/70">{empty}</p>
       ) : (
@@ -111,13 +133,23 @@ export default function HomePageNew({
   newPages = [],
   updatedPages = [],
   newsPages = [],
+  pendingPages = [],
+  upcomingEvents = [],
   getRelativeTime = (d) => d,
+  onOpenNewPages,
+  onOpenUpdatedPages,
+  onOpenPendingPages,
+  onOpenEvents,
+  onOpenNews,
+  onRandomPage,
   bookmarksComponent,
   profileComponent,
 }: HomePageNewProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [query, setQuery] = useState("");
+  // UI affordance only; the API enforces who can actually review.
+  const canReview = ["admin", "moderator"].includes((user?.role || "").toLowerCase());
 
   const go = (q: string) => {
     const t = q.trim();
@@ -224,9 +256,46 @@ export default function HomePageNew({
             })}
           </ul>
 
+          <h2 className="mt-10 text-[13px] font-medium text-base-content/65 pb-2 border-b border-base-300">Tools</h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {canReview && onOpenPendingPages && (
+              <button type="button" onClick={onOpenPendingPages} className={`${toolBtn} border-primary/40 bg-primary/10 text-primary`}>
+                <ClipboardCheck className="h-4 w-4" aria-hidden /> Review pending
+                {pendingPages.length > 0 && (
+                  <span className="ml-1 rounded-full bg-primary px-1.5 text-[12px] leading-5 text-primary-content">{pendingPages.length}</span>
+                )}
+              </button>
+            )}
+            {onRandomPage && (
+              <button type="button" onClick={onRandomPage} className={toolBtn}>
+                <Shuffle className="h-4 w-4" aria-hidden /> Random page
+              </button>
+            )}
+            {onOpenNewPages && (
+              <button type="button" onClick={onOpenNewPages} className={toolBtn}>
+                <Sparkles className="h-4 w-4" aria-hidden /> New pages
+              </button>
+            )}
+            {onOpenEvents && (
+              <button type="button" onClick={onOpenEvents} className={toolBtn}>
+                <CalendarDays className="h-4 w-4" aria-hidden /> Events
+                {upcomingEvents.length > 0 && <span className="text-[12px] text-base-content/60">{upcomingEvents.length}</span>}
+              </button>
+            )}
+            <button type="button" onClick={() => setActiveTab("bookmarks")} className={toolBtn}>
+              <Bookmark className="h-4 w-4" aria-hidden /> Saved pages
+            </button>
+            {user && (
+              <button type="button" onClick={() => setActiveTab("profile")} className={toolBtn}>
+                <UserRound className="h-4 w-4" aria-hidden /> Your profile
+              </button>
+            )}
+          </div>
+
           <div className="mt-10 grid sm:grid-cols-2 gap-x-12 gap-y-10">
             <List
               title="Recent changes"
+              onSeeAll={onOpenUpdatedPages}
               items={recent.map((p) => ({
                 key: p.slug,
                 label: p.title,
@@ -245,6 +314,7 @@ export default function HomePageNew({
             />
             <List
               title="Campus news"
+              onSeeAll={onOpenNews}
               items={newsPages.map((n) => ({
                 key: n.slug,
                 label: n.title,

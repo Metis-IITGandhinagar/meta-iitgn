@@ -62,11 +62,11 @@ export default function WelcomePage() {
           <p className="mt-5 mx-auto max-w-xl text-[16px] leading-relaxed text-base-content/70 rise" style={{ "--i": 1 } as React.CSSProperties}>
             The student-written knowledge base for IIT Gandhinagar. Hostels, mess, courses, clubs and placements, free to read and open to edit.
           </p>
-          <div className="mt-9 flex justify-center gap-3 rise" style={{ "--i": 2 } as React.CSSProperties}>
-            <Link href="/wiki/categories" className="h-11 px-5 inline-flex items-center gap-2 rounded-lg bg-primary text-primary-content text-[14px] font-medium hover:opacity-90 transition-opacity">
+          <div className="mt-9 flex flex-col sm:flex-row justify-center gap-3 max-w-xs sm:max-w-none mx-auto rise" style={{ "--i": 2 } as React.CSSProperties}>
+            <Link href="/wiki/categories" className="h-11 px-5 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary text-primary-content text-[14px] font-medium hover:opacity-90 transition-opacity">
               Open the wiki <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
-            <Link href="/login" className="h-11 px-5 inline-flex items-center rounded-lg border border-base-300 text-[14px] font-medium hover:bg-base-200 transition-colors">
+            <Link href="/login" className="h-11 px-5 inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-base-300 text-[14px] font-medium hover:bg-base-200 transition-colors">
               Sign in to contribute
             </Link>
           </div>

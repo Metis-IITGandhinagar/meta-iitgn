@@ -106,8 +106,16 @@ export default function InterviewFeedPage() {
   };
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-base-100 pt-14 pb-20 px-0 mt-5">
+    <div className="h-full w-full overflow-y-auto bg-base-100 pt-16 pb-20 px-0 mt-8">
       <div className="mx-auto max-w-6xl px-5 lg:px-8">
+        <header className="mb-6">
+          <h1 className="t-display text-4xl md:text-5xl">
+            Interview <em>stories</em>
+          </h1>
+          <p className="mt-2 text-[15px] text-base-content/70">
+            Placement and internship experiences from IITGN students.
+          </p>
+        </header>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left Column: User Profile & Stats Widget (Desktop `lg` only) */}
           <aside className="hidden lg:block lg:col-span-3 space-y-6">
@@ -173,13 +181,14 @@ export default function InterviewFeedPage() {
              {/* Search & Tag Filter Bar */}
             <div className="space-y-3">
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/65" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/65 z-10 pointer-events-none" aria-hidden />
                 <input
-                  type="text"
-                  placeholder="Search by company, role, or keywords..."
+                  type="search"
+                  aria-label="Search stories"
+                  placeholder="Search by company, role or keyword…"
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
-                  className="input input-sm input-bordered w-full pl-10 rounded-2xl text-xs bg-base-100"
+                  className="input input-bordered w-full h-11 pl-10 rounded-xl text-[14px] bg-base-100"
                 />
               </div>
 
